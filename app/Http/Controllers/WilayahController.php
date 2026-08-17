@@ -103,6 +103,8 @@ class WilayahController extends Controller
 
     private function titleCase(string $str): string
     {
-        return mb_convert_case(mb_strtolower($str), MB_CASE_TITLE, 'UTF-8');
+        $result = mb_convert_case(mb_strtolower($str), MB_CASE_TITLE, 'UTF-8');
+        // Singkatan administratif yang tidak boleh ikut di-title-case (mis. "Dki" → "DKI")
+        return str_ireplace(['Dki'], ['DKI'], $result);
     }
 }
