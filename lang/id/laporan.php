@@ -13,6 +13,10 @@ return [
         'langganan_per_bulan' => '/bln',
         'langganan_desc' => 'Akses tak terbatas semua 12 laporan + hoki harian via Email',
         'mulai_langganan' => 'Mulai Langganan',
+        'langganan_tahunan_title' => 'Langganan Tahunan',
+        'langganan_per_tahun' => '/thn',
+        'langganan_tahunan_hemat' => 'Hemat :persen%',
+        'mulai_langganan_tahunan' => 'Mulai Langganan Tahunan',
         'kembali_katalog' => '← Kembali ke katalog',
     ],
 

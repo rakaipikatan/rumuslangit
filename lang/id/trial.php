@@ -74,7 +74,7 @@ return [
         'steps' => [
             ['no' => '1', 'title' => 'Isi Data Lahir', 'desc' => 'Nama, tanggal & jam lahir, serta lokasi tempat tinggal. Tidak perlu akun, 100% gratis.'],
             ['no' => '2', 'title' => 'Lihat Peta Energi Anda', 'desc' => 'Hasil Weton, Shio, Zodiak, Radar Energi Harian, dan Profil Karakter AI muncul dalam hitungan detik.'],
-            ['no' => '3', 'title' => 'Buka Laporan Mendalam (Opsional)', 'desc' => '12 laporan spesifik — rezeki, asmara, karir, kesehatan, hingga tolak bala — mulai Rp 19.000.'],
+            ['no' => '3', 'title' => 'Buka Laporan Mendalam (Opsional)', 'desc' => '12 laporan spesifik — rezeki, asmara, karir, kesehatan, hingga tolak bala — mulai Rp 29.000.'],
         ],
     ],
 

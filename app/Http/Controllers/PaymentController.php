@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class PaymentController extends Controller
 {
     // GET /payment/{featureId} — halaman instruksi transfer / status verifikasi
-    // $featureId juga menerima literal 'langganan' untuk order langganan bulanan.
+    // $featureId juga menerima literal 'langganan-bulanan' / 'langganan-tahunan'.
     public function konfirmasi(string $featureId)
     {
         $fitur = $this->resolveFitur($featureId);
@@ -24,12 +24,14 @@ class PaymentController extends Controller
                 ->with('info', 'Silakan isi data lahir Anda terlebih dahulu.');
         }
 
-        if ($featureId === 'langganan') {
+        $subscriptionMarker = $this->subscriptionFeatureId($featureId);
+
+        if ($subscriptionMarker !== null) {
             if ($user->isSubscriber()) {
                 return redirect()->route('trial.katalog')
                     ->with('info', 'Anda sudah memiliki langganan aktif.');
             }
-            $orderFeatureId = Order::SUBSCRIPTION_FEATURE_ID;
+            $orderFeatureId = $subscriptionMarker;
         } else {
             $numericFeatureId = (int) $featureId;
 
@@ -64,7 +66,7 @@ class PaymentController extends Controller
             'bank' => 'required|in:' . collect(config('payment.bank_accounts'))->pluck('kode')->implode(','),
         ]);
 
-        $orderFeatureId = $featureId === 'langganan' ? Order::SUBSCRIPTION_FEATURE_ID : (int) $featureId;
+        $orderFeatureId = $this->subscriptionFeatureId($featureId) ?? (int) $featureId;
 
         // Idempotency: reuse order pending yang sudah ada, jangan buat kode unik baru tiap submit
         $order = Order::where('user_id', $user->id)
@@ -94,10 +96,29 @@ class PaymentController extends Controller
             ->with('success', 'Terima kasih! Transfer Anda akan kami verifikasi secepatnya (maks. 1x24 jam).');
     }
 
-    // Menerjemahkan {featureId} dari route (angka fitur ATAU literal 'langganan') menjadi array detail produk.
+    // Marker Order::SUBSCRIPTION_*_FEATURE_ID untuk literal langganan, null kalau bukan langganan.
+    private function subscriptionFeatureId(string $featureId): ?int
+    {
+        return match ($featureId) {
+            'langganan', 'langganan-bulanan' => Order::SUBSCRIPTION_MONTHLY_FEATURE_ID,
+            'langganan-tahunan'              => Order::SUBSCRIPTION_YEARLY_FEATURE_ID,
+            default                          => null,
+        };
+    }
+
+    // Menerjemahkan {featureId} dari route (angka fitur ATAU literal langganan) menjadi array detail produk.
     private function resolveFitur(string $featureId): ?array
     {
-        if ($featureId === 'langganan') {
+        if ($featureId === 'langganan-tahunan') {
+            return [
+                'nama'  => __('laporan.paywall.langganan_tahunan_title'),
+                'hub'   => 'Langganan',
+                'icon'  => '⭐',
+                'harga' => config('payment.subscription_yearly_price'),
+            ];
+        }
+
+        if ($featureId === 'langganan' || $featureId === 'langganan-bulanan') {
             return [
                 'nama'  => __('laporan.paywall.langganan_title'),
                 'hub'   => 'Langganan',

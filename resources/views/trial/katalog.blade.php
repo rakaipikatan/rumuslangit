@@ -115,7 +115,7 @@
             <div class="text-2xl mb-2">⭐</div>
             <h3 class="font-bold text-base mb-1">{{ __('hasil.katalog.langganan_title') }}</h3>
             <p class="text-white/40 text-xs mb-4">{{ __('hasil.katalog.langganan_desc') }}</p>
-            <a href="#langganan"
+            <a href="{{ route('payment.konfirmasi', 'langganan-bulanan') }}"
                class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all">
                 {{ __('hasil.katalog.langganan_cta') }}
             </a>

@@ -13,6 +13,10 @@ return [
         'langganan_per_bulan' => '/mo',
         'langganan_desc' => 'Unlimited access to all 12 reports + daily fortune via Email',
         'mulai_langganan' => 'Start Subscription',
+        'langganan_tahunan_title' => 'Yearly Subscription',
+        'langganan_per_tahun' => '/yr',
+        'langganan_tahunan_hemat' => 'Save :persen%',
+        'mulai_langganan_tahunan' => 'Start Yearly Subscription',
         'kembali_katalog' => '← Back to catalog',
     ],
 

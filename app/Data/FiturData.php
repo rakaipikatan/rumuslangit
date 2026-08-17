@@ -8,16 +8,16 @@ class FiturData
     private static function meta(): array
     {
         return [
-            1  => ['hub' => 'Wealth Hub', 'icon' => '🧭', 'harga' => 19000],
-            2  => ['hub' => 'Wealth Hub', 'icon' => '📈', 'harga' => 19000],
-            3  => ['hub' => 'Wealth Hub', 'icon' => '📅', 'harga' => 19000],
-            4  => ['hub' => 'Wealth Hub', 'icon' => '🏪', 'harga' => 19000],
-            5  => ['hub' => 'Social Hub', 'icon' => '💑', 'harga' => 19000],
-            6  => ['hub' => 'Social Hub', 'icon' => '🏢', 'harga' => 19000],
-            7  => ['hub' => 'Social Hub', 'icon' => '👨‍👧', 'harga' => 19000],
-            8  => ['hub' => 'Personal Wellness Hub', 'icon' => '✍️', 'harga' => 19000],
-            9  => ['hub' => 'Personal Wellness Hub', 'icon' => '💚', 'harga' => 19000, 'tanya_golongan_darah' => true],
-            10 => ['hub' => 'Personal Wellness Hub', 'icon' => '🛡️', 'harga' => 19000],
+            1  => ['hub' => 'Wealth Hub', 'icon' => '🧭', 'harga' => 29000],
+            2  => ['hub' => 'Wealth Hub', 'icon' => '📈', 'harga' => 29000],
+            3  => ['hub' => 'Wealth Hub', 'icon' => '📅', 'harga' => 29000],
+            4  => ['hub' => 'Wealth Hub', 'icon' => '🏪', 'harga' => 29000],
+            5  => ['hub' => 'Social Hub', 'icon' => '💑', 'harga' => 29000],
+            6  => ['hub' => 'Social Hub', 'icon' => '🏢', 'harga' => 29000],
+            7  => ['hub' => 'Social Hub', 'icon' => '👨‍👧', 'harga' => 29000],
+            8  => ['hub' => 'Personal Wellness Hub', 'icon' => '✍️', 'harga' => 29000],
+            9  => ['hub' => 'Personal Wellness Hub', 'icon' => '💚', 'harga' => 29000, 'tanya_golongan_darah' => true],
+            10 => ['hub' => 'Personal Wellness Hub', 'icon' => '🛡️', 'harga' => 29000],
             11 => ['hub' => 'Personal Wellness Hub', 'icon' => '🎯', 'harga' => 0, 'subscriber_only' => true],
             12 => ['hub' => 'Traffic Driver', 'icon' => '🌙', 'harga' => 0, 'freemium' => true],
         ];
@@ -410,7 +410,7 @@ class FiturData
 
     public static function harga(int $id): int
     {
-        return self::cari($id)['harga'] ?? 19000;
+        return self::cari($id)['harga'] ?? 29000;
     }
 
     public static function pertanyaan(int $id, ?string $locale = null): array

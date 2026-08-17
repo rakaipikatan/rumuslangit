@@ -65,8 +65,10 @@
                 </td>
                 <td class="px-5 py-3 text-white/80">
                     Rp {{ number_format($o->amount, 0, ',', '.') }}
-                    @if($o->feature_id === \App\Models\Order::SUBSCRIPTION_FEATURE_ID)
+                    @if($o->feature_id === \App\Models\Order::SUBSCRIPTION_MONTHLY_FEATURE_ID)
                         <div class="text-xs text-purple-300/70">Langganan Bulanan</div>
+                    @elseif($o->feature_id === \App\Models\Order::SUBSCRIPTION_YEARLY_FEATURE_ID)
+                        <div class="text-xs text-purple-300/70">Langganan Tahunan</div>
                     @endif
                 </td>
                 <td class="px-5 py-3 text-white/80">

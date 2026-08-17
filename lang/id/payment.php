@@ -18,7 +18,7 @@ return [
     'batal_kembali' => '← Batal, kembali ke katalog',
 
     'pilih_rekening' => 'Pilih Rekening Tujuan Transfer',
-    'info_kode_unik' => 'Setelah Anda melanjutkan, sistem akan menambahkan kode unik 3 digit ke nominal (contoh: Rp 19.000 → Rp 19.123). Transfer harus PERSIS sesuai nominal ini agar pembayaran Anda bisa diverifikasi.',
+    'info_kode_unik' => 'Setelah Anda melanjutkan, sistem akan menambahkan kode unik 3 digit ke nominal (contoh: Rp 29.000 → Rp 29.123). Transfer harus PERSIS sesuai nominal ini agar pembayaran Anda bisa diverifikasi.',
     'lanjut_transfer' => '✦ Lanjut — Dapatkan Nomor & Kode Unik Transfer',
     'menunggu_verifikasi' => 'Menunggu Verifikasi Pembayaran',
     'menunggu_verifikasi_sub' => 'Tim kami akan memverifikasi transfer Anda secara manual, maksimal 1x24 jam.',

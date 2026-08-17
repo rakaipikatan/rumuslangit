@@ -18,7 +18,7 @@ return [
     'batal_kembali' => '← Cancel, back to catalog',
 
     'pilih_rekening' => 'Choose a Destination Bank Account',
-    'info_kode_unik' => 'Once you continue, we\'ll add a 3-digit unique code to the amount (e.g. Rp 19,000 → Rp 19,123). You must transfer the EXACT amount shown so your payment can be verified.',
+    'info_kode_unik' => 'Once you continue, we\'ll add a 3-digit unique code to the amount (e.g. Rp 29,000 → Rp 29,123). You must transfer the EXACT amount shown so your payment can be verified.',
     'lanjut_transfer' => '✦ Continue — Get Transfer Number & Unique Code',
     'menunggu_verifikasi' => 'Awaiting Payment Verification',
     'menunggu_verifikasi_sub' => 'Our team will manually verify your transfer within 24 hours.',

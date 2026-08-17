@@ -65,29 +65,66 @@ class SubscriptionPaymentTest extends TestCase
         $response->assertSee('Langganan Bulanan');
     }
 
-    public function test_langganan_purchase_creates_pending_order_and_admin_confirm_activates_subscription(): void
+    public function test_langganan_bulanan_purchase_creates_pending_order_and_admin_confirm_activates_subscription(): void
     {
         $user = $this->buatUser();
 
         $this->withSession(['user_id' => $user->id])
-            ->post(route('payment.proses', 'langganan'), ['bank' => 'bca'])
-            ->assertRedirect(route('payment.konfirmasi', 'langganan'));
+            ->post(route('payment.proses', 'langganan-bulanan'), ['bank' => 'bca'])
+            ->assertRedirect(route('payment.konfirmasi', 'langganan-bulanan'));
 
         $order = Order::where('user_id', $user->id)
-            ->where('feature_id', Order::SUBSCRIPTION_FEATURE_ID)
+            ->where('feature_id', Order::SUBSCRIPTION_MONTHLY_FEATURE_ID)
             ->firstOrFail();
 
         $this->assertSame('pending', $order->status);
+        $this->assertSame(config('payment.subscription_monthly_price'), $order->amount);
         $this->assertFalse($user->fresh()->isSubscriber());
 
         $this->withSession(['admin_logged_in' => true])
             ->post(route('admin.orders.konfirmasi', $order->id))
             ->assertRedirect();
 
-        $this->assertTrue($user->fresh()->isSubscriber());
+        $user->refresh();
+        $this->assertTrue($user->isSubscriber());
+        $this->assertSame('monthly', $user->subscriptions()->latest('id')->first()->plan);
+        $this->assertEqualsWithDelta(
+            now()->addMonth()->timestamp,
+            $user->subscriptions()->latest('id')->first()->ends_at->timestamp,
+            5
+        );
     }
 
-    public function test_numeric_feature_payment_still_works(): void
+    public function test_langganan_tahunan_purchase_creates_pending_order_and_admin_confirm_activates_subscription(): void
+    {
+        $user = $this->buatUser();
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('payment.proses', 'langganan-tahunan'), ['bank' => 'bca'])
+            ->assertRedirect(route('payment.konfirmasi', 'langganan-tahunan'));
+
+        $order = Order::where('user_id', $user->id)
+            ->where('feature_id', Order::SUBSCRIPTION_YEARLY_FEATURE_ID)
+            ->firstOrFail();
+
+        $this->assertSame('pending', $order->status);
+        $this->assertSame(config('payment.subscription_yearly_price'), $order->amount);
+
+        $this->withSession(['admin_logged_in' => true])
+            ->post(route('admin.orders.konfirmasi', $order->id))
+            ->assertRedirect();
+
+        $user->refresh();
+        $this->assertTrue($user->isSubscriber());
+        $this->assertSame('yearly', $user->subscriptions()->latest('id')->first()->plan);
+        $this->assertEqualsWithDelta(
+            now()->addMonths(12)->timestamp,
+            $user->subscriptions()->latest('id')->first()->ends_at->timestamp,
+            5
+        );
+    }
+
+    public function test_numeric_feature_payment_still_works_with_new_price(): void
     {
         $user = $this->buatUser();
 
@@ -95,5 +132,6 @@ class SubscriptionPaymentTest extends TestCase
             ->get(route('payment.konfirmasi', 1));
 
         $response->assertOk();
+        $response->assertSee('29.000');
     }
 }

@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    /** Marker feature_id untuk order langganan bulanan (bukan pembelian fitur satuan). */
-    const SUBSCRIPTION_FEATURE_ID = -1;
+    /** Marker feature_id untuk order langganan (bukan pembelian fitur satuan). */
+    const SUBSCRIPTION_MONTHLY_FEATURE_ID = -1;
+    const SUBSCRIPTION_YEARLY_FEATURE_ID  = -2;
 
     protected $fillable = [
         'user_id', 'feature_id', 'package_id', 'amount',
