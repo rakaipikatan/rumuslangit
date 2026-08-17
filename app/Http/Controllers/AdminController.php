@@ -218,9 +218,29 @@ class AdminController extends Controller
 
         if ($order->status === 'pending') {
             $order->update(['status' => 'settlement', 'settled_at' => now()]);
+
+            if ($order->feature_id === Order::SUBSCRIPTION_FEATURE_ID) {
+                $this->aktifkanLangganan($order->user);
+            }
         }
 
         return back()->with('success', "Order #{$order->id} dikonfirmasi lunas.");
+    }
+
+    // Aktifkan/perpanjang langganan bulanan user setelah order langganan dikonfirmasi lunas.
+    private function aktifkanLangganan(User $user): void
+    {
+        $mulaiDari = $user->subscriptions()->where('ends_at', '>', now())->max('ends_at');
+
+        Subscription::create([
+            'user_id'    => $user->id,
+            'plan'       => 'monthly',
+            'starts_at'  => now(),
+            'ends_at'    => ($mulaiDari ? \Carbon\Carbon::parse($mulaiDari) : now())->addMonth(),
+            'auto_renew' => false,
+        ]);
+
+        $user->update(['subscription_status' => 'active']);
     }
 
     public function tolakOrder(int $id)

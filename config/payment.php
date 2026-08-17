@@ -19,4 +19,7 @@ return [
 
     // Batas waktu (jam) sebelum order manual transfer yang belum dikonfirmasi dianggap expired.
     'expire_hours' => env('PAYMENT_EXPIRE_HOURS', 24),
+
+    // Harga langganan bulanan (dipakai untuk order feature_id = Order::SUBSCRIPTION_FEATURE_ID).
+    'subscription_monthly_price' => env('PAYMENT_LANGGANAN_HARGA', 75000),
 ];

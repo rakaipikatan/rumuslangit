@@ -65,6 +65,9 @@
                 </td>
                 <td class="px-5 py-3 text-white/80">
                     Rp {{ number_format($o->amount, 0, ',', '.') }}
+                    @if($o->feature_id === \App\Models\Order::SUBSCRIPTION_FEATURE_ID)
+                        <div class="text-xs text-purple-300/70">Langganan Bulanan</div>
+                    @endif
                 </td>
                 <td class="px-5 py-3 text-white/80">
                     @if($o->transfer_amount)
