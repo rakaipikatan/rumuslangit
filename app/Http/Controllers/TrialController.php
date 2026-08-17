@@ -68,6 +68,9 @@ class TrialController extends Controller
         ];
 
         if (!$user) {
+            // Kaitkan permanen ke afiliator yang membawa user ini (kalau ada) — hanya
+            // saat user pertama kali dibuat, tidak ditimpa saat dia edit data lahirnya.
+            $userData['referred_by_affiliate_id'] = Session::get('ref_affiliate_id');
             $user = User::create($userData);
         } else {
             $user->update($userData);

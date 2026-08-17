@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Data\FiturData;
 use App\Models\AiReport;
+use App\Models\Affiliate;
+use App\Models\AffiliateCommission;
 use App\Models\Order;
 use App\Models\Subscription;
 use App\Models\User;
@@ -228,9 +230,33 @@ class AdminController extends Controller
             if ($bulan !== null) {
                 $this->aktifkanLangganan($order->user, $bulan);
             }
+
+            $this->catatKomisiAfiliasi($order);
         }
 
         return back()->with('success', "Order #{$order->id} dikonfirmasi lunas.");
+    }
+
+    // Catat komisi afiliator (kalau user ini direferensikan oleh afiliator aktif) saat order settlement.
+    private function catatKomisiAfiliasi(Order $order): void
+    {
+        $user = $order->user;
+        if (!$user || !$user->referred_by_affiliate_id) return;
+
+        $affiliate = $user->affiliate;
+        if (!$affiliate || !$affiliate->isActive()) return;
+
+        AffiliateCommission::firstOrCreate(
+            ['order_id' => $order->id],
+            [
+                'affiliate_id'  => $affiliate->id,
+                'user_id'       => $user->id,
+                'order_amount'  => $order->amount,
+                'komisi_persen' => $affiliate->komisi_persen,
+                'komisi_amount' => (int) round($order->amount * $affiliate->komisi_persen / 100),
+                'status'        => 'unpaid',
+            ]
+        );
     }
 
     // Aktifkan/perpanjang langganan user setelah order langganan dikonfirmasi lunas.
@@ -258,6 +284,85 @@ class AdminController extends Controller
         }
 
         return back()->with('success', "Order #{$order->id} ditolak/dibatalkan.");
+    }
+
+    // ─── Affiliates ──────────────────────────────────────────────────────────
+
+    public function affiliates()
+    {
+        $affiliates = Affiliate::withCount('users')
+            ->withSum(['commissions as total_unpaid' => fn ($q) => $q->where('status', 'unpaid')], 'komisi_amount')
+            ->withSum(['commissions as total_paid' => fn ($q) => $q->where('status', 'paid')], 'komisi_amount')
+            ->latest()
+            ->get();
+
+        return view('admin.affiliates', compact('affiliates'));
+    }
+
+    public function buatAffiliate(Request $request)
+    {
+        $request->validate([
+            'name'           => 'required|string|max:100',
+            'email'          => 'nullable|email|max:255',
+            'phone'          => 'nullable|string|max:30',
+            'referral_code'  => 'required|string|max:30|alpha_dash|unique:affiliates,referral_code',
+            'bank_nama'      => 'nullable|string|max:30',
+            'bank_rekening'  => 'nullable|string|max:50',
+            'bank_atas_nama' => 'nullable|string|max:100',
+            'komisi_persen'  => 'required|integer|min:1|max:100',
+        ]);
+
+        Affiliate::create([
+            'name'           => $request->name,
+            'email'          => $request->email,
+            'phone'          => $request->phone,
+            'referral_code'  => strtoupper($request->referral_code),
+            'bank_nama'      => $request->bank_nama,
+            'bank_rekening'  => $request->bank_rekening,
+            'bank_atas_nama' => $request->bank_atas_nama,
+            'komisi_persen'  => $request->komisi_persen,
+            'status'         => 'active',
+        ]);
+
+        return back()->with('success', 'Afiliator baru berhasil ditambahkan.');
+    }
+
+    public function affiliateDetail(int $id)
+    {
+        $affiliate = Affiliate::findOrFail($id);
+
+        $komisi = $affiliate->commissions()
+            ->with(['user', 'order'])
+            ->latest()
+            ->paginate(25);
+
+        $totalUnpaid = $affiliate->commissions()->where('status', 'unpaid')->sum('komisi_amount');
+        $totalPaid   = $affiliate->commissions()->where('status', 'paid')->sum('komisi_amount');
+
+        return view('admin.affiliate_detail', compact('affiliate', 'komisi', 'totalUnpaid', 'totalPaid'));
+    }
+
+    public function toggleStatusAffiliate(int $id)
+    {
+        $affiliate = Affiliate::findOrFail($id);
+        $affiliate->update(['status' => $affiliate->status === 'active' ? 'inactive' : 'active']);
+
+        return back()->with('success', "Status afiliator {$affiliate->name} diubah jadi {$affiliate->status}.");
+    }
+
+    // Tandai semua komisi unpaid afiliator ini lunas — dipakai saat transfer manual tanggal 25 selesai.
+    public function tandaiLunasKomisi(int $id)
+    {
+        $affiliate = Affiliate::findOrFail($id);
+
+        $jumlah = $affiliate->commissions()->where('status', 'unpaid')->count();
+
+        $affiliate->commissions()->where('status', 'unpaid')->update([
+            'status'  => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        return back()->with('success', "{$jumlah} komisi afiliator {$affiliate->name} ditandai lunas.");
     }
 
     // ─── System ──────────────────────────────────────────────────────────────

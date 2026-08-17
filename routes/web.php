@@ -79,6 +79,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders',        [AdminController::class, 'orders'])->name('orders');
         Route::post('/orders/{id}/konfirmasi', [AdminController::class, 'konfirmasiOrder'])->name('orders.konfirmasi');
         Route::post('/orders/{id}/tolak',      [AdminController::class, 'tolakOrder'])->name('orders.tolak');
+        Route::get('/affiliates',              [AdminController::class, 'affiliates'])->name('affiliates');
+        Route::post('/affiliates',             [AdminController::class, 'buatAffiliate'])->name('affiliates.buat');
+        Route::get('/affiliates/{id}',         [AdminController::class, 'affiliateDetail'])->name('affiliates.detail');
+        Route::post('/affiliates/{id}/toggle', [AdminController::class, 'toggleStatusAffiliate'])->name('affiliates.toggle');
+        Route::post('/affiliates/{id}/lunas',  [AdminController::class, 'tandaiLunasKomisi'])->name('affiliates.lunas');
         Route::get('/system',        [AdminController::class, 'system'])->name('system');
         Route::post('/system/clear-cache',       [AdminController::class, 'clearCache'])->name('system.clear-cache');
         Route::post('/system/clear-failed-jobs', [AdminController::class, 'clearFailedJobs'])->name('system.clear-failed-jobs');

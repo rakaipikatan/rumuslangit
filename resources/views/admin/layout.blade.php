@@ -48,6 +48,10 @@
                class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}">
                 <span class="nav-icon">💳</span> Orders
             </a>
+            <a href="{{ route('admin.affiliates') }}"
+               class="nav-link {{ request()->routeIs('admin.affiliates*') ? 'active' : '' }}">
+                <span class="nav-icon">🤝</span> Afiliator
+            </a>
         </div>
 
         <div class="nav-section-label">Lainnya</div>

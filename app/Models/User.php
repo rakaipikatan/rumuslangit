@@ -13,7 +13,7 @@ class User extends Authenticatable
         'name', 'jenis_kelamin', 'email', 'password', 'email_verified_at',
         'dob', 'birth_hour', 'province', 'kota', 'kecamatan', 'kelurahan',
         'agama', 'agama_lainnya', 'anak_ke', 'jumlah_saudara', 'status_pernikahan',
-        'pekerjaan', 'subscription_status',
+        'pekerjaan', 'subscription_status', 'referred_by_affiliate_id',
     ];
 
     protected $hidden = [
@@ -44,6 +44,11 @@ class User extends Authenticatable
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function affiliate()
+    {
+        return $this->belongsTo(Affiliate::class, 'referred_by_affiliate_id');
     }
 
     public function isSubscriber(): bool
