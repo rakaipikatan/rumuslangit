@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'title' => 'Konfirmasi Pembayaran — :nama',
+    'heading' => 'Konfirmasi Pembayaran',
+    'subtitle' => 'Periksa detail pesanan sebelum mengonfirmasi',
+    'detail_pesanan' => 'Detail Pesanan',
+    'akses_selamanya' => 'Akses selamanya',
+    'untuk' => 'Untuk:',
+    'sekali_bayar' => 'sekali bayar',
+    'laporan_analisis' => 'Laporan Analisis',
+    'biaya_layanan' => 'Biaya layanan',
+    'gratis' => 'Gratis',
+    'total' => 'Total',
+    'memproses' => 'Memproses…',
+    'persetujuan' => 'Dengan mengklik tombol di atas, Anda menyetujui pembayaran sebesar',
+    'untuk_laporan' => 'untuk laporan',
+    'batal_kembali' => '← Batal, kembali ke katalog',
+
+    'pilih_rekening' => 'Pilih Rekening Tujuan Transfer',
+    'info_kode_unik' => 'Setelah Anda melanjutkan, sistem akan menambahkan kode unik 3 digit ke nominal (contoh: Rp 19.000 → Rp 19.123). Transfer harus PERSIS sesuai nominal ini agar pembayaran Anda bisa diverifikasi.',
+    'lanjut_transfer' => '✦ Lanjut — Dapatkan Nomor & Kode Unik Transfer',
+    'menunggu_verifikasi' => 'Menunggu Verifikasi Pembayaran',
+    'menunggu_verifikasi_sub' => 'Tim kami akan memverifikasi transfer Anda secara manual, maksimal 1x24 jam.',
+    'bank_tujuan' => 'Bank Tujuan',
+    'nomor_rekening' => 'Nomor Rekening',
+    'atas_nama' => 'Atas Nama',
+    'total_transfer' => 'Total Transfer',
+    'salin_nominal' => 'Salin Nominal',
+    'tersalin' => 'Tersalin!',
+    'kode_unik_info' => 'Nominal di atas sudah termasuk kode unik :kode. Mohon transfer PERSIS sejumlah itu (jangan dibulatkan) agar tim kami bisa mencocokkan pembayaran Anda dengan cepat.',
+    'order_id' => 'ID Order',
+];
