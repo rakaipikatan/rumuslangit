@@ -11,7 +11,8 @@
 
     <div class="space-y-3 mb-8">
 
-        {{-- Eceran --}}
+        {{-- Eceran (disembunyikan untuk fitur khusus langganan) --}}
+        @if(($fitur['harga'] ?? 0) > 0)
         <div class="bg-cosmic-800/60 border border-white/10 rounded-2xl p-5 text-left">
             <div class="flex items-center justify-between mb-3">
                 <div>
@@ -28,6 +29,7 @@
                 {{ __('laporan.paywall.bayar_sekarang') }}
             </a>
         </div>
+        @endif
 
         <div class="flex items-center gap-3 text-white/20 text-xs">
             <div class="flex-1 h-px bg-white/10"></div>

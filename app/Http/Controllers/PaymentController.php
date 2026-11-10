@@ -25,9 +25,16 @@ class PaymentController extends Controller
                 ->with('info', 'Silakan isi data lahir Anda terlebih dahulu.');
         }
 
-        $fitur = $this->terapkanHargaUji($fitur, $user);
-
         $subscriptionMarker = $this->subscriptionFeatureId($featureId);
+
+        // Fitur gratis / khusus langganan tidak dijual eceran — jangan buat order Rp0.
+        if ($subscriptionMarker === null && (int) $fitur['harga'] <= 0) {
+            return empty($fitur['subscriber_only'])
+                ? redirect()->route('laporan.form', (int) $featureId)
+                : redirect()->route('trial.katalog')->with('info', 'Fitur ini khusus pelanggan langganan.');
+        }
+
+        $fitur = $this->terapkanHargaUji($fitur, $user);
 
         if ($subscriptionMarker !== null) {
             if ($user->isSubscriber()) {
@@ -71,6 +78,10 @@ class PaymentController extends Controller
 
         $user = $this->userDariSession();
         if (!$user) abort(403);
+
+        if ($this->subscriptionFeatureId($featureId) === null && (int) $fitur['harga'] <= 0) {
+            abort(422, 'Fitur ini tidak dijual eceran.');
+        }
 
         $fitur = $this->terapkanHargaUji($fitur, $user);
 
@@ -157,7 +168,7 @@ class PaymentController extends Controller
         $harga = config('payment.test_price');
         $email = config('payment.test_email');
 
-        if (filled($harga) && filled($email)
+        if ((int) $fitur['harga'] > 0 && filled($harga) && filled($email)
             && $user->email_verified_at
             && strcasecmp((string) $user->email, (string) $email) === 0) {
             $fitur['harga'] = max(1, (int) $harga);

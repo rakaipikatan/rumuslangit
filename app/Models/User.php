@@ -70,6 +70,10 @@ class User extends Authenticatable
 
     public function hasAccessToFeature(int $featureId): bool
     {
+        // Fitur freemium (mis. Tafsir Mimpi) terbuka untuk semua pengguna tanpa bayar.
+        $fitur = \App\Data\FiturData::cari($featureId);
+        if ($fitur && !empty($fitur['freemium'])) return true;
+
         if ($this->isSubscriber()) return true;
 
         return $this->orders()

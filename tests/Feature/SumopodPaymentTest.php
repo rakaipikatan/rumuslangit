@@ -275,4 +275,48 @@ class SumopodPaymentTest extends TestCase
 
         $this->assertSame(29000, (int) Order::where('user_id', $user->id)->value('amount'));
     }
+
+    public function test_fitur_gratis_tafsir_mimpi_terbuka_tanpa_bayar(): void
+    {
+        $user = $this->buatUser();
+        $user->update(['email_verified_at' => now()]);
+
+        $this->assertTrue($user->hasAccessToFeature(12));   // freemium
+        $this->assertFalse($user->hasAccessToFeature(11));  // khusus langganan
+        $this->assertFalse($user->hasAccessToFeature(3));   // berbayar
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('laporan.form', 12))
+            ->assertOk()
+            ->assertDontSee('Bayar Sekarang');
+    }
+
+    public function test_halaman_bayar_fitur_gratis_dialihkan_dan_tak_membuat_order(): void
+    {
+        $user = $this->buatUser();
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.konfirmasi', 12))
+            ->assertRedirect(route('laporan.form', 12));
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('payment.proses', 12), ['metode' => 'qris'])
+            ->assertStatus(422);
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.konfirmasi', 11))
+            ->assertRedirect(route('trial.katalog'));
+
+        $this->assertSame(0, Order::where('user_id', $user->id)->count());
+    }
+
+    public function test_harga_uji_tidak_berlaku_untuk_fitur_gratis(): void
+    {
+        $user = $this->buatUser();
+        $user->update(['email_verified_at' => now()]);
+        config(['payment.test_price' => 1000, 'payment.test_email' => $user->email]);
+
+        $this->withSession(['user_id' => $user->id])->post(route('payment.proses', 12), ['metode' => 'qris'])->assertStatus(422);
+        $this->assertSame(0, Order::where('user_id', $user->id)->count());
+    }
 }
