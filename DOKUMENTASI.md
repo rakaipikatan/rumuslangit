@@ -314,7 +314,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Email bukti pembayaran otomatis** setelah order lunas (queue, sekali per order, HTML+teks) + 5 tes (total 95) |
+| `118db64` | **Email bukti pembayaran otomatis** setelah order lunas (queue, sekali per order, HTML+teks) + 5 tes (total 95) |
 | `b50ffd9` | **Aturan komisi afiliasi:** batas 12 bulan sejak pembayaran pertama pelanggan, tanpa komisi untuk pembelian sendiri, masa tahan 14 hari sebelum bisa dibayar; **Syarat & Ketentuan** ditampilkan di `/afiliasi` dan dikirim di email persetujuan; +4 tes (total 90) |
 | `a4673ee` | **Halaman pendaftaran afiliator** `/afiliasi` + persetujuan di admin + email link referral otomatis; migration `affiliate_applications`; +11 tes (total 86) |
 | `7b7bfd4` | **Menu Pengaturan akun** untuk membuat/mengubah password (⚙ di navbar); +4 tes (total 75) |
