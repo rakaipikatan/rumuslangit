@@ -111,6 +111,12 @@
     </div>
     @endif
 
+    @if (session('error') || $errors->any())
+    <div class="mx-6 mt-4 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm">
+        ✕ {{ session('error') ?? $errors->first() }}
+    </div>
+    @endif
+
     <div class="flex-1 px-6 py-6">
         @yield('content')
     </div>

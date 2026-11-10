@@ -38,6 +38,25 @@
     @endforeach
 </div>
 
+{{-- Pendapatan per periode (order lunas berbayar; hari = hari WIB) --}}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    @foreach ([
+        ['Pendapatan Hari Ini', 'Rp '.number_format($stats['revenue_hari_ini'],0,',','.'), $stats['order_hari_ini'].' order lunas', 'bg-green-500/10 text-green-300', '💵'],
+        ['7 Hari Terakhir',     'Rp '.number_format($stats['revenue_7_hari'],0,',','.'),   'termasuk hari ini',                   'bg-emerald-500/10 text-emerald-300', '📅'],
+        ['30 Hari Terakhir',    'Rp '.number_format($stats['revenue_30_hari'],0,',','.'),  'termasuk hari ini',                   'bg-teal-500/10 text-teal-300', '🗓️'],
+        ['Rata-rata per Hari (30h)', 'Rp '.number_format((int) round($stats['revenue_30_hari'] / 30),0,',','.'), 'perkiraan kotor sebelum biaya', 'bg-lime-500/10 text-lime-300', '📊'],
+    ] as [$label, $val, $sub, $cls, $icon])
+    <div class="stat-card">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-white/40 uppercase tracking-wider">{{ $label }}</span>
+            <div class="w-8 h-8 rounded-xl {{ $cls }} flex items-center justify-center text-base">{{ $icon }}</div>
+        </div>
+        <div class="text-2xl font-bold text-white">{{ $val }}</div>
+        <div class="text-xs text-white/30 mt-1">{{ $sub }}</div>
+    </div>
+    @endforeach
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     {{-- Feature Usage --}}

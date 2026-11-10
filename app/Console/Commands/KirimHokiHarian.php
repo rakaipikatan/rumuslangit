@@ -42,10 +42,14 @@ class KirimHokiHarian extends Command
                 $gagal++;
                 // Dicatat ke log (output konsol cron dibuang), supaya kegagalan — mis. saldo email habis — terlihat.
                 Log::warning('Hoki harian gagal dikirim', ['user' => $user->id, 'error' => $e->getMessage()]);
+                \App\Support\LayananStatus::gagal('email', "Hoki user #{$user->id}: " . $e->getMessage());
                 $this->warn("Gagal kirim ke user #{$user->id}: {$e->getMessage()}");
             }
         }
 
+        $gagal === 0
+            ? \App\Support\LayananStatus::ok('hoki', "terkirim {$terkirim}")
+            : \App\Support\LayananStatus::gagal('hoki', "terkirim {$terkirim}, gagal {$gagal} dari {$subscribers->count()}");
         Log::info('Hoki harian selesai', ['terkirim' => $terkirim, 'gagal' => $gagal, 'total' => $subscribers->count()]);
         $this->info("Hoki harian terkirim ke {$terkirim} subscriber" . ($gagal ? ", {$gagal} gagal (lihat laravel.log)." : '.'));
         return self::SUCCESS;

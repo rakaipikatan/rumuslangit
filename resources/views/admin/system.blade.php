@@ -3,6 +3,81 @@
 
 @section('content')
 
+{{-- ═══ Status layanan ═══ --}}
+@php
+    $wibS = fn ($t) => $t ? $t->copy()->timezone('Asia/Jakarta')->format('d/m H:i') . ' WIB' : null;
+    $rel  = fn ($t) => $t ? $t->copy()->locale('id')->diffForHumans() : null;
+    $semuaBaik = collect($layanan)->every(fn ($l) => !$l['perlu_cek']) && $penjadwalOk && $horizon === 'berjalan' && collect($konfigurasi)->every(fn ($v) => $v);
+@endphp
+<div class="bg-cosmic-800/60 border {{ $semuaBaik ? 'border-emerald-500/20' : 'border-amber-500/30' }} rounded-2xl p-6 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <h2 class="text-xs font-semibold text-white/50 uppercase tracking-wider">Status layanan</h2>
+        <span class="text-xs px-2.5 py-1 rounded-full {{ $semuaBaik ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20' : 'bg-amber-500/15 text-amber-300 border border-amber-500/25' }}">
+            {{ $semuaBaik ? '✓ Semua normal' : '⚠ Ada yang perlu dicek' }}
+        </span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-xs text-white/30 uppercase tracking-wider">
+                <th class="py-2 pr-4">Layanan</th><th class="pr-4">Status</th><th class="pr-4">Terakhir berhasil</th><th class="pr-4">Gagal 24 jam</th><th>Kegagalan terakhir</th>
+            </tr></thead>
+            <tbody class="divide-y divide-white/5">
+            @foreach($layanan as $l)
+                <tr>
+                    <td class="py-2.5 pr-4 text-white/80">{{ $l['label'] }}</td>
+                    <td class="pr-4">
+                        @if($l['perlu_cek'])<span class="text-xs text-amber-300">⚠ perlu dicek</span>
+                        @elseif($l['terakhir_ok'])<span class="text-xs text-emerald-300">✓ normal</span>
+                        @else<span class="text-xs text-white/30">belum ada data</span>@endif
+                    </td>
+                    <td class="pr-4 text-white/50 text-xs">
+                        @if($l['terakhir_ok']){{ $rel($l['terakhir_ok']) }}<div class="text-white/25">{{ $wibS($l['terakhir_ok']) }}{{ $l['info_ok'] ? ' · ' . $l['info_ok'] : '' }}</div>@else — @endif
+                    </td>
+                    <td class="pr-4 {{ $l['gagal_24j'] > 0 ? 'text-amber-300' : 'text-white/40' }}">{{ $l['gagal_24j'] }}</td>
+                    <td class="text-white/40 text-xs">
+                        @if($l['gagal_terakhir'])<span class="text-white/30">{{ $wibS($l['gagal_terakhir']->created_at) }}</span> — {{ \Illuminate\Support\Str::limit($l['gagal_terakhir']->pesan, 120) }}@else — @endif
+                    </td>
+                </tr>
+            @endforeach
+                <tr>
+                    <td class="py-2.5 pr-4 text-white/80">Penjadwal (cron)</td>
+                    <td class="pr-4">@if($penjadwalOk)<span class="text-xs text-emerald-300">✓ hidup</span>@else<span class="text-xs text-amber-300">⚠ tidak berdetak</span>@endif</td>
+                    <td class="pr-4 text-white/50 text-xs" colspan="3">{{ $detak ? 'detak terakhir ' . $rel($detak) . ' (' . $wibS($detak) . ')' : 'belum pernah berdetak — cek cron schedule:run; Hoki Harian tidak akan terkirim' }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2.5 pr-4 text-white/80">Antrean (Horizon)</td>
+                    <td class="pr-4">@if($horizon === 'berjalan')<span class="text-xs text-emerald-300">✓ berjalan</span>@else<span class="text-xs text-amber-300">⚠ {{ $horizon }}</span>@endif</td>
+                    <td class="pr-4 text-white/50 text-xs" colspan="3">menunggu {{ $info['pending_jobs'] }} · gagal {{ $info['failed_jobs'] }}{{ $horizon !== 'berjalan' ? ' — laporan AI & email antrean tidak diproses' : '' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+        @foreach($konfigurasi as $nama => $ada)
+            <span class="{{ $ada ? 'text-white/50' : 'text-amber-300' }}">{{ $ada ? '✓' : '✕' }} {{ $nama }} {{ $ada ? 'terisi' : 'KOSONG' }}</span>
+        @endforeach
+        <span class="{{ str_contains($modeSumopod, 'SANDBOX') ? 'text-amber-300' : 'text-white/50' }}">SumoPod: {{ $modeSumopod }}</span>
+    </div>
+
+    <div class="mt-6 pt-5 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <form method="POST" action="{{ route('admin.system.tes-email') }}" class="flex flex-wrap items-end gap-2">
+            @csrf
+            <div class="flex-1 min-w-[12rem]">
+                <label class="block text-xs text-white/40 mb-1">Tes kirim email ke</label>
+                <input type="email" name="email" required placeholder="alamat@email.com"
+                       class="w-full bg-cosmic-700/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/60">
+            </div>
+            <button class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-sm text-white transition">Kirim email uji</button>
+        </form>
+        <form method="POST" action="{{ route('admin.system.tes-gemini') }}" class="flex items-end">
+            @csrf
+            <button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition">Tes Gemini (1 panggilan kecil)</button>
+        </form>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     {{-- Info Sistem --}}

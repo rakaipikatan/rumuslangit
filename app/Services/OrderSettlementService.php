@@ -63,6 +63,7 @@ class OrderSettlementService
             Mail::to($email)->queue(new BuktiBayarMail($order));
         } catch (\Throwable $e) {
             Log::warning('Bukti bayar gagal diantrekan', ['order' => $order->id, 'error' => $e->getMessage()]);
+            \App\Support\LayananStatus::gagal('email', "Bukti bayar order #{$order->id}: " . $e->getMessage());
         }
     }
 
@@ -86,6 +87,7 @@ class OrderSettlementService
     public function catatKomisiAfiliasi(Order $order): void
     {
         $user = $order->user;
+        if ($order->amount <= 0) return; // akses gratis dari admin tidak menghasilkan komisi
         if (! $user || ! $user->referred_by_affiliate_id) return;
 
         $affiliate = $user->affiliate;

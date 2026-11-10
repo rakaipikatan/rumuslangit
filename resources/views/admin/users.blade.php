@@ -187,7 +187,7 @@
             <tr class="hover:bg-white/2 transition">
                 <td class="px-5 py-3 text-white/30">#{{ $u->id }}</td>
                 <td class="px-5 py-3">
-                    <div class="font-medium text-white/85">{{ $u->name }}</div>
+                    <a href="{{ route('admin.users.detail', $u->id) }}" class="font-medium text-white/85 hover:text-purple-300 transition">{{ $u->name }}</a>
                     @if ($u->dob)
                     <div class="text-xs text-white/30">{{ \Carbon\Carbon::parse($u->dob)->format('d/m/Y') }}</div>
                     @endif
@@ -221,7 +221,7 @@
                         <button type="button" onclick="bukaResetPassword({{ $u->id }}, '{{ addslashes($u->name) }}')"
                                 class="text-xs text-amber-400/60 hover:text-amber-300 transition">Reset Password</button>
                         <form method="POST" action="{{ route('admin.users.hapus', $u->id) }}"
-                              onsubmit="return confirm('Hapus user {{ addslashes($u->name) }}? Semua data terkait akan dihapus.')">
+                              onsubmit="return confirm('Hapus user {{ addslashes($u->name) }}? Semua data terkait akan dihapus (riwayat komisi afiliator tetap disimpan).')">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-xs text-red-400/60 hover:text-red-300 transition">Hapus</button>
                         </form>

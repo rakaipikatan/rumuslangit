@@ -158,10 +158,13 @@ class PaymentController extends Controller
                 $sumopod->buatPembayaran($order, (int) config('payment.expire_hours', 24));
             } catch (\Throwable $e) {
                 \Log::error('SumoPod: gagal membuat pembayaran', ['order' => $order->id, 'error' => $e->getMessage()]);
+                \App\Support\LayananStatus::gagal('pembayaran', "Order #{$order->id}: " . $e->getMessage());
                 $order->update(['status' => 'cancel']);
                 return back()->withErrors(['metode' => __('payment.qris_gagal')]);
             }
         }
+
+        \App\Support\LayananStatus::ok('pembayaran');
 
         return redirect()->away($order->payment_link_url);
     }

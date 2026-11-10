@@ -17,7 +17,12 @@ class EmailOtpService
 
         Cache::put("otp:{$hash}", $otp, now()->addMinutes(5));
 
-        Mail::to($email)->send(new OtpMail($otp));
+        try {
+            Mail::to($email)->send(new OtpMail($otp));
+        } catch (\Throwable $e) {
+            \App\Support\LayananStatus::gagal('email', 'Kirim kode gagal: ' . $e->getMessage());
+            throw $e;
+        }
 
         Log::info('Email OTP sent', ['email_hash' => substr($hash, 0, 8) . '…']);
     }

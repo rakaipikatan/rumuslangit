@@ -25,10 +25,12 @@ class SumopodWebhookController extends Controller
             $request->header('svix-signature'),
         )) {
             Log::warning('SumoPod webhook: signature tidak valid', ['ip' => $request->ip()]);
+            \App\Support\LayananStatus::gagal('webhook', 'Signature tidak valid dari ' . $request->ip());
             return response('Invalid signature', 401);
         }
 
         $event = $request->json('event_type');
+        \App\Support\LayananStatus::ok('webhook', (string) $event);
         $data  = (array) $request->json('data', []);
 
         if ($event === 'payment.test') {
@@ -52,6 +54,7 @@ class SumopodWebhookController extends Controller
             case 'payment.completed':
                 // Nominal harus cocok dengan order — cegah settle dengan jumlah yang salah.
                 if ((int) ($data['amount'] ?? -1) !== (int) $order->amount) {
+                    \App\Support\LayananStatus::gagal('webhook', "Nominal tidak cocok order #{$order->id}");
                     Log::error('SumoPod webhook: nominal tidak cocok', [
                         'order' => $order->id, 'diharapkan' => $order->amount, 'diterima' => $data['amount'] ?? null,
                     ]);

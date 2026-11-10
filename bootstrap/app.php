@@ -16,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Kirim hoki harian ke semua subscriber pukul 06.00 WIB
         $schedule->command('hoki:kirim')->dailyAt('06:00')->timezone('Asia/Jakarta');
 
+        // Detak penjadwal tiap menit (panel "Status layanan" memantau bahwa cron hidup)
+        $schedule->call(fn () => \App\Support\LayananStatus::detak())->everyMinute()->name('detak-penjadwal');
+
+        // Buang catatan kegagalan layanan yang lebih dari 30 hari
+        $schedule->call(fn () => \App\Models\ServiceEvent::where('created_at', '<', now()->subDays(30))->delete())->daily()->name('bersihkan-service-events');
+
         // Sinkronisasi status subscription yang expired setiap jam
         $schedule->command('subscription:sync')->hourly();
     })

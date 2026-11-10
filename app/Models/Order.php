@@ -14,7 +14,7 @@ class Order extends Model
         'user_id', 'feature_id', 'package_id', 'amount',
         'unique_code', 'transfer_amount', 'bank_tujuan',
         'payment_method', 'gateway_order_id', 'status', 'settled_at',
-        'payment_id', 'payment_link_url', 'payment_expires_at',
+        'payment_id', 'payment_link_url', 'payment_expires_at', 'catatan',
     ];
 
     protected $casts = [

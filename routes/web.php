@@ -93,12 +93,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/',              [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/users',              [AdminController::class, 'users'])->name('users');
         Route::post('/users/buat-testing',[AdminController::class, 'buatUserTesting'])->name('users.buat-testing');
+        Route::get('/users/{id}',         [AdminController::class, 'userDetail'])->whereNumber('id')->name('users.detail');
+        Route::post('/users/{id}/beri-jatah',     [AdminController::class, 'beriJatah'])->name('users.beri-jatah');
+        Route::post('/users/{id}/beri-langganan', [AdminController::class, 'beriLangganan'])->name('users.beri-langganan');
         Route::post('/users/{id}/reset-password', [AdminController::class, 'resetPasswordUser'])->name('users.reset-password');
         Route::delete('/users/{id}',      [AdminController::class, 'hapusUser'])->name('users.hapus');
         Route::get('/reports',       [AdminController::class, 'reports'])->name('reports');
         Route::get('/orders',        [AdminController::class, 'orders'])->name('orders');
         Route::post('/orders/{id}/konfirmasi', [AdminController::class, 'konfirmasiOrder'])->name('orders.konfirmasi');
         Route::post('/orders/{id}/tolak',      [AdminController::class, 'tolakOrder'])->name('orders.tolak');
+        Route::post('/orders/{id}/kirim-bukti', [AdminController::class, 'kirimBukti'])->name('orders.kirim-bukti');
         Route::get('/affiliates',              [AdminController::class, 'affiliates'])->name('affiliates');
         Route::post('/affiliates',             [AdminController::class, 'buatAffiliate'])->name('affiliates.buat');
         Route::get('/affiliates/{id}',         [AdminController::class, 'affiliateDetail'])->name('affiliates.detail');
@@ -107,6 +111,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/affiliates/{id}/toggle', [AdminController::class, 'toggleStatusAffiliate'])->name('affiliates.toggle');
         Route::post('/affiliates/{id}/lunas',  [AdminController::class, 'tandaiLunasKomisi'])->name('affiliates.lunas');
         Route::get('/system',        [AdminController::class, 'system'])->name('system');
+        Route::post('/system/tes-email',         [AdminController::class, 'tesEmail'])->middleware('throttle:10,1')->name('system.tes-email');
+        Route::post('/system/tes-gemini',        [AdminController::class, 'tesGemini'])->middleware('throttle:10,1')->name('system.tes-gemini');
         Route::post('/system/clear-cache',       [AdminController::class, 'clearCache'])->name('system.clear-cache');
         Route::post('/system/clear-failed-jobs', [AdminController::class, 'clearFailedJobs'])->name('system.clear-failed-jobs');
     });

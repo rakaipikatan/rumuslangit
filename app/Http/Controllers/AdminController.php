@@ -68,14 +68,24 @@ class AdminController extends Controller
 
     public function dashboard()
     {
+        // "Hari" = hari kalender WIB. Pendapatan hanya order lunas berbayar (akses gratis dari admin bernominal 0).
+        $awalHari = \App\Support\HariWib::awal();
+        $lunas    = fn () => Order::where('status', 'settlement')->where('amount', '>', 0);
+
         $stats = [
             'total_users'       => User::count(),
             'users_verified'    => User::whereNotNull('email_verified_at')->count(),
-            'subscribers_aktif' => User::where('subscription_status', 'active')->count(),
+            // pelanggan aktif sebenarnya: status aktif DAN masa langganan belum berakhir
+            'subscribers_aktif' => User::where('subscription_status', 'active')
+                                       ->whereHas('subscriptions', fn ($q) => $q->where('ends_at', '>', now()))->count(),
             'total_reports'     => AiReport::whereNotNull('response_text')->count(),
-            'reports_hari_ini'  => AiReport::whereNotNull('response_text')->whereDate('cached_at', today())->count(),
-            'total_orders'      => Order::count(),
-            'revenue_settled'   => Order::where('status', 'settlement')->sum('amount'),
+            'reports_hari_ini'  => AiReport::whereNotNull('response_text')->where('cached_at', '>=', $awalHari)->count(),
+            'total_orders'      => Order::where('payment_method', '!=', 'komplimen')->count(),
+            'revenue_settled'   => $lunas()->sum('amount'),
+            'revenue_hari_ini'  => $lunas()->where('settled_at', '>=', $awalHari)->sum('amount'),
+            'revenue_7_hari'    => $lunas()->where('settled_at', '>=', $awalHari->copy()->subDays(6))->sum('amount'),
+            'revenue_30_hari'   => $lunas()->where('settled_at', '>=', $awalHari->copy()->subDays(29))->sum('amount'),
+            'order_hari_ini'    => $lunas()->where('settled_at', '>=', $awalHari)->count(),
             'pending_jobs'      => DB::table('jobs')->count(),
             'failed_jobs'       => DB::table('failed_jobs')->count(),
         ];
@@ -165,6 +175,110 @@ class AdminController extends Controller
 
         $pesan = "Password berhasil direset! Email: {$user->email} | Password baru: {$request->password}";
         return back()->with('password_reset_info', $pesan);
+    }
+
+    // ─── Detail pengguna & pemberian akses gratis ─────────────────────────────
+
+    public function userDetail(int $id)
+    {
+        $user = User::with(['orders' => fn ($q) => $q->latest(), 'subscriptions' => fn ($q) => $q->latest(), 'affiliate'])->findOrFail($id);
+
+        $fitur = FiturData::semua('id');
+
+        // Jatah per fitur untuk fitur yang pernah dibeli / diberikan
+        $kuota = [];
+        foreach ($user->orders->where('status', 'settlement')->where('feature_id', '>', 0)->pluck('feature_id')->unique() as $fid) {
+            $kuota[] = [
+                'nama'     => $fitur[$fid]['nama'] ?? "Fitur #{$fid}",
+                'total'    => $user->kuotaTotal($fid),
+                'terpakai' => $user->kuotaTerpakai($fid),
+                'sisa'     => $user->kuotaSisa($fid),
+            ];
+        }
+
+        $laporan  = AiReport::where('user_id', $id)->latest('id')->limit(15)->get();
+        $fiturBerbayar = collect($fitur)->filter(fn ($f) => ($f['harga'] ?? 0) > 0 && empty($f['freemium']) && empty($f['subscriber_only']));
+
+        return view('admin.user_detail', compact('user', 'fitur', 'kuota', 'laporan', 'fiturBerbayar'));
+    }
+
+    // Beri N paket jatah gratis (tiap paket = payment.single_generations jatah) untuk satu fitur berbayar.
+    public function beriJatah(Request $request, int $id)
+    {
+        $user = User::findOrFail($id);
+
+        $idBerbayar = collect(FiturData::semua('id'))
+            ->filter(fn ($f) => ($f['harga'] ?? 0) > 0 && empty($f['freemium']) && empty($f['subscriber_only']))
+            ->keys()->all();
+
+        $request->validate([
+            'feature_id' => ['required', 'integer', \Illuminate\Validation\Rule::in($idBerbayar)],
+            'paket'      => 'required|integer|min:1|max:10',
+            'catatan'    => 'nullable|string|max:200',
+        ]);
+
+        for ($i = 0; $i < (int) $request->paket; $i++) {
+            $this->buatOrderKomplimen($user, (int) $request->feature_id, $request->catatan);
+        }
+
+        $jatah = (int) $request->paket * (int) config('payment.single_generations', 3);
+        $nama  = FiturData::cari((int) $request->feature_id, 'id')['nama'] ?? 'fitur';
+
+        return back()->with('success', "{$jatah} jatah gratis untuk \"{$nama}\" diberikan ke {$user->name}.");
+    }
+
+    // Beri/perpanjang langganan gratis (1, 3, 6, atau 12 bulan), diperpanjang dari masa aktif yang ada.
+    public function beriLangganan(Request $request, int $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'bulan'   => 'required|integer|in:1,3,6,12',
+            'catatan' => 'nullable|string|max:200',
+        ]);
+
+        $bulan = (int) $request->bulan;
+        app(\App\Services\OrderSettlementService::class)->aktifkanLangganan($user, $bulan);
+        $this->buatOrderKomplimen(
+            $user,
+            $bulan >= 12 ? Order::SUBSCRIPTION_YEARLY_FEATURE_ID : Order::SUBSCRIPTION_MONTHLY_FEATURE_ID,
+            $request->catatan ?: "Langganan gratis {$bulan} bulan dari admin"
+        );
+
+        return back()->with('success', "Langganan {$bulan} bulan diberikan ke {$user->name}.");
+    }
+
+    // Catatan akses gratis: order lunas bernominal 0 (tidak masuk pendapatan, tanpa komisi afiliasi, tanpa email bukti bayar).
+    private function buatOrderKomplimen(User $user, int $featureId, ?string $catatan): Order
+    {
+        return Order::create([
+            'user_id'          => $user->id,
+            'feature_id'       => $featureId,
+            'amount'           => 0,
+            'payment_method'   => 'komplimen',
+            'gateway_order_id' => 'GRANT-' . strtoupper(\Illuminate\Support\Str::random(10)),
+            'status'           => 'settlement',
+            'settled_at'       => now(),
+            'catatan'          => $catatan ?: 'Akses gratis dari admin',
+        ]);
+    }
+
+    // Kirim ulang email bukti pembayaran (mis. pembeli tidak menerima / masuk spam).
+    public function kirimBukti(int $id, \App\Services\OrderSettlementService $settlement)
+    {
+        $order = Order::with('user')->findOrFail($id);
+
+        if (!$order->isSettled() || $order->amount <= 0 || $order->payment_method === 'komplimen') {
+            return back()->with('error', 'Bukti bayar hanya untuk order berbayar yang sudah lunas.');
+        }
+
+        if (!$order->user?->email) {
+            return back()->with('error', 'Pengguna ini tidak punya email.');
+        }
+
+        $settlement->kirimBuktiBayar($order);
+
+        return back()->with('success', "Bukti bayar order {$order->gateway_order_id} dikirim ulang ke {$order->user->email}.");
     }
 
     public function hapusUser(int $id)
@@ -321,6 +435,7 @@ class AdminController extends Controller
             $pesan .= ' Email berisi link referral sudah dikirim.';
         } catch (\Throwable $e) {
             \Log::warning('Email persetujuan afiliasi gagal', ['affiliate' => $affiliate->id, 'error' => $e->getMessage()]);
+            \App\Support\LayananStatus::gagal('email', "Persetujuan afiliasi #{$affiliate->id}: " . $e->getMessage());
             $pesan .= ' PERHATIAN: email gagal terkirim — kirim link manual: ' . url('/') . '?ref=' . $affiliate->referral_code;
         }
 
@@ -411,7 +526,85 @@ class AdminController extends Controller
             'db_size'      => $this->dbSize(),
         ];
 
-        return view('admin.system', compact('info'));
+        // ── Status layanan ──
+        $layanan = [];
+        foreach (array_keys(\App\Support\LayananStatus::LAYANAN) as $k) {
+            $layanan[$k] = \App\Support\LayananStatus::ringkas($k);
+        }
+
+        $detak       = \App\Support\LayananStatus::detakTerakhir();
+        $penjadwalOk = $detak && $detak->gt(now()->subMinutes(5));
+
+        try {
+            $master = collect(app(\Laravel\Horizon\Contracts\MasterSupervisorRepository::class)->all());
+            $horizon = $master->isEmpty() ? 'mati' : ($master->contains(fn ($m) => ($m->status ?? '') === 'paused') ? 'dijeda' : 'berjalan');
+        } catch (\Throwable $e) {
+            $horizon = 'tidak diketahui';
+        }
+
+        $konfigurasi = [
+            'Kunci Gemini'           => filled(config('services.gemini.key')),
+            'Kunci SumoPod'          => filled(config('services.sumopod_pay.api_key')),
+            'Secret webhook SumoPod' => filled(config('services.sumopod_pay.webhook_secret')),
+            'Host SMTP'              => filled(config('mail.mailers.smtp.host')),
+        ];
+        $modeSumopod = str_contains((string) config('services.sumopod_pay.base_url'), 'sandbox') ? 'SANDBOX (uji)' : 'LIVE';
+
+        return view('admin.system', compact('info', 'layanan', 'detak', 'penjadwalOk', 'horizon', 'konfigurasi', 'modeSumopod'));
+    }
+
+    // Tombol "Tes kirim email": kirim email uji ke alamat yang diketik admin dan tampilkan hasilnya apa adanya.
+    public function tesEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email|max:255']);
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                'Ini email uji dari panel admin Rumus Langit. Jika Anda menerimanya, pengiriman email berfungsi. '
+                . 'Tidak ada di Inbox? Cek folder Spam atau Junk.',
+                fn ($m) => $m->to($request->email)->subject('Uji Email Rumus Langit (admin)')
+            );
+        } catch (\Throwable $e) {
+            \App\Support\LayananStatus::gagal('email', 'Tes admin: ' . $e->getMessage());
+            return back()->with('error', 'GAGAL kirim email uji: ' . $e->getMessage());
+        }
+
+        return back()->with('success', "Email uji diterima server SMTP dan dikirim ke {$request->email}. Cek Inbox/Spam dalam 1–2 menit.");
+    }
+
+    // Tombol "Tes Gemini": satu panggilan kecil untuk memastikan kunci, model, dan koneksi berfungsi.
+    public function tesGemini()
+    {
+        $kunci = config('services.gemini.key');
+        if (blank($kunci)) {
+            return back()->with('error', 'Kunci Gemini belum diisi di .env (GEMINI_API_KEY).');
+        }
+
+        $model = config('services.gemini.model');
+        $mulai = microtime(true);
+
+        try {
+            $r = \Illuminate\Support\Facades\Http::timeout(30)
+                ->withHeaders(['x-goog-api-key' => $kunci])
+                ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent", [
+                    'contents'         => [['parts' => [['text' => 'Balas satu kata: OK']]]],
+                    'generationConfig' => ['maxOutputTokens' => 20],
+                ]);
+        } catch (\Throwable $e) {
+            \App\Support\LayananStatus::gagal('gemini', 'Tes admin: ' . $e->getMessage());
+            return back()->with('error', 'Gemini tidak terjangkau: ' . $e->getMessage());
+        }
+
+        $ms = (int) round((microtime(true) - $mulai) * 1000);
+
+        if ($r->failed()) {
+            \App\Support\LayananStatus::gagal('gemini', "Tes admin: HTTP {$r->status()}");
+            return back()->with('error', "Gemini menolak (HTTP {$r->status()}): " . substr($r->body(), 0, 200));
+        }
+
+        \App\Support\LayananStatus::ok('gemini', 'tes admin');
+
+        return back()->with('success', "Gemini berfungsi (model {$model}, {$ms} ms).");
     }
 
     public function clearCache()

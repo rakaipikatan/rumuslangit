@@ -81,6 +81,7 @@ class GeminiService
                 if (preg_match('/retry in ([\d.]+)s/i', $body, $m)) {
                     $retrySeconds = (int) ceil((float) $m[1]);
                 }
+                \App\Support\LayananStatus::gagal('gemini', 'Rate limit 429');
                 throw new \App\Exceptions\GeminiRateLimitException($retrySeconds, 'Gemini 429: ' . substr($body, 0, 200));
             }
 
@@ -96,11 +97,14 @@ class GeminiService
                     sleep($attempt * 3);
                     continue;
                 }
+                \App\Support\LayananStatus::gagal('gemini', 'HTTP ' . $response->status() . ': ' . substr($lastError, 0, 200));
                 throw new \Exception('Gemini API gagal: ' . $lastError);
             }
 
             break; // sukses
         }
+
+        \App\Support\LayananStatus::ok('gemini');
 
         $text = $response->json('candidates.0.content.parts.0.text', '');
 
