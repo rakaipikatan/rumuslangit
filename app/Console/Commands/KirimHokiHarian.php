@@ -6,6 +6,7 @@ use App\Mail\HokiHarianMail;
 use App\Models\User;
 use App\Services\KalkulasiEngine;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class KirimHokiHarian extends Command
@@ -15,12 +16,16 @@ class KirimHokiHarian extends Command
 
     public function handle(): int
     {
+        // Hanya pelanggan yang BENAR-BENAR masih aktif (status active DAN masa langganan belum berakhir) —
+        // status bisa tertinggal hingga 1 jam sebelum subscription:sync menurunkannya.
         $subscribers = User::where('subscription_status', 'active')
             ->whereNotNull('email')
             ->whereNotNull('email_verified_at')
+            ->whereHas('subscriptions', fn ($q) => $q->where('ends_at', '>', now()))
             ->get();
 
         $terkirim = 0;
+        $gagal    = 0;
 
         foreach ($subscribers as $user) {
             try {
@@ -34,11 +39,15 @@ class KirimHokiHarian extends Command
                 Mail::to($user->email)->send(new HokiHarianMail($user->name, $hoki));
                 $terkirim++;
             } catch (\Throwable $e) {
+                $gagal++;
+                // Dicatat ke log (output konsol cron dibuang), supaya kegagalan — mis. saldo email habis — terlihat.
+                Log::warning('Hoki harian gagal dikirim', ['user' => $user->id, 'error' => $e->getMessage()]);
                 $this->warn("Gagal kirim ke user #{$user->id}: {$e->getMessage()}");
             }
         }
 
-        $this->info("Hoki harian terkirim ke {$terkirim} subscriber.");
+        Log::info('Hoki harian selesai', ['terkirim' => $terkirim, 'gagal' => $gagal, 'total' => $subscribers->count()]);
+        $this->info("Hoki harian terkirim ke {$terkirim} subscriber" . ($gagal ? ", {$gagal} gagal (lihat laravel.log)." : '.'));
         return self::SUCCESS;
     }
 

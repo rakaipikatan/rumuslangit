@@ -274,7 +274,9 @@ php artisan horizon:terminate      # supervisor akan menjalankan ulang Horizon
 
 Proses yang harus hidup: **nginx**, **php-fpm**, **`php artisan horizon`** (worker queue), dan **cron** untuk scheduler (`* * * * * php artisan schedule:run`).
 
-Scheduler ([bootstrap/app.php](bootstrap/app.php)): `hoki:kirim` harian 06:00 WIB; `subscription:sync` tiap jam.
+Scheduler ([bootstrap/app.php](bootstrap/app.php)): `hoki:kirim` harian 06:00 WIB (= 23:00 UTC); `subscription:sync` tiap jam. **Syarat berjalan:** cron user `ubuntu` menjalankan `* * * * * cd /var/www/rumuslangit && php artisan schedule:run` (sudah terpasang; cek dengan `crontab -l` dan `php artisan schedule:list`).
+
+**Hoki Harian (`hoki:kirim`):** email otomatis tiap pagi ke pelanggan yang `subscription_status='active'`, email **terverifikasi**, **dan** masa langganan (`ends_at`) belum berakhir (tidak bergantung pada sinkronisasi status per jam). Isi (3 angka + 2 warna + mantra) dihitung deterministik dari weton dan tanggal — **tanpa AI**, jadi tidak ada biaya Gemini; biaya hanya 1 email (Rp5) per pelanggan per hari. Dikirim satu per satu secara sinkron; **kegagalan per pengguna dicatat** `Log::warning('Hoki harian gagal dikirim')` dan ringkasan `Log::info('Hoki harian selesai', terkirim/gagal/total)` di `laravel.log` (output konsol cron dibuang, jadi log inilah yang dipantau; penyebab gagal paling umum: saldo email SumoPod habis). Untuk skala besar (ratusan pelanggan) pertimbangkan memindahkan pengiriman ke queue.
 
 Perintah artisan kustom: `hoki:kirim`, `subscription:sync`, `mail:uji {email}` (kirim email uji + tampilkan konfigurasi SMTP aktif; berguna setelah mengganti `MAIL_*`).
 
@@ -330,6 +332,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 129 tes) |
 | `4c511bb` | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
 | `8d0bee4` | **Halaman Panduan Pengguna** `/panduan` (setelah login); teks jatah diperjelas ("3 jatah laporan" + tautan "Apa itu jatah?"); aturan hasil diselaraskan dengan keputusan pemilik: **hari sama = hasil sama, hari berikutnya = laporan baru (tanpa memotong jatah), jatah hanya untuk jawaban berbeda**, berlaku untuk semua fitur (`PAYMENT_FITUR_HARIAN=semua` default); +5 tes (total 126) |
 | `2231b85` | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
