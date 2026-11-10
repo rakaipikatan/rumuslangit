@@ -30,4 +30,18 @@ return [
     'tersalin' => 'Copied!',
     'kode_unik_info' => 'The amount above includes unique code :kode. Please transfer this EXACT amount (do not round) so our team can match your payment quickly.',
     'order_id' => 'Order ID',
+
+    'pilih_metode' => 'Choose Payment Method',
+    'metode_qris' => 'QRIS',
+    'metode_qris_sub' => 'Pay instantly from any e-wallet / mobile banking. Access activates automatically after payment.',
+    'metode_manual' => 'Manual Bank Transfer',
+    'metode_manual_sub' => 'Transfer with a unique code, verified by our team within 24 hours.',
+    'lanjut_qris' => '✦ Continue — Pay with QRIS',
+    'qris_menunggu' => 'Waiting for QRIS Payment',
+    'qris_menunggu_sub' => 'Complete the payment on the QRIS page. Your access activates automatically once payment is received.',
+    'qris_bayar_sekarang' => 'Open QRIS Payment Page',
+    'qris_cek_status' => 'Already paid? Refresh status',
+    'qris_berlaku_sampai' => 'Valid until',
+    'qris_tidak_tersedia' => 'QRIS payment is currently unavailable. Please choose manual bank transfer.',
+    'qris_gagal' => 'Failed to create the QRIS payment. Please try again or choose manual bank transfer.',
 ];

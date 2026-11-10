@@ -225,65 +225,13 @@ class AdminController extends Controller
     }
 
     // Cocokkan nominal masuk (amount + unique_code) dengan mutasi rekening lalu buka akses fitur
-    public function konfirmasiOrder(int $id)
+    public function konfirmasiOrder(int $id, \App\Services\OrderSettlementService $settlement)
     {
         $order = Order::findOrFail($id);
 
-        if ($order->status === 'pending') {
-            $order->update(['status' => 'settlement', 'settled_at' => now()]);
-
-            $bulan = match ($order->feature_id) {
-                Order::SUBSCRIPTION_MONTHLY_FEATURE_ID => 1,
-                Order::SUBSCRIPTION_YEARLY_FEATURE_ID  => 12,
-                default                                 => null,
-            };
-
-            if ($bulan !== null) {
-                $this->aktifkanLangganan($order->user, $bulan);
-            }
-
-            $this->catatKomisiAfiliasi($order);
-        }
+        $settlement->settle($order);
 
         return back()->with('success', "Order #{$order->id} dikonfirmasi lunas.");
-    }
-
-    // Catat komisi afiliator (kalau user ini direferensikan oleh afiliator aktif) saat order settlement.
-    private function catatKomisiAfiliasi(Order $order): void
-    {
-        $user = $order->user;
-        if (!$user || !$user->referred_by_affiliate_id) return;
-
-        $affiliate = $user->affiliate;
-        if (!$affiliate || !$affiliate->isActive()) return;
-
-        AffiliateCommission::firstOrCreate(
-            ['order_id' => $order->id],
-            [
-                'affiliate_id'  => $affiliate->id,
-                'user_id'       => $user->id,
-                'order_amount'  => $order->amount,
-                'komisi_persen' => $affiliate->komisi_persen,
-                'komisi_amount' => (int) round($order->amount * $affiliate->komisi_persen / 100),
-                'status'        => 'unpaid',
-            ]
-        );
-    }
-
-    // Aktifkan/perpanjang langganan user setelah order langganan dikonfirmasi lunas.
-    private function aktifkanLangganan(User $user, int $bulan): void
-    {
-        $mulaiDari = $user->subscriptions()->where('ends_at', '>', now())->max('ends_at');
-
-        Subscription::create([
-            'user_id'    => $user->id,
-            'plan'       => $bulan >= 12 ? 'yearly' : 'monthly',
-            'starts_at'  => now(),
-            'ends_at'    => ($mulaiDari ? \Carbon\Carbon::parse($mulaiDari) : now())->addMonths($bulan),
-            'auto_renew' => false,
-        ]);
-
-        $user->update(['subscription_status' => 'active']);
     }
 
     public function tolakOrder(int $id)

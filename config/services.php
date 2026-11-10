@@ -41,4 +41,11 @@ return [
         'max_tokens' => env('GEMINI_MAX_OUTPUT_TOKENS', 1500),
     ],
 
+    // SumoPod Managed Payment (QRIS). Isi nilai di .env — jangan di-commit.
+    'sumopod_pay' => [
+        'base_url'       => env('SUMOPOD_PAY_BASE_URL', 'https://api-pay.sumopod.com'),
+        'api_key'        => env('SUMOPOD_PAY_API_KEY'),
+        'webhook_secret' => env('SUMOPOD_PAY_WEBHOOK_SECRET'),
+    ],
+
 ];

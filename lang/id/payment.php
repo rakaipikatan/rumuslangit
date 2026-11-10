@@ -30,4 +30,18 @@ return [
     'tersalin' => 'Tersalin!',
     'kode_unik_info' => 'Nominal di atas sudah termasuk kode unik :kode. Mohon transfer PERSIS sejumlah itu (jangan dibulatkan) agar tim kami bisa mencocokkan pembayaran Anda dengan cepat.',
     'order_id' => 'ID Order',
+
+    'pilih_metode' => 'Pilih Metode Pembayaran',
+    'metode_qris' => 'QRIS',
+    'metode_qris_sub' => 'Bayar instan dari e-wallet / m-banking apa pun. Akses aktif otomatis setelah pembayaran.',
+    'metode_manual' => 'Transfer Bank Manual',
+    'metode_manual_sub' => 'Transfer dengan kode unik, diverifikasi tim kami maksimal 1x24 jam.',
+    'lanjut_qris' => '✦ Lanjut — Bayar dengan QRIS',
+    'qris_menunggu' => 'Menunggu Pembayaran QRIS',
+    'qris_menunggu_sub' => 'Selesaikan pembayaran di halaman QRIS. Akses Anda aktif otomatis begitu pembayaran diterima.',
+    'qris_bayar_sekarang' => 'Buka Halaman Pembayaran QRIS',
+    'qris_cek_status' => 'Sudah bayar? Muat ulang status',
+    'qris_berlaku_sampai' => 'Berlaku sampai',
+    'qris_tidak_tersedia' => 'Pembayaran QRIS sedang tidak tersedia. Silakan pilih transfer bank manual.',
+    'qris_gagal' => 'Gagal membuat pembayaran QRIS. Silakan coba lagi atau pilih transfer bank manual.',
 ];

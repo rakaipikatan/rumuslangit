@@ -38,7 +38,29 @@
             </div>
         </div>
 
-        @if($order)
+        @if($order && $order->payment_method === 'qris')
+        {{-- Status: menunggu pembayaran QRIS (otomatis via webhook) --}}
+        <div class="p-5 space-y-4">
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-start gap-2">
+                <span class="text-amber-400 text-base">⏳</span>
+                <div>
+                    <div class="text-xs font-medium text-amber-300">{{ __('payment.qris_menunggu') }}</div>
+                    <div class="text-xs text-white/40 mt-0.5">{{ __('payment.qris_menunggu_sub') }}</div>
+                </div>
+            </div>
+            <a href="{{ $order->payment_link_url }}" target="_blank" rel="noopener"
+               class="block w-full text-center py-4 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl font-bold text-base tracking-wide shadow-lg shadow-purple-900/40 hover:from-purple-500 hover:to-violet-500 transition-all">
+                {{ __('payment.qris_bayar_sekarang') }}
+            </a>
+            <a href="{{ route('payment.konfirmasi', $featureId) }}" class="block text-center text-xs text-white/50 hover:text-white/70 transition">
+                {{ __('payment.qris_cek_status') }}
+            </a>
+            @if($order->payment_expires_at)
+            <p class="text-xs text-white/30 text-center">{{ __('payment.qris_berlaku_sampai') }} {{ $order->payment_expires_at->timezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
+            @endif
+            <p class="text-xs text-white/30 text-center">{{ __('payment.order_id') }}: <span class="font-mono">{{ $order->gateway_order_id }}</span></p>
+        </div>
+        @elseif($order)
         {{-- Status: menunggu verifikasi admin --}}
         <div class="p-5 space-y-4">
             <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-start gap-2">
@@ -88,9 +110,30 @@
         @else
         {{-- Belum ada order: pilih rekening tujuan --}}
         <form action="{{ route('payment.proses', $featureId) }}" method="POST"
-              x-data="{ loading: false, bank: '{{ old('bank', $rekening[0]['kode'] ?? '') }}' }"
+              x-data="{ loading: false, metode: '{{ old('metode', $qrisTersedia ? 'qris' : 'manual') }}', bank: '{{ old('bank', $rekening[0]['kode'] ?? '') }}' }"
               @submit="loading = true">
             @csrf
+            @if($errors->has('metode'))
+            <div class="mx-5 mt-5 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-xs">{{ $errors->first('metode') }}</div>
+            @endif
+
+            @if($qrisTersedia)
+            <div class="p-5 pb-0 space-y-3">
+                <div class="text-xs text-white/40 uppercase tracking-wider mb-1">{{ __('payment.pilih_metode') }}</div>
+                @foreach([['qris', 'metode_qris', 'metode_qris_sub'], ['manual', 'metode_manual', 'metode_manual_sub']] as [$val, $judul, $sub])
+                <label class="flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer transition"
+                       :class="metode === '{{ $val }}' ? 'border-purple-500/50 bg-purple-500/10' : 'border-white/10 hover:border-white/20'">
+                    <input type="radio" name="metode" value="{{ $val }}" x-model="metode" class="accent-purple-500">
+                    <div>
+                        <div class="text-sm font-medium text-white">{{ __('payment.' . $judul) }}</div>
+                        <div class="text-xs text-white/40">{{ __('payment.' . $sub) }}</div>
+                    </div>
+                </label>
+                @endforeach
+            </div>
+            @endif
+
+            <div x-show="metode === 'manual'">
             <div class="p-5 space-y-3">
                 <div class="text-xs text-white/40 uppercase tracking-wider mb-1">{{ __('payment.pilih_rekening') }}</div>
                 @foreach($rekening as $rek)
@@ -112,6 +155,7 @@
                     {{ __('payment.info_kode_unik') }}
                 </div>
             </div>
+            </div>
 
             {{-- Tombol Konfirmasi --}}
             <div class="px-5 pb-5">
@@ -121,7 +165,8 @@
                     :class="loading ? 'opacity-60 cursor-not-allowed' : 'hover:from-purple-500 hover:to-violet-500'"
                     class="w-full py-4 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl font-bold text-base tracking-wide transition-all duration-200 shadow-lg shadow-purple-900/40"
                 >
-                    <span x-show="!loading">{{ __('payment.lanjut_transfer') }}</span>
+                    <span x-show="!loading && metode === 'manual'">{{ __('payment.lanjut_transfer') }}</span>
+                    <span x-show="!loading && metode === 'qris'" style="display:none">{{ __('payment.lanjut_qris') }}</span>
                     <span x-show="loading" style="display:none">{{ __('payment.memproses') }}</span>
                 </button>
             </div>

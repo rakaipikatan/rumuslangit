@@ -14,10 +14,12 @@ class Order extends Model
         'user_id', 'feature_id', 'package_id', 'amount',
         'unique_code', 'transfer_amount', 'bank_tujuan',
         'payment_method', 'gateway_order_id', 'status', 'settled_at',
+        'payment_id', 'payment_link_url', 'payment_expires_at',
     ];
 
     protected $casts = [
-        'settled_at' => 'datetime',
+        'settled_at'         => 'datetime',
+        'payment_expires_at' => 'datetime',
     ];
 
     public function user()

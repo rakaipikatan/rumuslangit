@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Data\FiturData;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\SumopodPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
@@ -48,9 +49,16 @@ class PaymentController extends Controller
             ->latest()
             ->first();
 
-        $rekening = config('payment.bank_accounts');
+        // Link QRIS yang sudah lewat masa berlaku dianggap expired — user bisa membuat yang baru.
+        if ($order && $order->payment_method === 'qris' && $order->payment_expires_at && $order->payment_expires_at->isPast()) {
+            $order->update(['status' => 'expire']);
+            $order = null;
+        }
 
-        return view('payment.konfirmasi', compact('user', 'fitur', 'featureId', 'order', 'rekening'));
+        $rekening      = config('payment.bank_accounts');
+        $qrisTersedia  = app(SumopodPayService::class)->terkonfigurasi();
+
+        return view('payment.konfirmasi', compact('user', 'fitur', 'featureId', 'order', 'rekening', 'qrisTersedia'));
     }
 
     // POST /payment/{featureId} — catat pengajuan transfer manual, menunggu verifikasi admin
@@ -62,21 +70,61 @@ class PaymentController extends Controller
         $user = $this->userDariSession();
         if (!$user) abort(403);
 
+        $sumopod = app(SumopodPayService::class);
+        $metode  = $request->input('metode', 'manual');
+
         $request->validate([
-            'bank' => 'required|in:' . collect(config('payment.bank_accounts'))->pluck('kode')->implode(','),
+            'metode' => 'nullable|in:manual,qris',
+            'bank'   => 'required_unless:metode,qris|in:' . collect(config('payment.bank_accounts'))->pluck('kode')->implode(','),
         ]);
 
-        $orderFeatureId = $this->subscriptionFeatureId($featureId) ?? (int) $featureId;
+        if ($metode === 'qris' && ! $sumopod->terkonfigurasi()) {
+            return back()->withErrors(['metode' => __('payment.qris_tidak_tersedia')]);
+        }
 
-        // Idempotency: reuse order pending yang sudah ada, jangan buat kode unik baru tiap submit
+        $orderFeatureId = $this->subscriptionFeatureId($featureId) ?? (int) $featureId;
+        $amount         = $fitur['harga'];
+
+        // Idempotency: pakai ulang order pending dengan metode yang sama (tak membuat kode unik/payment baru tiap submit)
         $order = Order::where('user_id', $user->id)
             ->where('feature_id', $orderFeatureId)
             ->where('status', 'pending')
+            ->where('payment_method', $metode === 'qris' ? 'qris' : 'manual_transfer')
             ->latest()
             ->first();
 
+        if ($metode === 'qris') {
+            if ($order && $order->payment_expires_at && $order->payment_expires_at->isPast()) {
+                $order->update(['status' => 'expire']);
+                $order = null;
+            }
+
+            if (! $order) {
+                $order = Order::create([
+                    'user_id'          => $user->id,
+                    'feature_id'       => $orderFeatureId,
+                    'amount'           => $amount,
+                    'transfer_amount'  => $amount,
+                    'payment_method'   => 'qris',
+                    'gateway_order_id' => 'RL-' . strtoupper(Str::random(12)),
+                    'status'           => 'pending',
+                ]);
+            }
+
+            if (! $order->payment_link_url) {
+                try {
+                    $sumopod->buatPembayaran($order, (int) config('payment.expire_hours', 24));
+                } catch (\Throwable $e) {
+                    \Log::error('SumoPod: gagal membuat pembayaran', ['order' => $order->id, 'error' => $e->getMessage()]);
+                    $order->update(['status' => 'cancel']);
+                    return back()->withErrors(['metode' => __('payment.qris_gagal')]);
+                }
+            }
+
+            return redirect()->away($order->payment_link_url);
+        }
+
         if (!$order) {
-            $amount     = $fitur['harga'];
             $uniqueCode = $this->generateUniqueCode($amount);
 
             $order = Order::create([

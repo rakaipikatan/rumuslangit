@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CaptureReferral::class,
         ]);
 
+        // Webhook dari server SumoPod tidak membawa token CSRF; diamankan lewat signature Svix.
+        $middleware->preventRequestForgery(except: ['webhook/sumopod']);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);

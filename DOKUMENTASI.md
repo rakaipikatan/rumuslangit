@@ -19,7 +19,7 @@
 | Frontend | Blade + Tailwind CSS 4 + Vite 8 (tanpa SPA) |
 | Web server | nginx + php-fpm 8.3 (pool `www`, user `www-data`) |
 | Bahasa UI | Indonesia (`id`) dan Inggris (`en`) |
-| Pembayaran | Transfer bank manual + kode unik 3 digit, dikonfirmasi admin (belum ada payment gateway) |
+| Pembayaran | Transfer bank manual + kode unik (konfirmasi admin) **dan** QRIS via SumoPod Managed Payment (otomatis lewat webhook) |
 
 Ada juga situs lain di server yang sama (`assessly.biz.id`), vhost terpisah.
 
@@ -124,6 +124,16 @@ Dihitung **tanpa AI**: weton (hari + pasaran Jawa, neptu), shio (tahun baru Imle
 3. Admin mencocokkan mutasi → `POST /admin/orders/{id}/konfirmasi` → status `settlement`; untuk langganan dibuat baris `subscriptions` (1 atau 12 bulan, diperpanjang dari `ends_at` jika masih aktif) dan `users.subscription_status='active'`; komisi afiliasi dicatat.
 4. Order pending kedaluwarsa setelah `PAYMENT_EXPIRE_HOURS` (24 jam) — **catatan:** nilai ini terdefinisi di config tetapi belum ada job yang meng-expire order secara otomatis.
 
+### 4.3b Pembayaran QRIS (SumoPod Managed Payment)
+Metode kedua, di samping transfer manual. Aktif otomatis bila `SUMOPOD_PAY_API_KEY` terisi (tombol pilihan metode muncul di halaman `/payment/{id}`).
+
+1. `POST /payment/{id}` dengan `metode=qris` → order `pending` (`payment_method='qris'`, `gateway_order_id='RL-xxxx'`, tanpa kode unik) → [SumopodPayService](app/Services/SumopodPayService.php) `POST {base}/api/v1/payments` (header `X-Api-Key`, `payment_method_type_code=qris`, kedaluwarsa maks. 24 jam) → `payment_id`, `payment_link_url`, `payment_expires_at` disimpan → user di-redirect ke halaman bayar SumoPod. Submit ulang memakai order yang sama (tanpa payment ganda). API gagal → order `cancel` + pesan error.
+2. SumoPod memanggil **`POST /webhook/sumopod`** ([SumopodWebhookController](app/Http/Controllers/SumopodWebhookController.php)). Dikecualikan dari CSRF, diamankan **signature Svix** (HMAC-SHA256 atas `{svix-id}.{svix-timestamp}.{raw body}` dengan `SUMOPOD_PAY_WEBHOOK_SECRET`, toleransi waktu 5 menit, perbandingan constant-time). Signature salah → 401.
+3. `payment.completed` → nominal harus sama dengan order, lalu [OrderSettlementService](app/Services/OrderSettlementService.php) melunasi order (idempoten, dengan row lock): membuka akses fitur / mengaktifkan langganan dan mencatat komisi afiliasi. `payment.failed` → `cancel`; `payment.expired` → `expire`; `payment.test` dan order tak dikenal → 200 (dicatat di log).
+4. Konfirmasi admin untuk transfer manual kini memakai `OrderSettlementService` yang sama.
+
+Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant), dana cair T+2. Kolom baru `orders.payment_id` (unik), `payment_link_url`, `payment_expires_at` (migration `2026_11_10_150000_...`).
+
 ### 4.4 Program afiliasi
 - Afiliator **didaftarkan admin** (tanpa self-signup): kode referral unik, komisi default 20%.
 - Link `?ref=KODE` ditangkap `CaptureReferral` (first-touch, di session). Saat `User` pertama dibuat, `referred_by_affiliate_id` diisi **permanen**.
@@ -146,7 +156,7 @@ Dropdown berjenjang provinsi → kota → kecamatan → kelurahan lewat `/api/wi
 | Auth | `/login`, `POST /login`, `POST /logout` |
 | OTP | `POST /otp/kirim`, `POST /otp/verifikasi` |
 | Laporan | `/laporan/{id}` (form), `POST`, `/laporan/{id}/status` (polling), `/laporan/{id}/hasil` — throttle 10 req/menit |
-| Payment | `GET/POST /payment/{id}` (id numerik atau `langganan`, `langganan-bulanan`, `langganan-tahunan`) |
+| Payment | `GET/POST /payment/{id}` (field `metode`: `manual` \| `qris`), `POST /webhook/sumopod` (id numerik atau `langganan`, `langganan-bulanan`, `langganan-tahunan`) |
 | Wilayah | `/api/wilayah/{provinsi,kota,kecamatan,kelurahan}` |
 | Admin | `/admin/login`, `/admin` (dashboard), `/users`, `/reports`, `/orders`, `/affiliates`, `/system` |
 | Sistem | `/up` (health bawaan Laravel), `/health` (JSON `{status, ts}`), `/horizon` |
@@ -192,6 +202,7 @@ Variabel yang dipakai (nilai rahasia jangan di-commit; `.env` sudah di-gitignore
 | Gemini | `GEMINI_API_KEY, GEMINI_MODEL, GEMINI_MAX_OUTPUT_TOKENS` |
 | Pembayaran | `PAYMENT_BCA_NAMA/NOMOR, PAYMENT_CIMB_NAMA/NOMOR, PAYMENT_EXPIRE_HOURS, PAYMENT_LANGGANAN_BULANAN_HARGA, PAYMENT_LANGGANAN_TAHUNAN_HARGA` |
 | Admin | `ADMIN_USERNAME, ADMIN_PASSWORD` |
+| SumoPod Payment (QRIS) | `SUMOPOD_PAY_API_KEY, SUMOPOD_PAY_WEBHOOK_SECRET, SUMOPOD_PAY_BASE_URL` (default `https://api-pay.sumopod.com`) |
 | Legacy (tidak dipakai kode saat ini) | `FONNTE_*, WHATSAPP_PROVIDER, WAHA_*, DUITKU_*` |
 
 `.env.example` masih berisi template bawaan Laravel (sqlite) dan **belum** mencantumkan variabel di atas.
@@ -235,7 +246,7 @@ Perintah artisan kustom: `hoki:kirim`, `subscription:sync`.
 php artisan test       # atau: composer test
 ```
 
-34 tes (108 assertion): `KalkulasiEngineTest`, `RepairJsonTest` (unit), `AdminLoginTest`, `SubscriptionPaymentTest`, `AffiliateTest`, `ProfilStatusTest`, serta tes contoh.
+48 tes (147 assertion): `KalkulasiEngineTest`, `RepairJsonTest` (unit), `AdminLoginTest`, `SubscriptionPaymentTest`, `AffiliateTest`, `ProfilStatusTest`, `SumopodPaymentTest` (checkout QRIS, webhook: signature, replay, idempotensi, nominal, afiliasi), serta tes contoh.
 
 - **Database tes terisolasi.** Tes yang butuh DB memakai trait [tests/Concerns/UsesPostgresTestSchema.php](tests/Concerns/UsesPostgresTestSchema.php): skema PostgreSQL terpisah **`rumuslangit_test`** di server DB yang sama (dibuat dan dimigrasi otomatis), tiap tes dibungkus transaksi yang di-rollback. Skema produksi `public` tidak disentuh, dan ada pengaman yang menggagalkan tes bila skema aktif bukan `rumuslangit_test`. (Migration memakai SQL khusus Postgres sehingga sqlite tidak bisa dipakai.)
 - **Cache produksi diabaikan.** [tests/TestCase.php](tests/TestCase.php) mengarahkan `APP_CONFIG_CACHE` dan `APP_ROUTES_CACHE` ke file yang tidak ada, jadi `bootstrap/cache/*.php` (config/route produksi) tidak memengaruhi tes dan `php artisan test` aman dijalankan langsung.
@@ -277,6 +288,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | Integrasi **QRIS SumoPod Managed Payment**: service klien API, webhook ber-signature Svix, `OrderSettlementService` bersama, pilihan metode di halaman pembayaran, migration kolom payment, 14 tes baru. **Belum aktif di produksi** sampai migration dijalankan dan `config:cache`/`route:cache` di-refresh (lihat bagian 9) |
 | `080df47` | **Bugfix produksi:** profil karakter menggantung di "Sedang menganalisis..." — Gemini mengembalikan JSON dengan trailing comma sehingga data tersimpan tapi tak terbaca. Perbaikan: `repairJson` + validasi + self-healing + tes regresi. Plus: hardening login admin (throttle), rekening ke `.env`, tes pada skema DB terpisah, hapus kode WhatsApp legacy, API key Gemini via header |
 | `0a837b8`, `7e8789e` | Patch keamanan: update dependensi Composer (laravel/framework 13.40, Symfony, Guzzle, dompdf, commonmark), hardening PHP2Shell, dokumentasi ini |
 | `619f858` | Program afiliasi (referral, komisi, payout manual) |

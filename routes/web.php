@@ -7,6 +7,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SumopodWebhookController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\TarotController;
 use App\Http\Controllers\WilayahController;
@@ -57,6 +58,9 @@ Route::prefix('payment')->name('payment.')->group(function () {
     Route::get('/{featureId}', [PaymentController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/{featureId}', [PaymentController::class, 'proses'])->name('proses');
 });
+
+// Webhook SumoPod Managed Payment (QRIS) — dilindungi verifikasi signature, bukan CSRF
+Route::post('/webhook/sumopod', [SumopodWebhookController::class, 'handle'])->name('webhook.sumopod');
 
 // Health check untuk monitoring uptime
 Route::get('/health', function () {
