@@ -25,7 +25,9 @@ Route::get('/analisis', [TrialController::class, 'katalog'])->name('trial.katalo
 
 // Auth
 Route::get('/login', [AuthController::class, 'loginForm'])->name('auth.login.form');
-Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('auth.login');
+Route::post('/login/kode', [AuthController::class, 'kodeKirim'])->middleware('throttle:6,1')->name('auth.kode.kirim');
+Route::post('/login/kode/verifikasi', [AuthController::class, 'kodeVerifikasi'])->middleware('throttle:10,1')->name('auth.kode.verifikasi');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // OTP Email

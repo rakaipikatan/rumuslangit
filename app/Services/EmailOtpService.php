@@ -40,6 +40,35 @@ class EmailOtpService
         return true;
     }
 
+    /**
+     * Periksa kode untuk LOGIN (tidak menandai trial terpakai). Maks. 5 tebakan salah per kode,
+     * setelahnya kode dibatalkan — mencegah brute force 6 digit.
+     */
+    public function periksaKode(string $hash, string $inputOtp): bool
+    {
+        $cached = Cache::get("otp:{$hash}");
+        if (!$cached) {
+            return false;
+        }
+
+        $kunciGagal = "otp_gagal:{$hash}";
+
+        if (hash_equals((string) $cached, $inputOtp)) {
+            Cache::forget("otp:{$hash}");
+            Cache::forget($kunciGagal);
+            return true;
+        }
+
+        $gagal = Cache::increment($kunciGagal) ?: 1;
+        Cache::put($kunciGagal, $gagal, now()->addMinutes(10));
+        if ($gagal >= 5) {
+            Cache::forget("otp:{$hash}");
+            Cache::forget($kunciGagal);
+        }
+
+        return false;
+    }
+
     public function sudahPakaiTrial(string $hash): bool
     {
         $record = EmailVerification::where('email_hash', $hash)->first();

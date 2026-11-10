@@ -148,6 +148,13 @@ Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant
 ### 4.5 Wilayah
 Dropdown berjenjang provinsi → kota → kecamatan → kelurahan lewat `/api/wilayah/*`. Provinsi dan kota di-seed; kecamatan/kelurahan **di-seed lazy** saat pertama kali diminta (`WilayahController::seedKecamatan/seedKelurahan`).
 
+### 4.6b Login pengguna
+Pengguna **tidak punya password** (akun dibuat dari form data lahir + verifikasi email OTP), sehingga jalur login utama adalah **kode email**: `/login` → masukkan email → kode 6 digit dikirim (berlaku 5 menit) → masuk ke katalog. Rinciannya:
+- Hanya akun dengan email **terverifikasi** yang dikirimi kode; respons selalu sama (tidak membocorkan apakah email terdaftar).
+- Batas: 6 permintaan/menit per IP, 3 kode/10 menit per email, maks. **5 tebakan salah** per kode (setelah itu kode dibatalkan), 10 verifikasi/menit per IP.
+- Login password (`POST /login`, 10/menit) tetap ada, dilipat di bawah ("Punya password?"), untuk akun yang dibuat admin (user testing).
+- Pengguna yang kehilangan sesi/cookie cukup login ulang dengan kode email; data laporan dan pembelian mengikuti akun (berdasarkan email).
+
 ### 4.6 Lokalisasi
 `SetLocale` membaca `session('locale')` (default `id`); ganti bahasa lewat `/lokal/{id|en}`. File terjemahan di [lang/](lang/). Laporan AI disimpan per `locale`.
 
@@ -158,7 +165,7 @@ Dropdown berjenjang provinsi → kota → kecamatan → kelurahan lewat `/api/wi
 | Area | Rute |
 |---|---|
 | Publik | `/`, `/mulai-analisis`, `POST /proses`, `/hasil`, `/profil-status` (AJAX), `/analisis` (katalog), `/lokal/{locale}`, `/tarot/pilih`, `/health` |
-| Auth | `/login`, `POST /login`, `POST /logout` |
+| Auth | `/login`, `POST /login` (password), `POST /login/kode` + `POST /login/kode/verifikasi` (kode email), `POST /logout` |
 | OTP | `POST /otp/kirim`, `POST /otp/verifikasi` |
 | Laporan | `/laporan/{id}` (form), `POST`, `/laporan/{id}/status` (polling), `/laporan/{id}/hasil` — throttle 10 req/menit |
 | Payment | `GET/POST /payment/{id}` `POST /webhook/sumopod` (id numerik atau `langganan`, `langganan-bulanan`, `langganan-tahunan`) |
@@ -293,6 +300,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Login dengan kode email** (tanpa password) di `/login`, dengan pembatasan percobaan; login password dilipat. Admin → Users menampilkan "N laporan dibeli" (status `free` = bukan pelanggan langganan; pembelian satuan tidak mengubah status). +6 tes (total 71) |
 | `ca24ee5` | **Transfer bank manual dihapus** (halaman bayar, controller, config rekening, teks bahasa, env `PAYMENT_BCA/CIMB`); QRIS jadi satu-satunya metode. Konfirmasi admin dipertahankan sebagai cadangan; rekening untuk **payout komisi afiliator** tidak terkait dan tetap. Tes disesuaikan (total 65) |
 | `2b3b60b` | **Perbaikan alur pasca-bayar QRIS:** return URL per-payment ke halaman `payment.selesai` (tunggu konfirmasi → otomatis ke kuesioner), katalog & upsell menandai fitur yang sudah dibeli, pesan sukses; +8 tes (total 63) |
 | `23f8049` | **Bugfix:** Tafsir Mimpi (freemium, Rp0) salah menampilkan paywall "Bayar Sekarang" dan membuat order QRIS; kini gratis untuk semua. Fitur Rp0 tak bisa dibeli eceran, harga uji tak berlaku untuk fitur gratis; +3 tes (total 55) |

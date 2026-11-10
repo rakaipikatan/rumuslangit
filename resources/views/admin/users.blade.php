@@ -208,6 +208,9 @@
                     <span class="badge-pill {{ $u->subscription_status === 'active' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20' : ($u->subscription_status === 'expired' ? 'bg-red-500/15 text-red-300 border border-red-500/20' : 'bg-white/5 text-white/40 border border-white/10') }}">
                         {{ $u->subscription_status }}
                     </span>
+                    @if($u->dibeli_count > 0)
+                    <div class="text-xs text-emerald-300/70 mt-1">{{ $u->dibeli_count }} laporan dibeli</div>
+                    @endif
                 </td>
                 <td class="px-5 py-3 text-white/50">{{ $u->aiReports->count() }}</td>
                 <td class="px-5 py-3 text-white/30 text-xs">

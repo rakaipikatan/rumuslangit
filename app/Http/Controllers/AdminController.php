@@ -102,6 +102,7 @@ class AdminController extends Controller
     public function users(Request $request)
     {
         $q = User::with(['orders', 'aiReports'])
+            ->withCount(['orders as dibeli_count' => fn ($o) => $o->where('status', 'settlement')->where('feature_id', '>', 0)])
             ->latest();
 
         if ($request->filled('cari')) {
