@@ -9,6 +9,16 @@
     <h1 class="text-2xl font-bold mb-2">{{ $fitur['nama'] }}</h1>
     <p class="text-white/40 text-sm mb-8 max-w-sm mx-auto">{{ $fitur['deskripsi'] }}</p>
 
+    @if(!empty($jatahHabis))
+    <div class="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-5 mb-5 text-left">
+        <div class="font-semibold text-sm text-amber-300 mb-1">{{ __('laporan.paywall.jatah_habis_title') }}</div>
+        <p class="text-xs text-white/50 leading-relaxed">{{ __('laporan.paywall.jatah_habis_desc') }}</p>
+        @if(!empty($laporanTerakhir))
+        <a href="{{ route('laporan.terakhir', $featureId) }}" class="inline-block mt-3 text-xs text-purple-300 hover:text-purple-200 underline underline-offset-2">↺ {{ __('laporan.paywall.lihat_laporan_lama') }}</a>
+        @endif
+    </div>
+    @endif
+
     <div class="space-y-3 mb-8">
 
         {{-- Eceran (disembunyikan untuk fitur khusus langganan) --}}
@@ -17,7 +27,7 @@
             <div class="flex items-center justify-between mb-3">
                 <div>
                     <div class="font-semibold text-sm">{{ __('laporan.paywall.beli_title') }}</div>
-                    <div class="text-white/40 text-xs">{{ __('laporan.paywall.beli_sub') }}</div>
+                    <div class="text-white/40 text-xs">{{ __('laporan.paywall.beli_sub', ['n' => config('payment.single_generations', 3)]) }}</div>
                 </div>
                 <div class="text-right">
                     <div class="text-xl font-bold text-white">Rp {{ number_format($fitur['harga'], 0, ',', '.') }}</div>
@@ -51,7 +61,7 @@
                 <div class="font-semibold text-sm">{{ __('laporan.paywall.langganan_title') }}</div>
                 <div class="text-xl font-bold text-white">Rp {{ number_format($hargaBulanan, 0, ',', '.') }}<span class="text-xs text-white/40 font-normal">{{ __('laporan.paywall.langganan_per_bulan') }}</span></div>
             </div>
-            <p class="text-white/40 text-xs mb-3">{{ __('laporan.paywall.langganan_desc') }}</p>
+            <p class="text-white/40 text-xs mb-3">{{ __('laporan.paywall.langganan_desc', ['n' => config('payment.subscriber_daily_reports', 20)]) }}</p>
             <a href="{{ route('payment.konfirmasi', 'langganan-bulanan') }}"
                class="block w-full py-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-sm font-semibold text-center transition">
                 {{ __('laporan.paywall.mulai_langganan') }}

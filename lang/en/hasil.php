@@ -72,7 +72,7 @@ return [
         'bebas' => '✓ Unlimited',
         'gratis' => 'Free',
         'langganan_title' => 'Subscribe — Unlimited Access to Everything',
-        'langganan_desc' => 'Rp 49,000/month or Rp 350,000/year · All 12 reports + daily fortune via Email',
+        'langganan_desc' => 'Rp :bulanan/month or Rp :tahunan/year · All reports + Daily Fortune via email',
         'langganan_cta' => 'Start Subscription',
         'kembali' => '← Back to My Energy Map',
     ],

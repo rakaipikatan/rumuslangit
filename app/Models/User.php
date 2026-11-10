@@ -68,6 +68,10 @@ class User extends Authenticatable
         }
     }
 
+    /**
+     * Akses ke fitur: gratis (freemium) → selalu; pelanggan aktif → ya; selain itu harus punya
+     * JATAH pembuatan dari pembelian satuan (config payment.single_generations per pembelian).
+     */
     public function hasAccessToFeature(int $featureId): bool
     {
         // Fitur freemium (mis. Tafsir Mimpi) terbuka untuk semua pengguna tanpa bayar.
@@ -76,10 +80,36 @@ class User extends Authenticatable
 
         if ($this->isSubscriber()) return true;
 
-        return $this->orders()
+        return $this->kuotaSisa($featureId) > 0;
+    }
+
+    /** Total jatah dari pembelian satuan yang lunas (tiap pembelian = N pembuatan). */
+    public function kuotaTotal(int $featureId): int
+    {
+        $pembelian = $this->orders()->where('feature_id', $featureId)->where('status', 'settlement')->count();
+
+        return $pembelian * (int) config('payment.single_generations', 3);
+    }
+
+    /** Jatah terpakai: pembuatan selesai, atau yang sedang diproses (15 menit terakhir — kegagalan tak menghanguskan jatah). */
+    public function kuotaTerpakai(int $featureId): int
+    {
+        return AiReport::where('user_id', $this->id)
             ->where('feature_id', $featureId)
-            ->where('status', 'settlement')
-            ->exists();
+            ->where('consumed_quota', true)
+            ->where(fn ($q) => $q->whereNotNull('response_text')->orWhere('cached_at', '>=', now()->subMinutes(15)))
+            ->count();
+    }
+
+    public function kuotaSisa(int $featureId): int
+    {
+        return max(0, $this->kuotaTotal($featureId) - $this->kuotaTerpakai($featureId));
+    }
+
+    /** Pernah membeli fitur ini (untuk membedakan "belum beli" dari "jatah habis"). */
+    public function pernahBeli(int $featureId): bool
+    {
+        return $this->orders()->where('feature_id', $featureId)->where('status', 'settlement')->exists();
     }
 
     /**

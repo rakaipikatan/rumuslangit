@@ -2,16 +2,19 @@
 
 return [
     'paywall' => [
+        'jatah_habis_title' => 'Jatah pembuatan laporan ini sudah habis',
+        'jatah_habis_desc' => 'Semua jatah dari pembelian sebelumnya sudah terpakai. Hasil laporan lama tetap tersimpan. Beli lagi untuk jatah baru, atau berlangganan agar semua laporan terbuka.',
+        'lihat_laporan_lama' => 'Lihat laporan terakhir saya',
         'title' => 'Buka Akses — :nama',
         'beli_title' => 'Beli Laporan Ini',
-        'beli_sub' => 'Akses selamanya untuk laporan ini',
+        'beli_sub' => ':n× pembuatan laporan · hasil tersimpan selamanya',
         'sekali_bayar' => 'sekali bayar',
         'bayar_sekarang' => 'Bayar Sekarang',
         'atau' => 'atau',
         'nilai_terbaik' => '✦ Nilai terbaik',
         'langganan_title' => 'Langganan Bulanan',
         'langganan_per_bulan' => '/bln',
-        'langganan_desc' => 'Akses tak terbatas semua 12 laporan + hoki harian via Email',
+        'langganan_desc' => 'Semua laporan tanpa batas wajar (maks. :n/hari) + Angka & Warna Keberuntungan + Hoki Harian via email',
         'mulai_langganan' => 'Mulai Langganan',
         'langganan_tahunan_title' => 'Langganan Tahunan',
         'langganan_per_tahun' => '/thn',
@@ -34,6 +37,9 @@ return [
     ],
 
     'form' => [
+        'jatah' => 'Sisa jatah pembuatan: :sisa dari :total',
+        'jatah_info' => 'Jatah terpakai setiap Anda membuat laporan baru. Mengirim jawaban yang sama persis menampilkan laporan lama tanpa memakai jatah.',
+        'lihat_laporan_terakhir' => 'Lihat laporan terakhir saya (tanpa memakai jatah)',
         'kembali' => '← Kembali',
         'error_title' => 'Terjadi kesalahan — harap perbaiki dan coba lagi:',
         'pasangan_title' => 'Data Pasangan',
@@ -159,5 +165,9 @@ return [
         'submit' => '🌙 Tafsirkan Mimpi Saya',
         'submitting' => 'Menafsirkan mimpi…',
         'footer_note' => 'Tafsir dasar gratis · Mimpi bermakna buruk membuka panduan proteksi',
+    ],
+    'batas' => [
+        'langganan' => 'Batas wajar :n laporan per hari sudah tercapai. Silakan lanjutkan besok.',
+        'gratis' => 'Batas :n pembuatan per hari untuk fitur gratis ini sudah tercapai. Silakan coba lagi besok.',
     ],
 ];

@@ -28,12 +28,12 @@
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <div class="font-semibold text-sm text-white">{{ $fitur['nama'] }}</div>
-                    <div class="text-xs text-white/40 mt-1">{{ $fitur['hub'] }} · {{ __('payment.akses_selamanya') }}</div>
+                    <div class="text-xs text-white/40 mt-1">{{ $fitur['hub'] }} · {{ str_starts_with($featureId, 'langganan') ? __('payment.akses_langganan') : __('payment.akses_selamanya', ['n' => config('payment.single_generations', 3)]) }}</div>
                     <div class="text-xs text-white/30 mt-0.5">{{ __('payment.untuk') }} {{ $user->name }}</div>
                 </div>
                 <div class="text-right flex-shrink-0">
                     <div class="text-xl font-bold text-white">Rp {{ number_format($fitur['harga'], 0, ',', '.') }}</div>
-                    <div class="text-xs text-white/30">{{ __('payment.sekali_bayar') }}</div>
+                    <div class="text-xs text-white/30">{{ $featureId === 'langganan-tahunan' ? __('payment.per_tahun') : (str_starts_with($featureId, 'langganan') ? __('payment.per_bulan') : __('payment.sekali_bayar')) }}</div>
                 </div>
             </div>
         </div>

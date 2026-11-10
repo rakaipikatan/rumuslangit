@@ -13,6 +13,10 @@
         <span>{{ $fitur['nama'] }}</span>
     </div>
 
+    @if(!empty($laporanTerakhir))
+    <a href="{{ route('laporan.terakhir', $featureId) }}" class="inline-block mb-6 text-xs text-purple-300 hover:text-purple-200 underline underline-offset-2">↺ {{ __('laporan.form.lihat_laporan_terakhir') }}</a>
+    @endif
+
     <div class="mb-8">
         <div class="inline-flex items-center gap-2 bg-cosmic-600/40 border border-purple-500/20 rounded-full px-3 py-1 text-xs text-purple-300 mb-4">
             {{ $fitur['hub'] }} · {{ __('laporan.mimpi.freemium') }}

@@ -72,7 +72,7 @@ return [
         'bebas' => '✓ Bebas',
         'gratis' => 'Gratis',
         'langganan_title' => 'Langganan — Akses Semua Tanpa Batas',
-        'langganan_desc' => 'Rp 49.000/bulan atau Rp 350.000/tahun · Semua 12 laporan + hoki harian via Email',
+        'langganan_desc' => 'Rp :bulanan/bulan atau Rp :tahunan/tahun · Semua laporan + Hoki Harian via email',
         'langganan_cta' => 'Mulai Berlangganan',
         'kembali' => '← Kembali ke Peta Energi Saya',
     ],

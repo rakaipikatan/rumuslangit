@@ -2,16 +2,19 @@
 
 return [
     'paywall' => [
+        'jatah_habis_title' => 'No generations left for this report',
+        'jatah_habis_desc' => 'All generations from your previous purchases have been used. Your earlier results stay saved. Buy again for new generations, or subscribe to unlock every report.',
+        'lihat_laporan_lama' => 'View my latest report',
         'title' => 'Unlock Access — :nama',
         'beli_title' => 'Buy This Report',
-        'beli_sub' => 'Permanent access to this report',
+        'beli_sub' => ':n generations · results saved forever',
         'sekali_bayar' => 'one-time payment',
         'bayar_sekarang' => 'Pay Now',
         'atau' => 'or',
         'nilai_terbaik' => '✦ Best value',
         'langganan_title' => 'Monthly Subscription',
         'langganan_per_bulan' => '/mo',
-        'langganan_desc' => 'Unlimited access to all 12 reports + daily fortune via Email',
+        'langganan_desc' => 'All reports with a fair-use limit (max :n/day) + Daily Lucky Numbers & Colors + Daily Fortune by email',
         'mulai_langganan' => 'Start Subscription',
         'langganan_tahunan_title' => 'Yearly Subscription',
         'langganan_per_tahun' => '/yr',
@@ -34,6 +37,9 @@ return [
     ],
 
     'form' => [
+        'jatah' => 'Generations left: :sisa of :total',
+        'jatah_info' => 'A generation is used each time you create a new report. Submitting the exact same answers shows the earlier report without using a generation.',
+        'lihat_laporan_terakhir' => 'View my latest report (uses no generation)',
         'kembali' => '← Back',
         'error_title' => 'An error occurred — please fix and try again:',
         'pasangan_title' => "Partner's Data",
@@ -159,5 +165,9 @@ return [
         'submit' => '🌙 Interpret My Dream',
         'submitting' => 'Interpreting your dream…',
         'footer_note' => 'Basic interpretation free · A dream with a bad meaning unlocks the protection guide',
+    ],
+    'batas' => [
+        'langganan' => 'The fair-use limit of :n reports per day has been reached. Please continue tomorrow.',
+        'gratis' => 'The limit of :n generations per day for this free feature has been reached. Please try again tomorrow.',
     ],
 ];

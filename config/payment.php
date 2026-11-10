@@ -6,7 +6,7 @@ return [
 
     // Harga langganan (dipakai untuk order feature_id = Order::SUBSCRIPTION_MONTHLY_FEATURE_ID / SUBSCRIPTION_YEARLY_FEATURE_ID).
     'subscription_monthly_price' => env('PAYMENT_LANGGANAN_BULANAN_HARGA', 49000),
-    'subscription_yearly_price'  => env('PAYMENT_LANGGANAN_TAHUNAN_HARGA', 350000),
+    'subscription_yearly_price'  => env('PAYMENT_LANGGANAN_TAHUNAN_HARGA', 399000),
 
     // Harga UJI sementara, hanya berlaku untuk SATU email (untuk tes transaksi Live bernominal kecil).
     // Aktif bila keduanya terisi di .env; hapus/kosongkan setelah pengujian selesai.
@@ -19,4 +19,10 @@ return [
     // Aturan komisi afiliasi (juga ditampilkan sebagai Syarat & Ketentuan ke afiliator).
     'affiliate_commission_months' => env('AFFILIATE_COMMISSION_MONTHS', 12), // komisi hanya untuk pembayaran dalam N bulan sejak pembayaran pertama pelanggan
     'affiliate_hold_days'         => env('AFFILIATE_HOLD_DAYS', 14),         // masa tahan sebelum komisi boleh dibayar
+
+    // Skema harga: pembelian satuan = N kali pembuatan laporan untuk fitur itu (hasil tersimpan selamanya).
+    // Setiap pembelian baru menambah N jatah. Langganan = tanpa jatah, dengan batas wajar harian.
+    'single_generations'       => env('PAYMENT_JATAH_SATUAN', 3),
+    'subscriber_daily_reports' => env('PAYMENT_BATAS_HARIAN_LANGGANAN', 20),
+    'free_daily_reports'       => env('PAYMENT_BATAS_HARIAN_GRATIS', 5), // fitur gratis (Tafsir Mimpi) per pengguna
 ];

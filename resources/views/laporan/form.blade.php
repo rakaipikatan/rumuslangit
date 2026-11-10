@@ -22,6 +22,16 @@
     </div>
     @endif
 
+    @if(!empty($kuota))
+    <div class="bg-purple-500/10 border border-purple-500/20 rounded-xl px-4 py-3 mb-4 text-xs text-white/60 leading-relaxed">
+        <strong class="text-purple-200">{{ __('laporan.form.jatah', ['sisa' => $kuota['sisa'], 'total' => $kuota['total']]) }}</strong><br>
+        {{ __('laporan.form.jatah_info') }}
+    </div>
+    @endif
+    @if(!empty($laporanTerakhir))
+    <a href="{{ route('laporan.terakhir', $featureId) }}" class="inline-block mb-6 text-xs text-purple-300 hover:text-purple-200 underline underline-offset-2">↺ {{ __('laporan.form.lihat_laporan_terakhir') }}</a>
+    @endif
+
     <div class="mb-8">
         <div class="inline-flex items-center gap-2 bg-cosmic-600/40 border border-purple-500/20 rounded-full px-3 py-1 text-xs text-purple-300 mb-4">
             {{ $fitur['hub'] }}

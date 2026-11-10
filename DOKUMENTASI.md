@@ -74,13 +74,22 @@ Didefinisikan di [app/Data/FiturData.php](app/Data/FiturData.php) (metadata baha
 
 Fitur 1–10 memakai 10 pertanyaan Ya/Tidak (`q1..q10`). Tarot (opsional, maks 3 kartu) dari [app/Data/TarotData.php](app/Data/TarotData.php) lewat `/tarot/pilih`.
 
-### Harga & langganan (config: [config/payment.php](config/payment.php))
+### Harga & skema akses (config: [config/payment.php](config/payment.php))
 
-| Produk | Harga | Marker `orders.feature_id` |
-|---|---|---|
-| Laporan satuan | Rp29.000 | 1–12 |
-| Langganan bulanan | Rp49.000 | `-1` (`Order::SUBSCRIPTION_MONTHLY_FEATURE_ID`) |
-| Langganan tahunan | Rp350.000 | `-2` (`Order::SUBSCRIPTION_YEARLY_FEATURE_ID`) |
+| Produk | Harga | Isi | Marker `orders.feature_id` |
+|---|---|---|---|
+| **Laporan satuan** | Rp29.000 | **3 kali pembuatan** laporan untuk fitur itu (`PAYMENT_JATAH_SATUAN`); hasil yang sudah dibuat **tersimpan selamanya**. Setiap pembelian baru menambah 3 jatah | 1–10 |
+| **Langganan bulanan** | Rp49.000 | Semua fitur tanpa jatah (batas wajar **20 laporan/hari**, `PAYMENT_BATAS_HARIAN_LANGGANAN`) + fitur 11 + Hoki Harian | `-1` (`Order::SUBSCRIPTION_MONTHLY_FEATURE_ID`) |
+| **Langganan tahunan** | **Rp399.000** (hemat 32% dari 12 × Rp49.000; `PAYMENT_LANGGANAN_TAHUNAN_HARGA`) | Sama dengan bulanan, 12 bulan | `-2` (`Order::SUBSCRIPTION_YEARLY_FEATURE_ID`) |
+
+**Alasan skema (ditetapkan 11 Nov 2026):** sebelumnya membeli 10 laporan satuan (Rp290.000, akses selamanya tanpa batas) lebih murah daripada langganan tahunan (Rp350.000), sehingga langganan tidak masuk akal. Sekarang satuan = untuk mencoba (jatah terbatas), langganan = pemakaian terus-menerus. Pembeli 2 laporan (Rp58.000) sudah lebih untung berlangganan bulanan (Rp49.000).
+
+**Cara kerja jatah** (`User::kuotaTotal/kuotaTerpakai/kuotaSisa`, `ai_reports.consumed_quota`):
+- Akses fitur = fitur gratis, **atau** pelanggan aktif, **atau** `kuotaSisa > 0`. Jatah total = 3 × jumlah pembelian lunas fitur itu; terpakai = pembuatan BARU yang menandai `consumed_quota=true`.
+- **Tidak memakai jatah:** jawaban identik dengan laporan sebelumnya (diambil dari cache `data_hash`), pembuatan oleh pelanggan, fitur gratis, dan pembuatan yang gagal/macet lebih dari 15 menit. Pembuatan yang sedang berjalan (< 15 menit) tetap dihitung agar pengiriman serentak tidak menembus batas.
+- Jatah habis → paywall menampilkan "Jatah pembuatan laporan ini sudah habis" (beli lagi atau langganan) dan tautan **"Lihat laporan terakhir saya"** (`GET /laporan/{id}/terakhir`, tanpa memakai jatah dan tanpa butuh akses aktif; hanya laporan milik sendiri).
+- Form laporan menampilkan "Sisa jatah pembuatan: X dari 3" untuk pembeli satuan.
+- **Batas harian** (melindungi biaya AI): pelanggan 20 laporan/hari; fitur gratis (Tafsir Mimpi) 5/hari per pengguna (`PAYMENT_BATAS_HARIAN_GRATIS`). Hanya pembuatan baru yang dihitung.
 
 Fitur **freemium (ID 12, Tafsir Mimpi) terbuka untuk semua pengguna** tanpa bayar; fitur 11 hanya untuk pelanggan; halaman `/payment/{id}` untuk fitur bernominal 0 dialihkan (tidak pernah membuat order Rp0) dan kartu beli eceran disembunyikan di paywall fitur khusus langganan. Pelanggan aktif mengakses semua fitur dan menerima email **Hoki Harian** pukul 06.00 WIB.
 
@@ -315,6 +324,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Skema harga baru:** satuan Rp29.000 = 3 kali pembuatan (hasil tersimpan selamanya) per pembelian; langganan tahunan Rp350.000 → **Rp399.000**; batas wajar harian (langganan 20/hari, fitur gratis 5/hari); halaman "laporan terakhir"; teks harga/akses diperbarui (tidak ada lagi "akses selamanya" / "12 laporan" yang menyesatkan); kolom `ai_reports.consumed_quota`; +10 tes (total 108) |
 | `900b7d9` | **Pengingat cek folder Spam/Junk** di semua email dan pesan layar terkait pengiriman email (OTP, login kode, bukti bayar, Hoki Harian, persetujuan afiliasi) + 3 tes (total 98) |
 | `118db64` | **Email bukti pembayaran otomatis** setelah order lunas (queue, sekali per order, HTML+teks) + 5 tes (total 95) |
 | `b50ffd9` | **Aturan komisi afiliasi:** batas 12 bulan sejak pembayaran pertama pelanggan, tanpa komisi untuk pembelian sendiri, masa tahan 14 hari sebelum bisa dibayar; **Syarat & Ketentuan** ditampilkan di `/afiliasi` dan dikirim di email persetujuan; +4 tes (total 90) |

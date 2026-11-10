@@ -33,17 +33,25 @@ class ReportController extends Controller
                 ->with('info', 'Verifikasi email Anda untuk mengakses laporan ini.');
         }
 
-        // Cek akses: subscriber atau sudah bayar fitur ini
+        // Cek akses: freemium, pelanggan aktif, atau punya jatah dari pembelian satuan
         if (!$user->hasAccessToFeature($featureId)) {
-            return view('laporan.paywall', compact('user', 'fitur', 'featureId'));
+            $jatahHabis    = $user->pernahBeli($featureId); // sudah beli tapi jatahnya terpakai semua
+            $laporanTerakhir = $this->laporanTerakhir($user, $featureId);
+            return view('laporan.paywall', compact('user', 'fitur', 'featureId', 'jatahHabis', 'laporanTerakhir'));
         }
+
+        // Info jatah (hanya relevan untuk pembeli satuan yang bukan pelanggan) + tautan laporan terakhir
+        $kuota = (!$user->isSubscriber() && empty($fitur['freemium']))
+            ? ['total' => $user->kuotaTotal($featureId), 'sisa' => $user->kuotaSisa($featureId)]
+            : null;
+        $laporanTerakhir = $this->laporanTerakhir($user, $featureId);
 
         // Fitur 12: Tafsir Mimpi pakai form khusus (input teks bebas)
         if ($featureId === 12) {
-            return view('laporan.form_mimpi', compact('user', 'fitur', 'featureId'));
+            return view('laporan.form_mimpi', compact('user', 'fitur', 'featureId', 'laporanTerakhir'));
         }
 
-        return view('laporan.form', compact('user', 'fitur', 'featureId'));
+        return view('laporan.form', compact('user', 'fitur', 'featureId', 'kuota', 'laporanTerakhir'));
     }
 
     /**
@@ -132,12 +140,19 @@ class ReportController extends Controller
             return redirect()->route('laporan.hasil', $featureId);
         }
 
+        // Batas wajar harian (melindungi biaya AI) — hanya untuk pembuatan BARU, bukan laporan identik dari cache.
+        if ($pesan = $this->batasHarianTercapai($user, $featureId, $fitur)) {
+            return back()->withErrors(['batas' => $pesan])->withInput();
+        }
+
         $report = AiReport::create([
-            'user_id'    => $user->id,
-            'feature_id' => $featureId,
-            'locale'     => $locale,
-            'data_hash'  => $dataHash,
-            'cached_at'  => now(),
+            'user_id'        => $user->id,
+            'feature_id'     => $featureId,
+            'locale'         => $locale,
+            // Pembeli satuan (bukan pelanggan, bukan fitur gratis) memakai 1 jatah per pembuatan baru
+            'consumed_quota' => !$user->isSubscriber() && empty($fitur['freemium']),
+            'data_hash'      => $dataHash,
+            'cached_at'      => now(),
         ]);
 
         Session::put("report_id_{$featureId}", $report->id);
@@ -247,6 +262,58 @@ class ReportController extends Controller
         $kalkulasi = $this->kalkulasiUser($user);
 
         return view('laporan.hasil', compact('user', 'fitur', 'featureId', 'report', 'kalkulasi'));
+    }
+
+    /** Pesan error bila batas harian tercapai; null bila masih boleh. */
+    private function batasHarianTercapai(User $user, int $featureId, array $fitur): ?string
+    {
+        $awalHari = now()->startOfDay();
+
+        if ($user->isSubscriber()) {
+            $batas = (int) config('payment.subscriber_daily_reports', 20);
+            $hariIni = AiReport::where('user_id', $user->id)->where('feature_id', '>', 0)->where('cached_at', '>=', $awalHari)->count();
+
+            return $hariIni >= $batas ? __('laporan.batas.langganan', ['n' => $batas]) : null;
+        }
+
+        if (!empty($fitur['freemium'])) {
+            $batas = (int) config('payment.free_daily_reports', 5);
+            $hariIni = AiReport::where('user_id', $user->id)->where('feature_id', $featureId)->where('cached_at', '>=', $awalHari)->count();
+
+            return $hariIni >= $batas ? __('laporan.batas.gratis', ['n' => $batas]) : null;
+        }
+
+        return null;
+    }
+
+    private function laporanTerakhir(User $user, int $featureId): ?AiReport
+    {
+        return AiReport::where('user_id', $user->id)
+            ->where('feature_id', $featureId)
+            ->whereNotNull('response_text')
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Buka kembali laporan terakhir yang pernah dibuat (hasil tersimpan selamanya), tanpa memakai jatah.
+     * Tidak butuh akses aktif: laporan sudah dibayar/dibuat.
+     */
+    public function terakhir(int $featureId)
+    {
+        $user = $this->userDariSession();
+        if (!$user) {
+            return redirect()->route('trial.index');
+        }
+
+        $report = $this->laporanTerakhir($user, $featureId);
+        if (!$report) {
+            return redirect()->route('laporan.form', $featureId);
+        }
+
+        Session::put("report_id_{$featureId}", $report->id);
+
+        return redirect()->route('laporan.hasil', $featureId);
     }
 
     private function userDariSession(): ?User

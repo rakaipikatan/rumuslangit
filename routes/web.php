@@ -48,6 +48,7 @@ Route::prefix('laporan')->name('laporan.')->middleware('throttle:10,1')->group(f
     Route::get('/{featureId}', [ReportController::class, 'form'])->name('form');
     Route::post('/{featureId}', [ReportController::class, 'proses'])->name('proses');
     Route::get('/{featureId}/status', [ReportController::class, 'status'])->name('status');
+    Route::get('/{featureId}/terakhir', [ReportController::class, 'terakhir'])->name('terakhir');
     Route::get('/{featureId}/hasil', [ReportController::class, 'hasil'])->name('hasil');
 });
 
