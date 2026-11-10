@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Mail\BuktiBayarMail;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Tests\Concerns\UsesPostgresTestSchema;
 use Tests\TestCase;
@@ -460,5 +462,73 @@ class SumopodPaymentTest extends TestCase
         $this->withSession(['user_id' => $user->id])
             ->get(route('payment.konfirmasi', 3))
             ->assertOk()->assertSee('QRIS sedang tidak tersedia');
+    }
+
+    public function test_bukti_bayar_diantrekan_sekali_saat_lunas_dan_tidak_ganda_pada_webhook_ulang(): void
+    {
+        Mail::fake();
+        $user  = $this->buatUser();
+        $order = $this->buatOrderQris($user, 3, 29000);
+
+        $this->kirimWebhook($this->eventSelesai($order))->assertOk();
+        $this->kirimWebhook($this->eventSelesai($order))->assertOk();
+
+        Mail::assertQueued(BuktiBayarMail::class, 1);
+        Mail::assertQueued(BuktiBayarMail::class, fn ($m) => $m->hasTo($user->email) && $m->order->id === $order->id);
+    }
+
+    public function test_bukti_bayar_tidak_dikirim_untuk_pembayaran_gagal_atau_nominal_salah(): void
+    {
+        Mail::fake();
+        $order = $this->buatOrderQris($this->buatUser(), 3, 29000);
+
+        $this->kirimWebhook($this->eventSelesai($order, 1000))->assertOk();
+        $this->kirimWebhook(['event_type' => 'payment.failed', 'data' => ['payment_id' => $order->payment_id, 'order_id' => $order->gateway_order_id]])->assertOk();
+
+        Mail::assertNothingQueued();
+    }
+
+    public function test_pelunasan_tetap_berhasil_walau_pengguna_tanpa_email(): void
+    {
+        Mail::fake();
+        $user = $this->buatUser();
+        $user->forceFill(['email' => null])->save();
+        $order = $this->buatOrderQris($user, 3, 29000);
+
+        $this->kirimWebhook($this->eventSelesai($order))->assertOk();
+
+        $this->assertSame('settlement', $order->fresh()->status);
+        Mail::assertNothingQueued();
+    }
+
+    public function test_isi_bukti_bayar_fitur_satuan(): void
+    {
+        $user  = $this->buatUser();
+        $order = $this->buatOrderQris($user, 3, 29000);
+        $order->update(['status' => 'settlement', 'settled_at' => now()]);
+
+        $mail = new BuktiBayarMail($order->fresh());
+
+        $mail->assertSeeInHtml($order->gateway_order_id);
+        $mail->assertSeeInHtml('Hari Baik &amp; Momentum Usaha', false);
+        $mail->assertSeeInHtml('Rp 29.000');
+        $mail->assertSeeInHtml('QRIS');
+        $mail->assertSeeInHtml('bukan faktur pajak');
+        $mail->assertSeeInHtml(route('laporan.form', 3));
+        $mail->assertSeeInText('TOTAL DIBAYAR: Rp 29.000');
+    }
+
+    public function test_isi_bukti_bayar_langganan_memuat_masa_aktif(): void
+    {
+        $user  = $this->buatUser();
+        $order = $this->buatOrderQris($user, Order::SUBSCRIPTION_YEARLY_FEATURE_ID, 350000);
+        $this->kirimWebhook($this->eventSelesai($order))->assertOk();
+
+        $mail = new BuktiBayarMail($order->fresh());
+
+        $mail->assertSeeInHtml('Langganan Tahunan');
+        $mail->assertSeeInHtml('Rp 350.000');
+        $mail->assertSeeInHtml('Aktif sampai');
+        $mail->assertSeeInHtml(route('trial.katalog'));
     }
 }

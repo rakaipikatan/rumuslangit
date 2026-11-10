@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Mail\BuktiBayarMail;
 use App\Models\AffiliateCommission;
 use App\Models\Order;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Satu-satunya tempat order dinyatakan lunas — dipakai konfirmasi admin (transfer manual)
@@ -17,7 +20,7 @@ class OrderSettlementService
     /** @return bool true bila order baru saja diubah menjadi lunas, false bila sudah bukan pending. */
     public function settle(Order $order): bool
     {
-        return DB::transaction(function () use ($order) {
+        $baruLunas = DB::transaction(function () use ($order) {
             $order = Order::whereKey($order->id)->lockForUpdate()->first();
 
             if (! $order || $order->status !== 'pending') {
@@ -40,6 +43,27 @@ class OrderSettlementService
 
             return true;
         });
+
+        // Bukti bayar dikirim SETELAH transaksi tersimpan, lewat antrean (webhook harus membalas cepat),
+        // dan kegagalan email tidak boleh membatalkan pelunasan. settle() idempoten → satu email per order.
+        if ($baruLunas) {
+            $this->kirimBuktiBayar($order->fresh('user'));
+        }
+
+        return $baruLunas;
+    }
+
+    /** Kirim bukti bayar ke email pelanggan (jika punya email). */
+    public function kirimBuktiBayar(Order $order): void
+    {
+        $email = $order->user?->email;
+        if (! $email) return;
+
+        try {
+            Mail::to($email)->queue(new BuktiBayarMail($order));
+        } catch (\Throwable $e) {
+            Log::warning('Bukti bayar gagal diantrekan', ['order' => $order->id, 'error' => $e->getMessage()]);
+        }
     }
 
     /** Aktifkan/perpanjang langganan (perpanjang dari ends_at bila masih aktif). */
