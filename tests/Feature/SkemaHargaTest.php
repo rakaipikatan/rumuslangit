@@ -207,15 +207,16 @@ class SkemaHargaTest extends TestCase
 
     public function test_harga_dan_teks_skema_baru(): void
     {
-        $this->assertSame(399000, (int) config('payment.subscription_yearly_price'));
+        $this->assertSame(59000, (int) config('payment.subscription_monthly_price'));
+        $this->assertSame(499000, (int) config('payment.subscription_yearly_price'));
         $this->assertSame(3, (int) config('payment.single_generations'));
 
         $u = $this->user();
         $this->withSession(['user_id' => $u->id])->get(route('laporan.form', 3))
-            ->assertOk()->assertSee('3 jatah laporan · hasil tersimpan selamanya')->assertSee('Apa itu jatah?')->assertSee('Hemat 32%')->assertDontSee('Akses selamanya');
+            ->assertOk()->assertSee('3 jatah laporan · hasil tersimpan selamanya')->assertSee('Apa itu jatah?')->assertSee('Hemat 30%')->assertDontSee('Akses selamanya');
 
         $this->withSession(['user_id' => $u->id])->get(route('trial.katalog'))
-            ->assertOk()->assertSee('Rp 399.000/tahun');
+            ->assertOk()->assertSee('Rp 499.000/tahun');
 
         $this->withSession(['user_id' => $u->id])->get(route('payment.konfirmasi', 'langganan-tahunan'))
             ->assertOk()->assertSee('per tahun')->assertSee('Akses semua laporan selama masa langganan');

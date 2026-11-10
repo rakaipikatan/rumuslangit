@@ -79,12 +79,12 @@ Fitur 1–10 memakai 10 pertanyaan Ya/Tidak (`q1..q10`). Tarot (opsional, maks 3
 | Produk | Harga | Isi | Marker `orders.feature_id` |
 |---|---|---|---|
 | **Laporan satuan** | Rp29.000 | **3 kali pembuatan dengan jawaban berbeda** untuk fitur itu (`PAYMENT_JATAH_SATUAN`); jawaban yang sama tidak memakai jatah (laporan tersimpan dipakai ulang); hasil yang sudah dibuat **tersimpan selamanya**. Setiap pembelian baru menambah 3 jatah | 1–10 |
-| **Langganan bulanan** | Rp49.000 | Semua fitur tanpa jatah (batas wajar **20 laporan/hari**, `PAYMENT_BATAS_HARIAN_LANGGANAN`) + fitur 11 + Hoki Harian | `-1` (`Order::SUBSCRIPTION_MONTHLY_FEATURE_ID`) |
-| **Langganan tahunan** | **Rp399.000** (hemat 32% dari 12 × Rp49.000; `PAYMENT_LANGGANAN_TAHUNAN_HARGA`) | Sama dengan bulanan, 12 bulan | `-2` (`Order::SUBSCRIPTION_YEARLY_FEATURE_ID`) |
+| **Langganan bulanan** | **Rp59.000** (`PAYMENT_LANGGANAN_BULANAN_HARGA`) | Semua fitur tanpa jatah (batas wajar **20 laporan/hari**, `PAYMENT_BATAS_HARIAN_LANGGANAN`) + fitur 11 + Hoki Harian | `-1` (`Order::SUBSCRIPTION_MONTHLY_FEATURE_ID`) |
+| **Langganan tahunan** | **Rp499.000** (hemat 30% dari 12 × Rp59.000; `PAYMENT_LANGGANAN_TAHUNAN_HARGA`) | Sama dengan bulanan, 12 bulan | `-2` (`Order::SUBSCRIPTION_YEARLY_FEATURE_ID`) |
 
-**Biaya per transaksi (acuan perhitungan margin, per 11 Nov 2026):** QRIS SumoPod 0,7% + Rp300 (dari saldo merchant, cair T+2); email SumoPod **Rp5 per email** (OTP, bukti bayar, Hoki Harian; Hoki Harian ≈ Rp150/bulan atau Rp1.825/tahun per pelanggan); AI Gemini taksiran Rp25–250 per laporan; komisi afiliasi 20% (maks. 12 bulan per pelanggan). Perkiraan sisa bersih: tahunan Rp399.000 ≈ Rp300.000, bulanan Rp49.000 ≈ Rp37.000, satuan Rp29.000 ≈ Rp22.500. **Saldo email habis = OTP/login kode gagal** — top up secara berkala dan pantau saldo di dashboard SumoPod (tidak bisa dibaca dari aplikasi).
+**Biaya per transaksi (acuan perhitungan margin, per 11 Nov 2026):** QRIS SumoPod 0,7% + Rp300 (dari saldo merchant, cair T+2); email SumoPod **Rp5 per email** (OTP, bukti bayar, Hoki Harian; Hoki Harian ≈ Rp150/bulan atau Rp1.825/tahun per pelanggan); AI Gemini taksiran Rp25–250 per laporan; komisi afiliasi 20% (maks. 12 bulan per pelanggan). Perkiraan sisa bersih: tahunan Rp499.000 ≈ Rp388.000, bulanan Rp59.000 ≈ Rp45.400, satuan Rp29.000 ≈ Rp22.500 (harga bulanan/tahunan dinaikkan dari Rp49.000/Rp399.000 pada 11 Nov 2026; impas konversi: harga baru lebih menguntungkan selama pembeli tidak turun lebih dari ±17%). **Saldo email habis = OTP/login kode gagal** — top up secara berkala dan pantau saldo di dashboard SumoPod (tidak bisa dibaca dari aplikasi).
 
-**Alasan skema (ditetapkan 11 Nov 2026):** sebelumnya membeli 10 laporan satuan (Rp290.000, akses selamanya tanpa batas) lebih murah daripada langganan tahunan (Rp350.000), sehingga langganan tidak masuk akal. Sekarang satuan = untuk mencoba (jatah terbatas), langganan = pemakaian terus-menerus. Pembeli 2 laporan (Rp58.000) sudah lebih untung berlangganan bulanan (Rp49.000).
+**Alasan skema (ditetapkan 11 Nov 2026):** sebelumnya membeli 10 laporan satuan (Rp290.000, akses selamanya tanpa batas) lebih murah daripada langganan tahunan (Rp350.000), sehingga langganan tidak masuk akal. Sekarang satuan = untuk mencoba (jatah terbatas), langganan = pemakaian terus-menerus. Pembeli 3 laporan (Rp87.000) sudah lebih untung berlangganan bulanan (Rp59.000); 2 laporan (Rp58.000) kira-kira impas.
 
 **Cara kerja jatah** (`User::kuotaTotal/kuotaTerpakai/kuotaSisa`, `ai_reports.consumed_quota`):
 - Akses fitur = fitur gratis, **atau** pelanggan aktif, **atau** `kuotaSisa > 0`. Jatah total = 3 × jumlah pembelian lunas fitur itu; terpakai = pembuatan BARU yang menandai `consumed_quota=true`.
@@ -332,6 +332,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Harga langganan naik:** bulanan Rp49.000 → **Rp59.000**, tahunan Rp399.000 → **Rp499.000** (hemat 30%); tes tidak lagi mengunci angka lama (komisi dan nominal mengikuti konfigurasi) |
 | `2e74fde` | **Perbaikan email Hoki Harian:** "Krem &amp; Oranye" (kode HTML tampil mentah akibat escape ganda) dan tanggal email yang memakai UTC (tampil tanggal kemarin pada pengiriman 06.00 WIB); angka hoki kini berdasar tanggal WIB; +3 tes (total 132) |
 | `6628866` | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 132 tes) |
 | `4c511bb` | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |

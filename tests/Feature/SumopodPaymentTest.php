@@ -44,7 +44,7 @@ class SumopodPaymentTest extends TestCase
         ]);
     }
 
-    private function buatOrderQris(User $user, int $featureId = Order::SUBSCRIPTION_MONTHLY_FEATURE_ID, int $amount = 49000): Order
+    private function buatOrderQris(User $user, int $featureId = Order::SUBSCRIPTION_MONTHLY_FEATURE_ID, int $amount = 59000): Order
     {
         return Order::create([
             'user_id' => $user->id, 'feature_id' => $featureId, 'amount' => $amount,
@@ -82,7 +82,7 @@ class SumopodPaymentTest extends TestCase
     public function test_checkout_qris_membuat_payment_dan_redirect_ke_link_bayar(): void
     {
         Http::fake(['api-pay.sumopod.test/*' => Http::response([
-            'payment_id' => 'pay-123', 'order_id' => 'x', 'amount' => 49000,
+            'payment_id' => 'pay-123', 'order_id' => 'x', 'amount' => 59000,
             'payment_link_url' => 'https://pay.sumopod.test/pay/pay-123',
             'status' => 'pending', 'expires_at' => now()->addDay()->toIso8601String(),
         ], 200)]);
@@ -99,7 +99,7 @@ class SumopodPaymentTest extends TestCase
         $this->assertSame('pending', $order->status);
 
         Http::assertSent(fn ($r) => $r->hasHeader('X-Api-Key', 'test-key')
-            && $r['amount'] === 49000 && $r['currency'] === 'IDR'
+            && $r['amount'] === (int) config('payment.subscription_monthly_price') && $r['currency'] === 'IDR'
             && $r['payment_method_type_code'] === 'qris' && $r['order_id'] === $order->gateway_order_id);
     }
 
@@ -241,7 +241,7 @@ class SumopodPaymentTest extends TestCase
 
         $this->kirimWebhook($this->eventSelesai($order))->assertOk();
 
-        $this->assertSame(9800, (int) \App\Models\AffiliateCommission::where('order_id', $order->id)->value('komisi_amount'));
+        $this->assertSame((int) round($order->amount * 20 / 100), (int) \App\Models\AffiliateCommission::where('order_id', $order->id)->value('komisi_amount')); // 20% dari harga order
     }
 
     public function test_harga_uji_hanya_berlaku_untuk_email_yang_ditentukan(): void

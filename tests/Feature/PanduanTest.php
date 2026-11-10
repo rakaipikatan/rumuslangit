@@ -39,8 +39,8 @@ class PanduanTest extends TestCase
         $this->assertStringContainsString('Panduan Pengguna', $html);
         $this->assertStringContainsString('Apa itu jatah?', $html);
         $this->assertStringContainsString('Rp 29.000', $html);
-        $this->assertStringContainsString('Rp 49.000', $html);
-        $this->assertStringContainsString('Rp 399.000', $html);
+        $this->assertStringContainsString('Rp 59.000', $html);
+        $this->assertStringContainsString('Rp 499.000', $html);
         $this->assertStringContainsString('3 jatah', $html);
         $this->assertStringContainsString('20 laporan per hari', $html);
         $this->assertStringContainsString('id="jatah"', $html);
