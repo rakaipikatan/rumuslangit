@@ -334,4 +334,46 @@ class SkemaHargaTest extends TestCase
         $this->kirim($u, 3, 0); $this->selesaikanSemua($u);
         $this->assertSame(2, $u->kuotaSisa(3));
     }
+
+    public function test_fitur_biasa_jawaban_sama_selalu_memakai_laporan_tersimpan_tanpa_ai(): void
+    {
+        $u = $this->user();
+        $this->beli($u, 1); // Arah Mata Angin Rezeki — tidak bergantung tanggal
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
+        $this->kirim($u, 1, 0)->assertRedirect(route('laporan.status', 1));
+        $this->selesaikanSemua($u);
+        Queue::assertPushed(GenerateAIReport::class, 1);
+
+        // 1 hari, 1 pekan, 1 bulan kemudian: jawaban sama → tampilkan yang tersimpan, TANPA job AI baru
+        foreach ([1, 7, 30] as $hari) {
+            $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC')->addDays($hari));
+            $this->kirim($u, 1, 0)->assertRedirect(route('laporan.hasil', 1));
+        }
+
+        Queue::assertPushed(GenerateAIReport::class, 1);
+        $this->assertSame(1, AiReport::where('user_id', $u->id)->where('feature_id', 1)->count());
+        $this->assertSame(2, $u->kuotaSisa(1));
+    }
+
+    public function test_fitur_bergantung_tanggal_dibuat_baru_tiap_hari_tanpa_memotong_jatah(): void
+    {
+        $this->assertTrue(!empty(FiturData::cari(3)['bergantung_tanggal']));
+        $this->assertTrue(!empty(FiturData::cari(10)['bergantung_tanggal']));
+        $this->assertTrue(!empty(FiturData::cari(11)['bergantung_tanggal']));
+        $this->assertTrue(empty(FiturData::cari(1)['bergantung_tanggal']));
+        $this->assertTrue(empty(FiturData::cari(5)['bergantung_tanggal']));
+
+        $u = $this->user();
+        $this->beli($u, 3);
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
+        $this->kirim($u, 3, 0); $this->selesaikanSemua($u);
+        $this->kirim($u, 3, 0)->assertRedirect(route('laporan.hasil', 3)); // hari sama → tersimpan
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 03:00:00', 'UTC'));
+        $this->kirim($u, 3, 0)->assertRedirect(route('laporan.status', 3));  // hari baru → dibuat baru
+        $this->assertSame(2, $u->kuotaSisa(3), 'jawaban sama tidak memotong jatah');
+        Queue::assertPushed(GenerateAIReport::class, 2);
+    }
 }

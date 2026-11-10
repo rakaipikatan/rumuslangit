@@ -61,4 +61,33 @@ class GeminiCachePerHariTest extends TestCase
         $this->assertSame('2026-11-10 17:00:00', HariWib::awal()->format('Y-m-d H:i:s'));
         $this->assertSame('2026-11-11', HariWib::tanggal());
     }
+
+    public function test_fitur_biasa_cache_tidak_bergantung_hari_dan_prompt_tanpa_tanggal(): void
+    {
+        Cache::flush();
+        Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
+
+        $this->travelTo(Carbon::parse('2026-11-10 03:00:00', 'UTC')); // 10 Nov 10:00 WIB
+        $this->generate(1);
+        $this->travelTo(Carbon::parse('2026-11-11 02:00:00', 'UTC')); // 11 Nov 09:00 WIB — hari WIB berikutnya, masih < 24 jam
+        $this->generate(1);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($r) => !str_contains(json_encode($r->data()), 'KONTEKS WAKTU'));
+    }
+
+    public function test_fitur_bergantung_tanggal_mengirim_tanggal_hari_ini_ke_ai(): void
+    {
+        Cache::flush();
+        Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
+
+        $this->travelTo(Carbon::parse('2026-11-10 17:30:00', 'UTC')); // 11 Nov 00:30 WIB
+        $this->generate(3);
+
+        Http::assertSent(function ($r) {
+            $isi = json_encode($r->data(), JSON_UNESCAPED_UNICODE);
+
+            return str_contains($isi, 'KONTEKS WAKTU') && str_contains($isi, '11 November 2026');
+        });
+    }
 }
