@@ -5,7 +5,9 @@
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
     <div class="text-sm text-white/50">
-        Total komisi belum dibayar: <span class="text-amber-400 font-semibold">Rp {{ number_format($affiliates->sum('total_unpaid'), 0, ',', '.') }}</span>
+        Siap dibayar: <span class="text-amber-400 font-semibold">Rp {{ number_format($affiliates->sum('total_payable'), 0, ',', '.') }}</span>
+        &nbsp;·&nbsp;
+        Ditahan: <span class="text-white/70 font-semibold">Rp {{ number_format($affiliates->sum('total_unpaid') - $affiliates->sum('total_payable'), 0, ',', '.') }}</span>
         &nbsp;·&nbsp;
         Sudah dibayar: <span class="text-emerald-400 font-semibold">Rp {{ number_format($affiliates->sum('total_paid'), 0, ',', '.') }}</span>
     </div>

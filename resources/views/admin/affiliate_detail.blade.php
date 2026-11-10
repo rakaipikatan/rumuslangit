@@ -38,12 +38,16 @@
             <div class="flex justify-between"><span class="text-white/40">Atas Nama</span><span class="text-white/80">{{ $affiliate->bank_atas_nama ?: '—' }}</span></div>
         </div>
 
-        @if ($totalUnpaid > 0)
+        @if ($totalDitahan > 0)
+        <p class="mt-4 text-xs text-white/40">Ditahan {{ $holdDays }} hari (belum bisa dibayar): <span class="text-white/70">Rp {{ number_format($totalDitahan, 0, ',', '.') }}</span></p>
+        @endif
+
+        @if ($totalPayable > 0)
         <form method="POST" action="{{ route('admin.affiliates.lunas', $affiliate->id) }}" class="mt-5"
-              onsubmit="return confirm('Tandai semua komisi belum dibayar ({{ number_format($totalUnpaid,0,',','.') }}) sebagai LUNAS? Lakukan ini hanya setelah transfer manual selesai dikirim.')">
+              onsubmit="return confirm('Tandai komisi yang siap dibayar ({{ number_format($totalPayable,0,',','.') }}) sebagai LUNAS? Lakukan ini hanya setelah transfer manual selesai dikirim.')">
             @csrf
             <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-semibold text-white transition">
-                ✓ Tandai Lunas (Rp {{ number_format($totalUnpaid, 0, ',', '.') }})
+                ✓ Tandai Lunas — siap dibayar (Rp {{ number_format($totalPayable, 0, ',', '.') }})
             </button>
         </form>
         @endif

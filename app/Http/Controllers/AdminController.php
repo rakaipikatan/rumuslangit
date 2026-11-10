@@ -254,6 +254,7 @@ class AdminController extends Controller
         $affiliates = Affiliate::withCount('users')
             ->withSum(['commissions as total_unpaid' => fn ($q) => $q->where('status', 'unpaid')], 'komisi_amount')
             ->withSum(['commissions as total_paid' => fn ($q) => $q->where('status', 'paid')], 'komisi_amount')
+            ->withSum(['commissions as total_payable' => fn ($q) => $q->where('status', 'unpaid')->where('created_at', '<=', $this->batasTahanKomisi())], 'komisi_amount')
             ->latest()
             ->get();
 
@@ -356,10 +357,13 @@ class AdminController extends Controller
             ->latest()
             ->paginate(25);
 
-        $totalUnpaid = $affiliate->commissions()->where('status', 'unpaid')->sum('komisi_amount');
-        $totalPaid   = $affiliate->commissions()->where('status', 'paid')->sum('komisi_amount');
+        $totalUnpaid  = $affiliate->commissions()->where('status', 'unpaid')->sum('komisi_amount');
+        $totalPaid    = $affiliate->commissions()->where('status', 'paid')->sum('komisi_amount');
+        $totalPayable = $affiliate->commissions()->where('status', 'unpaid')->where('created_at', '<=', $this->batasTahanKomisi())->sum('komisi_amount');
+        $totalDitahan = $totalUnpaid - $totalPayable;
+        $holdDays     = (int) config('payment.affiliate_hold_days', 14);
 
-        return view('admin.affiliate_detail', compact('affiliate', 'komisi', 'totalUnpaid', 'totalPaid'));
+        return view('admin.affiliate_detail', compact('affiliate', 'komisi', 'totalUnpaid', 'totalPaid', 'totalPayable', 'totalDitahan', 'holdDays'));
     }
 
     public function toggleStatusAffiliate(int $id)
@@ -370,19 +374,24 @@ class AdminController extends Controller
         return back()->with('success', "Status afiliator {$affiliate->name} diubah jadi {$affiliate->status}.");
     }
 
-    // Tandai semua komisi unpaid afiliator ini lunas — dipakai saat transfer manual tanggal 25 selesai.
+    // Komisi lebih baru dari batas ini masih ditahan (belum boleh dibayar).
+    private function batasTahanKomisi(): \Illuminate\Support\Carbon
+    {
+        return now()->subDays((int) config('payment.affiliate_hold_days', 14));
+    }
+
+    // Tandai komisi yang SUDAH LEWAT masa tahan sebagai lunas — dipakai saat transfer manual tanggal 25 selesai.
+    // Komisi yang masih ditahan tidak ikut ditandai (akan masuk periode berikutnya).
     public function tandaiLunasKomisi(int $id)
     {
         $affiliate = Affiliate::findOrFail($id);
 
-        $jumlah = $affiliate->commissions()->where('status', 'unpaid')->count();
+        $siap = $affiliate->commissions()->where('status', 'unpaid')->where('created_at', '<=', $this->batasTahanKomisi());
+        $jumlah = (clone $siap)->count();
 
-        $affiliate->commissions()->where('status', 'unpaid')->update([
-            'status'  => 'paid',
-            'paid_at' => now(),
-        ]);
+        $siap->update(['status' => 'paid', 'paid_at' => now()]);
 
-        return back()->with('success', "{$jumlah} komisi afiliator {$affiliate->name} ditandai lunas.");
+        return back()->with('success', "{$jumlah} komisi afiliator {$affiliate->name} ditandai lunas (komisi yang masih ditahan tidak ikut).");
     }
 
     // ─── System ──────────────────────────────────────────────────────────────

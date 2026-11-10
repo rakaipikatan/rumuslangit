@@ -160,4 +160,28 @@ class AfiliasiPendaftaranTest extends TestCase
     {
         $this->get(route('trial.index'))->assertSee(route('afiliasi.index'));
     }
+
+    public function test_syarat_ketentuan_tampil_di_halaman_dengan_angka_dari_konfigurasi(): void
+    {
+        config(['payment.affiliate_commission_months' => 12, 'payment.affiliate_hold_days' => 14]);
+
+        $this->get(route('afiliasi.index'))
+            ->assertOk()
+            ->assertSee('Syarat &amp; Ketentuan Program Afiliasi', false)
+            ->assertSee('selama 12 bulan sejak pembayaran pertamanya')
+            ->assertSee('ditahan 14 hari')
+            ->assertSee('pembelian oleh afiliator sendiri');
+    }
+
+    public function test_email_persetujuan_memuat_syarat_ketentuan(): void
+    {
+        $aff = Affiliate::create(['name' => 'Budi', 'email' => 'b@example.test', 'referral_code' => 'BUDI42', 'komisi_persen' => 25, 'status' => 'active', 'bank_nama' => 'BCA']);
+        $mail = new AffiliateDisetujuiMail($aff);
+
+        $mail->assertSeeInHtml('Syarat &amp; Ketentuan Program Afiliasi', false);
+        $mail->assertSeeInHtml('selama 12 bulan');
+        $mail->assertSeeInText('ditahan 14 hari');
+        $mail->assertSeeInText('Komisi sebesar 25%');
+        $mail->assertSeeInText('BUDI42');
+    }
 }

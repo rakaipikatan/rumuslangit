@@ -67,6 +67,17 @@ class OrderSettlementService
         $affiliate = $user->affiliate;
         if (! $affiliate || ! $affiliate->isActive()) return;
 
+        // Tidak ada komisi untuk pembelian oleh diri sendiri (email pelanggan = email afiliator).
+        if ($affiliate->email && $user->email && strcasecmp(trim($affiliate->email), trim($user->email)) === 0) return;
+
+        // Komisi hanya untuk pembayaran dalam N bulan sejak pembayaran PERTAMA pelanggan ini.
+        $pertama = Order::where('user_id', $user->id)->where('status', 'settlement')->orderBy('settled_at')->first();
+        $batas   = (int) config('payment.affiliate_commission_months', 12);
+        if ($pertama && $pertama->settled_at && $order->settled_at
+            && $order->settled_at->gt($pertama->settled_at->copy()->addMonths($batas))) {
+            return;
+        }
+
         AffiliateCommission::firstOrCreate(
             ['order_id' => $order->id],
             [

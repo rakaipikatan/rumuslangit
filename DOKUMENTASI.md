@@ -140,10 +140,16 @@ Metode pembayaran tunggal. Bila `SUMOPOD_PAY_API_KEY` kosong, halaman `/payment/
 Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant), dana cair T+2. Kolom baru `orders.payment_id` (unik), `payment_link_url`, `payment_expires_at` (migration `2026_11_10_150000_...`).
 
 ### 4.4 Program afiliasi
-- Afiliator **didaftarkan admin** (tanpa self-signup): kode referral unik, komisi default 20%.
+- Afiliator mendaftar lewat halaman publik `/afiliasi` dan **disetujui admin** (atau ditambahkan manual oleh admin); kode referral unik, komisi default `AFFILIATE_DEFAULT_COMMISSION` (20%).
 - Link `?ref=KODE` ditangkap `CaptureReferral` (first-touch, di session). Saat `User` pertama dibuat, `referred_by_affiliate_id` diisi **permanen**.
-- Tiap order `settlement` mencatat komisi `unpaid` di `affiliate_commissions` (satu per order, idempoten). Afiliator nonaktif tidak dapat komisi baru.
-- Admin menandai lunas semua komisi `unpaid` seorang afiliator setelah transfer manual.
+- Tiap order `settlement` mencatat komisi `unpaid` di `affiliate_commissions` (satu per order, idempoten) lewat `OrderSettlementService::catatKomisiAfiliasi`. Afiliator nonaktif tidak dapat komisi baru.
+- **Aturan komisi (juga menjadi Syarat & Ketentuan yang dibaca dan disetujui afiliator di `/afiliasi`, dan dikirim di email persetujuan; teks di `lang/*/afiliasi.php`, angka dari config):**
+  1. Komisi = persentase × harga yang dibayar (sebelum biaya gateway dan pajak), untuk setiap pembayaran berhasil pelanggan yang direferensikan.
+  2. **Batas waktu:** hanya untuk pembayaran dalam `AFFILIATE_COMMISSION_MONTHS` (12) bulan sejak **pembayaran pertama** pelanggan itu (termasuk perpanjangan langganan); sesudahnya tanpa komisi.
+  3. **Tanpa komisi untuk pembelian sendiri:** email pelanggan sama dengan email afiliator (tidak peka huruf besar-kecil).
+  4. **Masa tahan** `AFFILIATE_HOLD_DAYS` (14) hari: admin hanya bisa menandai lunas komisi yang sudah lewat masa tahan ("Siap dibayar"); yang masih "Ditahan" tidak ikut dan masuk periode berikutnya. Dibayar manual tiap tanggal 25.
+  5. Tidak ada komisi untuk transaksi gagal/batal/refund/terindikasi penipuan (komisi hanya dicatat saat order `settlement`; pembatalan setelahnya perlu dibatalkan manual oleh admin — belum ada otomatisasi refund).
+- Admin menandai lunas komisi yang siap dibayar setelah transfer manual selesai.
 
 #### Pendaftaran afiliator (publik)
 - Halaman **`/afiliasi`** (tautan di footer semua halaman): penjelasan program (komisi `AFFILIATE_DEFAULT_COMMISSION`, default 20%, bayar tiap tanggal 25) + formulir (nama, email, HP, rencana promosi opsional, rekening payout, persetujuan).
@@ -307,6 +313,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Aturan komisi afiliasi:** batas 12 bulan sejak pembayaran pertama pelanggan, tanpa komisi untuk pembelian sendiri, masa tahan 14 hari sebelum bisa dibayar; **Syarat & Ketentuan** ditampilkan di `/afiliasi` dan dikirim di email persetujuan; +4 tes (total 90) |
 | `a4673ee` | **Halaman pendaftaran afiliator** `/afiliasi` + persetujuan di admin + email link referral otomatis; migration `affiliate_applications`; +11 tes (total 86) |
 | `7b7bfd4` | **Menu Pengaturan akun** untuk membuat/mengubah password (⚙ di navbar); +4 tes (total 75) |
 | `24aa214` | **Login dengan kode email** (tanpa password) di `/login`, dengan pembatasan percobaan; login password dilipat. Admin → Users menampilkan "N laporan dibeli" (status `free` = bukan pelanggan langganan; pembelian satuan tidak mengubah status). +6 tes (total 71) |

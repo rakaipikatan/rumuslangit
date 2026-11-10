@@ -156,7 +156,7 @@ class AffiliateTest extends TestCase
             ->assertSee($affiliate->referral_code);
     }
 
-    public function test_tandai_lunas_menandai_semua_komisi_unpaid_afiliator(): void
+    public function test_tandai_lunas_hanya_komisi_yang_lewat_masa_tahan(): void
     {
         $affiliate = $this->buatAffiliate();
         $user = User::create([
@@ -168,9 +168,7 @@ class AffiliateTest extends TestCase
         foreach ([1, 2] as $featureId) {
             $order = Order::create([
                 'user_id' => $user->id, 'feature_id' => $featureId, 'amount' => 29000,
-                'unique_code' => 300 + $featureId, 'transfer_amount' => 29000 + 300 + $featureId,
-                'bank_tujuan' => 'bca', 'payment_method' => 'qris',
-                'gateway_order_id' => 'MANUAL-' . strtoupper(Str::random(10)),
+                'payment_method' => 'qris', 'gateway_order_id' => 'RL-' . strtoupper(Str::random(10)),
                 'status' => 'pending',
             ]);
 
@@ -180,11 +178,78 @@ class AffiliateTest extends TestCase
 
         $this->assertSame(2, AffiliateCommission::where('affiliate_id', $affiliate->id)->where('status', 'unpaid')->count());
 
+        // Satu komisi dibuat 15 hari lalu (lewat masa tahan 14 hari), satu masih baru.
+        AffiliateCommission::where('affiliate_id', $affiliate->id)->orderBy('id')->first()
+            ->forceFill(['created_at' => now()->subDays(15)])->save();
+
         $this->withSession(['admin_logged_in' => true])
             ->post(route('admin.affiliates.lunas', $affiliate->id))
             ->assertRedirect();
 
-        $this->assertSame(0, AffiliateCommission::where('affiliate_id', $affiliate->id)->where('status', 'unpaid')->count());
-        $this->assertSame(2, AffiliateCommission::where('affiliate_id', $affiliate->id)->where('status', 'paid')->count());
+        $this->assertSame(1, AffiliateCommission::where('affiliate_id', $affiliate->id)->where('status', 'paid')->count());
+        $this->assertSame(1, AffiliateCommission::where('affiliate_id', $affiliate->id)->where('status', 'unpaid')->count(), 'yang masih ditahan tidak ikut dilunasi');
+    }
+
+    public function test_tidak_ada_komisi_untuk_pembelian_oleh_afiliator_sendiri(): void
+    {
+        $affiliate = $this->buatAffiliate(['email' => 'sendiri-' . strtolower(Str::random(6)) . '@example.test']);
+        $user = User::create([
+            'name' => 'Diri Sendiri', 'email' => strtoupper($affiliate->email),
+            'password' => bcrypt('password'), 'dob' => '1990-01-01',
+            'referred_by_affiliate_id' => $affiliate->id,
+        ]);
+        $order = Order::create([
+            'user_id' => $user->id, 'feature_id' => 1, 'amount' => 29000, 'payment_method' => 'qris',
+            'gateway_order_id' => 'RL-' . strtoupper(Str::random(10)), 'status' => 'pending',
+        ]);
+
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.orders.konfirmasi', $order->id));
+
+        $this->assertSame('settlement', $order->fresh()->status);
+        $this->assertSame(0, AffiliateCommission::where('affiliate_id', $affiliate->id)->count());
+    }
+
+    public function test_komisi_hanya_untuk_pembayaran_dalam_12_bulan_sejak_pembayaran_pertama(): void
+    {
+        $affiliate = $this->buatAffiliate();
+        $user = User::create([
+            'name' => 'Pelanggan Lama', 'email' => 'lama-' . strtolower(Str::random(6)) . '@example.test',
+            'password' => bcrypt('password'), 'dob' => '1990-01-01',
+            'referred_by_affiliate_id' => $affiliate->id,
+        ]);
+
+        // Pembayaran pertama 13 bulan lalu (sudah lunas, di luar pencatatan komisi saat ini)
+        Order::create([
+            'user_id' => $user->id, 'feature_id' => 1, 'amount' => 29000, 'payment_method' => 'qris',
+            'gateway_order_id' => 'RL-' . strtoupper(Str::random(10)), 'status' => 'settlement',
+            'settled_at' => now()->subMonths(13),
+        ]);
+
+        $baru = Order::create([
+            'user_id' => $user->id, 'feature_id' => 2, 'amount' => 29000, 'payment_method' => 'qris',
+            'gateway_order_id' => 'RL-' . strtoupper(Str::random(10)), 'status' => 'pending',
+        ]);
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.orders.konfirmasi', $baru->id));
+
+        $this->assertSame('settlement', $baru->fresh()->status);
+        $this->assertSame(0, AffiliateCommission::where('affiliate_id', $affiliate->id)->count(), 'di luar 12 bulan: tanpa komisi');
+
+        // Pelanggan lain, pembayaran pertama 11 bulan lalu → masih dalam batas
+        $user2 = User::create([
+            'name' => 'Pelanggan Baru', 'email' => 'baru-' . strtolower(Str::random(6)) . '@example.test',
+            'password' => bcrypt('password'), 'dob' => '1990-01-01',
+            'referred_by_affiliate_id' => $affiliate->id,
+        ]);
+        Order::create([
+            'user_id' => $user2->id, 'feature_id' => 1, 'amount' => 29000, 'payment_method' => 'qris',
+            'gateway_order_id' => 'RL-' . strtoupper(Str::random(10)), 'status' => 'settlement', 'settled_at' => now()->subMonths(11),
+        ]);
+        $o2 = Order::create([
+            'user_id' => $user2->id, 'feature_id' => 2, 'amount' => 29000, 'payment_method' => 'qris',
+            'gateway_order_id' => 'RL-' . strtoupper(Str::random(10)), 'status' => 'pending',
+        ]);
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.orders.konfirmasi', $o2->id));
+
+        $this->assertSame(1, AffiliateCommission::where('affiliate_id', $affiliate->id)->count());
     }
 }

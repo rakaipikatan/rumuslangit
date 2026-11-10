@@ -15,4 +15,8 @@ return [
 
     // Komisi default (%) untuk afiliator yang disetujui dari halaman pendaftaran.
     'affiliate_default_commission' => env('AFFILIATE_DEFAULT_COMMISSION', 20),
+
+    // Aturan komisi afiliasi (juga ditampilkan sebagai Syarat & Ketentuan ke afiliator).
+    'affiliate_commission_months' => env('AFFILIATE_COMMISSION_MONTHS', 12), // komisi hanya untuk pembayaran dalam N bulan sejak pembayaran pertama pelanggan
+    'affiliate_hold_days'         => env('AFFILIATE_HOLD_DAYS', 14),         // masa tahan sebelum komisi boleh dibayar
 ];

@@ -32,6 +32,12 @@
         </ol>
     </div>
 
+    {{-- Syarat & Ketentuan --}}
+    <div class="bg-cosmic-800/60 border border-white/10 rounded-2xl p-6 mb-6">
+        <h2 class="font-semibold text-sm mb-4">{{ __('afiliasi.syarat_title') }}</h2>
+        @include('afiliasi._syarat', ['komisi' => $komisi])
+    </div>
+
     @if(session('terkirim'))
     <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 text-center">
         <div class="text-3xl mb-2">✓</div>

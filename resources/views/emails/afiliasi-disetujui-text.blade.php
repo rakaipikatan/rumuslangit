@@ -10,4 +10,9 @@ Komisi        : {{ $affiliate->komisi_persen }}% dari setiap pembayaran yang ber
 
 Komisi dibayarkan ke rekening yang Anda daftarkan ({{ $affiliate->bank_nama }}) secara berkala setiap tanggal 25.
 
+{{ strtoupper(__('afiliasi.syarat_title', [], 'id')) }}
+@foreach(range(1, 9) as $n)
+{{ $n }}. {{ __('afiliasi.syarat_' . $n, ['komisi' => $affiliate->komisi_persen, 'bulan' => config('payment.affiliate_commission_months', 12), 'hari' => config('payment.affiliate_hold_days', 14)], 'id') }}
+@endforeach
+
 Rumus Langit - rumuslangit.biz.id
