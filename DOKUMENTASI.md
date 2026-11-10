@@ -326,7 +326,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
+| `2231b85` | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
 | `193ba86` | **Jawaban sama = pakai data tersimpan (tanpa AI)** untuk semua fitur kecuali yang bergantung tanggal (3, 10, 11) yang diperbarui tiap hari WIB; prompt fitur bergantung tanggal kini memuat tanggal hari ini; +4 tes (total 119) |
 | `fdd0e2c` | **Jatah hanya untuk jawaban berbeda:** jawaban sama (hari lain/bahasa lain) membuat laporan baru tanpa memotong jatah; percobaan gagal-lalu-diulang tidak memotong dua kali; teks form/paywall disesuaikan; +3 tes (total 115) |
 | `1534d32` | **Aturan hari yang sama/besok:** laporan identik hanya dipakai ulang bila dibuat hari ini (WIB); besoknya dibuat baru. Cache Gemini per hari kalender WIB (bukan 24 jam bergulir). Batas harian kini berganti tengah malam WIB (sebelumnya 07.00 WIB karena UTC). Helper `HariWib`; +4 tes (total 112) |
