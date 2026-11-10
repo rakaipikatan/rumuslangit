@@ -293,7 +293,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Transfer bank manual dihapus** (halaman bayar, controller, config rekening, teks bahasa, env `PAYMENT_BCA/CIMB`); QRIS jadi satu-satunya metode. Konfirmasi admin dipertahankan sebagai cadangan; rekening untuk **payout komisi afiliator** tidak terkait dan tetap. Tes disesuaikan (total 65) |
+| `ca24ee5` | **Transfer bank manual dihapus** (halaman bayar, controller, config rekening, teks bahasa, env `PAYMENT_BCA/CIMB`); QRIS jadi satu-satunya metode. Konfirmasi admin dipertahankan sebagai cadangan; rekening untuk **payout komisi afiliator** tidak terkait dan tetap. Tes disesuaikan (total 65) |
 | `2b3b60b` | **Perbaikan alur pasca-bayar QRIS:** return URL per-payment ke halaman `payment.selesai` (tunggu konfirmasi → otomatis ke kuesioner), katalog & upsell menandai fitur yang sudah dibeli, pesan sukses; +8 tes (total 63) |
 | `23f8049` | **Bugfix:** Tafsir Mimpi (freemium, Rp0) salah menampilkan paywall "Bayar Sekarang" dan membuat order QRIS; kini gratis untuk semua. Fitur Rp0 tak bisa dibeli eceran, harga uji tak berlaku untuk fitur gratis; +3 tes (total 55) |
 | `6d66fd1` | Email OTP kini punya versi teks polos (mengurangi risiko spam) + tes; harga uji dinaikkan ke Rp1.000 (minimum SumoPod). DNS email: SPF, DKIM (`trx_ke._domainkey`), verifikasi SumoPod terpasang dan terverifikasi; MAIL_* dipindah ke SMTP SumoPod (`smtp.sumopod.com:465`, smtps). Disarankan menambah DMARC (`_dmarc` TXT `v=DMARC1; p=none;`) |
