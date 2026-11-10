@@ -15,6 +15,39 @@
     </button>
 </div>
 
+@if($pendaftar->isNotEmpty())
+<div class="mb-6 border border-amber-500/30 bg-amber-500/5 rounded-2xl p-5">
+    <h2 class="font-semibold text-amber-300 text-sm mb-4">Pendaftar menunggu persetujuan ({{ $pendaftar->count() }})</h2>
+    <div class="space-y-4">
+        @foreach($pendaftar as $p)
+        <div class="bg-cosmic-800/60 border border-white/10 rounded-xl p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="text-sm">
+                    <div class="font-semibold text-white">{{ $p->name }}</div>
+                    <div class="text-white/50 text-xs mt-0.5">{{ $p->email }} · {{ $p->phone }}</div>
+                    <div class="text-white/40 text-xs mt-1">{{ $p->bank_nama }} {{ $p->bank_rekening }} a.n. {{ $p->bank_atas_nama }}</div>
+                    @if($p->promosi)<div class="text-white/60 text-xs mt-2 max-w-md">"{{ $p->promosi }}"</div>@endif
+                    <div class="text-white/25 text-xs mt-2">Daftar {{ $p->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('admin.affiliates.pendaftar.setuju', $p->id) }}" class="flex items-center gap-2">
+                        @csrf
+                        <input type="number" name="komisi_persen" value="{{ config('payment.affiliate_default_commission', 20) }}" min="1" max="100"
+                               class="w-16 bg-cosmic-700/50 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs" title="Komisi (%)">
+                        <button class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs text-white transition">Setujui</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.affiliates.pendaftar.tolak', $p->id) }}" onsubmit="return confirm('Tolak pendaftaran {{ e($p->name) }}?')">
+                        @csrf
+                        <button class="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 rounded-lg text-xs text-red-300 transition">Tolak</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 {{-- Modal Buat Afiliator --}}
 <div id="modal-buat-affiliate" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
      style="background:rgba(0,0,0,.7);backdrop-filter:blur(4px)">

@@ -12,4 +12,7 @@ return [
     // Aktif bila keduanya terisi di .env; hapus/kosongkan setelah pengujian selesai.
     'test_price' => env('PAYMENT_TEST_PRICE'),
     'test_email' => env('PAYMENT_TEST_EMAIL'),
+
+    // Komisi default (%) untuk afiliator yang disetujui dari halaman pendaftaran.
+    'affiliate_default_commission' => env('AFFILIATE_DEFAULT_COMMISSION', 20),
 ];

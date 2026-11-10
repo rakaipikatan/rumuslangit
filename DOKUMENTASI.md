@@ -145,6 +145,11 @@ Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant
 - Tiap order `settlement` mencatat komisi `unpaid` di `affiliate_commissions` (satu per order, idempoten). Afiliator nonaktif tidak dapat komisi baru.
 - Admin menandai lunas semua komisi `unpaid` seorang afiliator setelah transfer manual.
 
+#### Pendaftaran afiliator (publik)
+- Halaman **`/afiliasi`** (tautan di footer semua halaman): penjelasan program (komisi `AFFILIATE_DEFAULT_COMMISSION`, default 20%, bayar tiap tanggal 25) + formulir (nama, email, HP, rencana promosi opsional, rekening payout, persetujuan).
+- Disimpan di tabel **`affiliate_applications`** dengan status `pending` — **tidak** langsung menjadi afiliator. Perlindungan spam: 5 kiriman/jam per IP, kolom honeypot `website`, validasi format HP/rekening, satu email hanya satu pendaftaran menunggu / satu afiliator.
+- Admin → **Afiliator**: kartu "Pendaftar menunggu persetujuan" (badge jumlah di menu). **Setujui** (komisi % bisa diubah per orang) membuat `Affiliate` aktif dengan kode referral otomatis (`NAMADEPAN` + 2 digit, unik) dan mengirim email `AffiliateDisetujuiMail` berisi link `?ref=KODE`; bila email gagal, link ditampilkan di pesan admin untuk dikirim manual. **Tolak** menandai `rejected`. Tambah afiliator manual (modal) tetap ada.
+
 ### 4.5 Wilayah
 Dropdown berjenjang provinsi → kota → kecamatan → kelurahan lewat `/api/wilayah/*`. Provinsi dan kota di-seed; kecamatan/kelurahan **di-seed lazy** saat pertama kali diminta (`WilayahController::seedKecamatan/seedKelurahan`).
 
@@ -167,6 +172,7 @@ Pengguna **tidak punya password** (akun dibuat dari form data lahir + verifikasi
 |---|---|
 | Publik | `/`, `/mulai-analisis`, `POST /proses`, `/hasil`, `/profil-status` (AJAX), `/analisis` (katalog), `/lokal/{locale}`, `/tarot/pilih`, `/health` |
 | Auth | `/login`, `POST /login` (password), `POST /login/kode` + `POST /login/kode/verifikasi` (kode email), `POST /logout`, `GET /pengaturan`, `POST /pengaturan/password` |
+| Afiliasi | `GET/POST /afiliasi` (publik), admin: `POST /admin/affiliates/pendaftar/{id}/setuju`, `.../tolak` |
 | OTP | `POST /otp/kirim`, `POST /otp/verifikasi` |
 | Laporan | `/laporan/{id}` (form), `POST`, `/laporan/{id}/status` (polling), `/laporan/{id}/hasil` — throttle 10 req/menit |
 | Payment | `GET/POST /payment/{id}` `POST /webhook/sumopod` (id numerik atau `langganan`, `langganan-bulanan`, `langganan-tahunan`) |
@@ -301,6 +307,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Halaman pendaftaran afiliator** `/afiliasi` + persetujuan di admin + email link referral otomatis; migration `affiliate_applications`; +11 tes (total 86) |
 | `7b7bfd4` | **Menu Pengaturan akun** untuk membuat/mengubah password (⚙ di navbar); +4 tes (total 75) |
 | `24aa214` | **Login dengan kode email** (tanpa password) di `/login`, dengan pembatasan percobaan; login password dilipat. Admin → Users menampilkan "N laporan dibeli" (status `free` = bukan pelanggan langganan; pembelian satuan tidak mengubah status). +6 tes (total 71) |
 | `ca24ee5` | **Transfer bank manual dihapus** (halaman bayar, controller, config rekening, teks bahasa, env `PAYMENT_BCA/CIMB`); QRIS jadi satu-satunya metode. Konfirmasi admin dipertahankan sebagai cadangan; rekening untuk **payout komisi afiliator** tidak terkait dan tetap. Tes disesuaikan (total 65) |

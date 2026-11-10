@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AfiliasiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OtpController;
@@ -22,6 +23,10 @@ Route::post('/proses', [TrialController::class, 'proses'])->name('trial.proses')
 Route::get('/hasil', [TrialController::class, 'hasil'])->name('trial.hasil');
 Route::get('/profil-status', [TrialController::class, 'profilStatus'])->name('trial.profil.status');
 Route::get('/analisis', [TrialController::class, 'katalog'])->name('trial.katalog');
+
+// Program afiliasi (publik)
+Route::get('/afiliasi', [AfiliasiController::class, 'index'])->name('afiliasi.index');
+Route::post('/afiliasi', [AfiliasiController::class, 'daftar'])->middleware('throttle:5,60')->name('afiliasi.daftar');
 
 // Auth
 Route::get('/login', [AuthController::class, 'loginForm'])->name('auth.login.form');
@@ -92,6 +97,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/affiliates',              [AdminController::class, 'affiliates'])->name('affiliates');
         Route::post('/affiliates',             [AdminController::class, 'buatAffiliate'])->name('affiliates.buat');
         Route::get('/affiliates/{id}',         [AdminController::class, 'affiliateDetail'])->name('affiliates.detail');
+        Route::post('/affiliates/pendaftar/{id}/setuju', [AdminController::class, 'setujuPendaftar'])->name('affiliates.pendaftar.setuju');
+        Route::post('/affiliates/pendaftar/{id}/tolak',  [AdminController::class, 'tolakPendaftar'])->name('affiliates.pendaftar.tolak');
         Route::post('/affiliates/{id}/toggle', [AdminController::class, 'toggleStatusAffiliate'])->name('affiliates.toggle');
         Route::post('/affiliates/{id}/lunas',  [AdminController::class, 'tandaiLunasKomisi'])->name('affiliates.lunas');
         Route::get('/system',        [AdminController::class, 'system'])->name('system');

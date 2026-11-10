@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Data\FiturData;
 use App\Models\AiReport;
 use App\Models\Affiliate;
+use App\Models\AffiliateApplication;
 use App\Models\AffiliateCommission;
 use App\Models\Order;
 use App\Models\Subscription;
@@ -256,7 +257,12 @@ class AdminController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.affiliates', compact('affiliates'));
+        // Tabel pendaftar baru ada setelah migration; jangan 500 bila belum dimigrasi.
+        $pendaftar = \Illuminate\Support\Facades\Schema::hasTable('affiliate_applications')
+            ? AffiliateApplication::where('status', 'pending')->oldest()->get()
+            : collect();
+
+        return view('admin.affiliates', compact('affiliates', 'pendaftar'));
     }
 
     public function buatAffiliate(Request $request)
@@ -285,6 +291,60 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Afiliator baru berhasil ditambahkan.');
+    }
+
+    // Setujui pendaftar: buat afiliator aktif + kode referral otomatis, lalu kirim email berisi link.
+    public function setujuPendaftar(Request $request, int $id)
+    {
+        $request->validate(['komisi_persen' => 'nullable|integer|min:1|max:100']);
+
+        $app = AffiliateApplication::where('status', 'pending')->findOrFail($id);
+
+        $affiliate = Affiliate::create([
+            'name'           => $app->name,
+            'email'          => $app->email,
+            'phone'          => $app->phone,
+            'referral_code'  => $this->buatKodeReferral($app->name),
+            'bank_nama'      => $app->bank_nama,
+            'bank_rekening'  => $app->bank_rekening,
+            'bank_atas_nama' => $app->bank_atas_nama,
+            'komisi_persen'  => (int) ($request->komisi_persen ?: config('payment.affiliate_default_commission', 20)),
+            'status'         => 'active',
+        ]);
+
+        $app->update(['status' => 'approved', 'affiliate_id' => $affiliate->id, 'reviewed_at' => now()]);
+
+        $pesan = "{$app->name} disetujui. Kode referral: {$affiliate->referral_code}.";
+        try {
+            \Illuminate\Support\Facades\Mail::to($app->email)->send(new \App\Mail\AffiliateDisetujuiMail($affiliate));
+            $pesan .= ' Email berisi link referral sudah dikirim.';
+        } catch (\Throwable $e) {
+            \Log::warning('Email persetujuan afiliasi gagal', ['affiliate' => $affiliate->id, 'error' => $e->getMessage()]);
+            $pesan .= ' PERHATIAN: email gagal terkirim — kirim link manual: ' . url('/') . '?ref=' . $affiliate->referral_code;
+        }
+
+        return back()->with('success', $pesan);
+    }
+
+    public function tolakPendaftar(int $id)
+    {
+        $app = AffiliateApplication::where('status', 'pending')->findOrFail($id);
+        $app->update(['status' => 'rejected', 'reviewed_at' => now()]);
+
+        return back()->with('success', "Pendaftaran {$app->name} ditolak.");
+    }
+
+    // Kode referral unik dari nama depan: 3–6 huruf + 2 digit (mis. BUDI42).
+    private function buatKodeReferral(string $nama): string
+    {
+        $depan = strtoupper(preg_replace('/[^A-Za-z]/', '', \Illuminate\Support\Str::ascii(strtok(trim($nama), ' ') ?: '')));
+        $dasar = strlen($depan) >= 3 ? substr($depan, 0, 6) : 'RL' . $depan;
+
+        do {
+            $kode = $dasar . random_int(10, 99);
+        } while (Affiliate::where('referral_code', $kode)->exists());
+
+        return $kode;
     }
 
     public function affiliateDetail(int $id)

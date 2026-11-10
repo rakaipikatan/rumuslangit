@@ -51,6 +51,13 @@
             <a href="{{ route('admin.affiliates') }}"
                class="nav-link {{ request()->routeIs('admin.affiliates*') ? 'active' : '' }}">
                 <span class="nav-icon">🤝</span> Afiliator
+                @php
+                    $menunggu = \Illuminate\Support\Facades\Schema::hasTable('affiliate_applications')
+                        ? \App\Models\AffiliateApplication::where('status', 'pending')->count() : 0;
+                @endphp
+                @if($menunggu > 0)
+                    <span class="ml-auto text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-2 py-0.5">{{ $menunggu }}</span>
+                @endif
             </a>
         </div>
 

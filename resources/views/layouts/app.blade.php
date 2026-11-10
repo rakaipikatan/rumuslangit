@@ -100,6 +100,7 @@
     <footer class="relative z-10 border-t border-white/5 mt-16 py-8 text-center text-white/30 text-xs">
         <p>{{ __('nav.footer_copyright', ['year' => date('Y')]) }}</p>
         <p class="mt-1">{{ __('nav.footer_disclaimer') }}</p>
+        <p class="mt-2"><a href="{{ route('afiliasi.index') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('afiliasi.footer_link') }}</a></p>
     </footer>
 
     @stack('scripts')
