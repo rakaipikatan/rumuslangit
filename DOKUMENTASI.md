@@ -48,7 +48,7 @@ Poin penting:
 - **Tidak ada registrasi klasik.** Identitas pengguna = baris `users` yang dibuat dari form data lahir; `user_id` disimpan di **session**. Login email+password (`/login`) hanya untuk akun yang sudah punya password (mis. dibuat admin).
 - **Akses fitur** (`User::hasAccessToFeature`): pelanggan aktif **atau** punya order `settlement` untuk fitur itu.
 - **Trial** dibatasi per email: satu email (di-hash SHA-256) hanya bisa pakai trial sekali (`email_verifications.trial_used_at`). Pembatasan dimatikan saat `APP_ENV=local`.
-- **Hasil AI di-cache**: laporan identik (hash dari fitur + kalkulasi + jawaban + tarot + locale) dipakai ulang tanpa memanggil Gemini lagi; selain itu respons Gemini di-cache 24 jam di Redis.
+- **Hasil AI: dipakai ulang di hari yang sama, dibuat baru besok.** Laporan dengan hash identik (fitur + kalkulasi + jawaban + tarot + locale) yang dibuat **hari ini menurut WIB** dipakai ulang tanpa memanggil Gemini dan tanpa memakai jatah. Pada hari kalender WIB berikutnya, jawaban yang sama menghasilkan **laporan baru** (memakai 1 jatah bagi pembeli satuan; laporan lama tetap tersimpan dan bisa dibuka lewat "Lihat laporan terakhir"). Cache respons Gemini di Redis juga per hari kalender WIB (kunci memuat tanggal), bukan 24 jam bergulir; **profil karakter (fitur 0) bersifat tetap**, tidak berganti harian. "Hari" dihitung oleh `App\Support\HariWib` (server & database tetap UTC).
 
 ---
 
@@ -86,10 +86,10 @@ Fitur 1–10 memakai 10 pertanyaan Ya/Tidak (`q1..q10`). Tarot (opsional, maks 3
 
 **Cara kerja jatah** (`User::kuotaTotal/kuotaTerpakai/kuotaSisa`, `ai_reports.consumed_quota`):
 - Akses fitur = fitur gratis, **atau** pelanggan aktif, **atau** `kuotaSisa > 0`. Jatah total = 3 × jumlah pembelian lunas fitur itu; terpakai = pembuatan BARU yang menandai `consumed_quota=true`.
-- **Tidak memakai jatah:** jawaban identik dengan laporan sebelumnya (diambil dari cache `data_hash`), pembuatan oleh pelanggan, fitur gratis, dan pembuatan yang gagal/macet lebih dari 15 menit. Pembuatan yang sedang berjalan (< 15 menit) tetap dihitung agar pengiriman serentak tidak menembus batas.
+- **Tidak memakai jatah:** jawaban identik dengan laporan yang dibuat **hari ini (WIB)** (diambil lewat `data_hash`; besoknya dibuat baru dan memakai jatah), pembuatan oleh pelanggan, fitur gratis, dan pembuatan yang gagal/macet lebih dari 15 menit. Pembuatan yang sedang berjalan (< 15 menit) tetap dihitung agar pengiriman serentak tidak menembus batas.
 - Jatah habis → paywall menampilkan "Jatah pembuatan laporan ini sudah habis" (beli lagi atau langganan) dan tautan **"Lihat laporan terakhir saya"** (`GET /laporan/{id}/terakhir`, tanpa memakai jatah dan tanpa butuh akses aktif; hanya laporan milik sendiri).
 - Form laporan menampilkan "Sisa jatah pembuatan: X dari 3" untuk pembeli satuan.
-- **Batas harian** (melindungi biaya AI): pelanggan 20 laporan/hari; fitur gratis (Tafsir Mimpi) 5/hari per pengguna (`PAYMENT_BATAS_HARIAN_GRATIS`). Hanya pembuatan baru yang dihitung.
+- **Batas harian** (melindungi biaya AI; hari = hari kalender WIB, berganti tengah malam WIB): pelanggan 20 laporan/hari; fitur gratis (Tafsir Mimpi) 5/hari per pengguna (`PAYMENT_BATAS_HARIAN_GRATIS`). Hanya pembuatan baru yang dihitung.
 
 Fitur **freemium (ID 12, Tafsir Mimpi) terbuka untuk semua pengguna** tanpa bayar; fitur 11 hanya untuk pelanggan; halaman `/payment/{id}` untuk fitur bernominal 0 dialihkan (tidak pernah membuat order Rp0) dan kartu beli eceran disembunyikan di paywall fitur khusus langganan. Pelanggan aktif mengakses semua fitur dan menerima email **Hoki Harian** pukul 06.00 WIB.
 
@@ -324,6 +324,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Aturan hari yang sama/besok:** laporan identik hanya dipakai ulang bila dibuat hari ini (WIB); besoknya dibuat baru. Cache Gemini per hari kalender WIB (bukan 24 jam bergulir). Batas harian kini berganti tengah malam WIB (sebelumnya 07.00 WIB karena UTC). Helper `HariWib`; +4 tes (total 112) |
 | `523d10f` | **Skema harga baru:** satuan Rp29.000 = 3 kali pembuatan (hasil tersimpan selamanya) per pembelian; langganan tahunan Rp350.000 → **Rp399.000**; batas wajar harian (langganan 20/hari, fitur gratis 5/hari); halaman "laporan terakhir"; teks harga/akses diperbarui (tidak ada lagi "akses selamanya" / "12 laporan" yang menyesatkan); kolom `ai_reports.consumed_quota`; +10 tes (total 108) |
 | `900b7d9` | **Pengingat cek folder Spam/Junk** di semua email dan pesan layar terkait pengiriman email (OTP, login kode, bukti bayar, Hoki Harian, persetujuan afiliasi) + 3 tes (total 98) |
 | `118db64` | **Email bukti pembayaran otomatis** setelah order lunas (queue, sekali per order, HTML+teks) + 5 tes (total 95) |

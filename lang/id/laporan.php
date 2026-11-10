@@ -38,7 +38,7 @@ return [
 
     'form' => [
         'jatah' => 'Sisa jatah pembuatan: :sisa dari :total',
-        'jatah_info' => 'Jatah terpakai setiap Anda membuat laporan baru. Mengirim jawaban yang sama persis menampilkan laporan lama tanpa memakai jatah.',
+        'jatah_info' => 'Jatah terpakai setiap Anda membuat laporan baru. Jawaban yang sama persis di hari yang sama menampilkan laporan yang sudah ada tanpa memakai jatah. Besoknya, laporan dibuat baru dan memakai 1 jatah.',
         'lihat_laporan_terakhir' => 'Lihat laporan terakhir saya (tanpa memakai jatah)',
         'kembali' => '← Kembali',
         'error_title' => 'Terjadi kesalahan — harap perbaiki dan coba lagi:',

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\HariWib;
+
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,7 +23,9 @@ class GeminiService
     public function generate(int $featureId, array $kalkulasi, array $answers, array $userProfile, array $tarotData = [], string $locale = 'id'): string
     {
         $dataHash = hash('sha256', json_encode(compact('featureId', 'kalkulasi', 'answers', 'tarotData', 'locale')));
-        $cacheKey = "gemini:{$locale}:{$featureId}:{$dataHash}";
+        // Cache per HARI KALENDER (WIB) agar besok menghasilkan teks baru. Profil karakter (fitur 0) bersifat tetap.
+        $hari     = $featureId === 0 ? 'tetap' : HariWib::tanggal();
+        $cacheKey = "gemini:{$locale}:{$featureId}:{$hari}:{$dataHash}";
 
         // Cache lama untuk profil bisa berisi JSON rusak (sebelum validasi ditambahkan) — abaikan.
         if (Cache::has($cacheKey)) {

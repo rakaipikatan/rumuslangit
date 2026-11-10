@@ -9,6 +9,7 @@ use App\Models\QuestionnaireSession;
 use App\Models\User;
 use App\Services\GeminiService;
 use App\Services\KalkulasiEngine;
+use App\Support\HariWib;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -127,12 +128,15 @@ class ReportController extends Controller
         $kalkulasi = $this->kalkulasiUser($user);
         $dataHash  = hash('sha256', json_encode([$featureId, $kalkulasi, $validated, $tarotData, $locale]));
 
-        // Cek cache: laporan identik sudah pernah dibuat (untuk locale yang sama)
+        // Laporan identik yang dibuat HARI INI (WIB) dipakai ulang tanpa memakai jatah. Besok, jawaban yang
+        // sama menghasilkan laporan BARU (memakai 1 jatah bagi pembeli satuan).
         $existing = AiReport::where('user_id', $user->id)
             ->where('feature_id', $featureId)
             ->where('locale', $locale)
             ->where('data_hash', $dataHash)
+            ->where('cached_at', '>=', HariWib::awal())
             ->whereNotNull('response_text')
+            ->latest('id')
             ->first();
 
         if ($existing) {
@@ -267,7 +271,7 @@ class ReportController extends Controller
     /** Pesan error bila batas harian tercapai; null bila masih boleh. */
     private function batasHarianTercapai(User $user, int $featureId, array $fitur): ?string
     {
-        $awalHari = now()->startOfDay();
+        $awalHari = HariWib::awal();
 
         if ($user->isSubscriber()) {
             $batas = (int) config('payment.subscriber_daily_reports', 20);

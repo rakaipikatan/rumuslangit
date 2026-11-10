@@ -220,4 +220,56 @@ class SkemaHargaTest extends TestCase
         $this->withSession(['user_id' => $u->id])->get(route('payment.konfirmasi', 'langganan-tahunan'))
             ->assertOk()->assertSee('per tahun')->assertSee('Akses semua laporan selama masa langganan');
     }
+
+    public function test_jawaban_sama_di_hari_wib_yang_sama_dipakai_ulang_besok_dibuat_baru(): void
+    {
+        $u = $this->user();
+        $this->beli($u);
+
+        // 10 Nov 17:00 WIB (10:00 UTC): laporan pertama
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 10:00:00', 'UTC'));
+        $this->kirim($u, 3, 0)->assertRedirect(route('laporan.status', 3));
+        $this->selesaikanSemua($u);
+        $this->assertSame(2, $u->kuotaSisa(3));
+
+        // 10 Nov 23:30 WIB (16:30 UTC): masih hari yang sama di WIB → laporan lama, jatah tak berkurang
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 16:30:00', 'UTC'));
+        $this->kirim($u, 3, 0)->assertRedirect(route('laporan.hasil', 3));
+        $this->assertSame(1, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
+        $this->assertSame(2, $u->kuotaSisa(3));
+
+        // 11 Nov 00:05 WIB (17:05 UTC): sudah hari berikutnya di WIB → laporan BARU, memakai 1 jatah
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 17:05:00', 'UTC'));
+        $this->kirim($u, 3, 0)->assertRedirect(route('laporan.status', 3));
+        $this->assertSame(2, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
+        $this->assertSame(1, $u->kuotaSisa(3));
+        Queue::assertPushed(GenerateAIReport::class, 2);
+
+        // Setelah laporan hari baru selesai, pengiriman ulang di hari itu memakai laporan hari itu
+        $this->selesaikanSemua($u);
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 09:00:00', 'UTC'));
+        $this->kirim($u, 3, 0)->assertRedirect(route('laporan.hasil', 3));
+        $this->assertSame(2, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
+    }
+
+    public function test_batas_harian_berganti_tengah_malam_wib_bukan_utc(): void
+    {
+        config(['payment.free_daily_reports' => 1]);
+        $u = $this->user();
+
+        // 10 Nov 23:50 WIB (16:50 UTC) sudah 1 pembuatan
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 16:50:00', 'UTC'));
+        AiReport::create(['user_id' => $u->id, 'feature_id' => 12, 'locale' => 'id', 'data_hash' => Str::random(20),
+            'response_text' => 'tafsir', 'cached_at' => now()]);
+
+        // 10 Nov 23:59 WIB masih hari yang sama → ditolak
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 16:59:00', 'UTC'));
+        $this->withSession(['user_id' => $u->id])->post(route('laporan.proses', 12), ['mimpi' => 'Mimpi pertama malam ini'])
+            ->assertSessionHasErrors('batas');
+
+        // 11 Nov 00:01 WIB (17:01 UTC) hari baru → boleh lagi
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 17:01:00', 'UTC'));
+        $this->withSession(['user_id' => $u->id])->post(route('laporan.proses', 12), ['mimpi' => 'Mimpi pertama malam ini'])
+            ->assertSessionHasNoErrors();
+    }
 }

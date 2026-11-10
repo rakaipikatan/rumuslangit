@@ -38,7 +38,7 @@ return [
 
     'form' => [
         'jatah' => 'Generations left: :sisa of :total',
-        'jatah_info' => 'A generation is used each time you create a new report. Submitting the exact same answers shows the earlier report without using a generation.',
+        'jatah_info' => 'A generation is used each time you create a new report. The exact same answers on the same day show the existing report without using a generation. The next day, a new report is generated and uses 1 generation.',
         'lihat_laporan_terakhir' => 'View my latest report (uses no generation)',
         'kembali' => '← Back',
         'error_title' => 'An error occurred — please fix and try again:',
