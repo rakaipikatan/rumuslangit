@@ -275,8 +275,7 @@ composer test          # = config:clear lalu php artisan test
 
 | Commit | Isi |
 |---|---|
-| (10 Nov 2026) | Patch keamanan: update dependensi Composer (laravel/framework 13.40, Symfony, Guzzle, dompdf, commonmark), hardening PHP2Shell, dokumentasi ini |
-|---|---|
+| `0a837b8` | Patch keamanan: update dependensi Composer (laravel/framework 13.40, Symfony, Guzzle, dompdf, commonmark), hardening PHP2Shell, dokumentasi ini |
 | `619f858` | Program afiliasi (referral, komisi, payout manual) |
 | `5329d05` | Harga baru: laporan Rp29rb, langganan Rp49rb/bulan, tahunan Rp350rb |
 | `077e5f8` | Fix crash langganan bulanan di paywall & aktivasi |
