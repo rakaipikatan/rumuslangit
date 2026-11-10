@@ -330,7 +330,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
+| `4c511bb` | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
 | `8d0bee4` | **Halaman Panduan Pengguna** `/panduan` (setelah login); teks jatah diperjelas ("3 jatah laporan" + tautan "Apa itu jatah?"); aturan hasil diselaraskan dengan keputusan pemilik: **hari sama = hasil sama, hari berikutnya = laporan baru (tanpa memotong jatah), jatah hanya untuk jawaban berbeda**, berlaku untuk semua fitur (`PAYMENT_FITUR_HARIAN=semua` default); +5 tes (total 126) |
 | `2231b85` | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
 | `193ba86` | **Jawaban sama = pakai data tersimpan (tanpa AI)** untuk semua fitur kecuali yang bergantung tanggal (3, 10, 11) yang diperbarui tiap hari WIB; prompt fitur bergantung tanggal kini memuat tanggal hari ini; +4 tes (total 119) |
