@@ -202,7 +202,7 @@ Variabel yang dipakai (nilai rahasia jangan di-commit; `.env` sudah di-gitignore
 | App | `APP_NAME, APP_ENV, APP_KEY, APP_DEBUG, APP_URL, APP_LOCALE` |
 | Database | `DB_CONNECTION=pgsql, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD, DB_SSLMODE` |
 | Redis | `SESSION_DRIVER=redis, QUEUE_CONNECTION=redis, CACHE_DRIVER=redis, REDIS_*` |
-| Mail | `MAIL_MAILER=smtp, MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_*` |
+| Mail | `MAIL_MAILER=smtp, MAIL_HOST, MAIL_PORT, MAIL_SCHEME (smtps untuk port 465), MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_*`. Domain pengirim harus punya SPF/DKIM (DNS domain dikelola di SumoPod); tanpa itu email OTP masuk spam/terbuang |
 | Gemini | `GEMINI_API_KEY, GEMINI_MODEL, GEMINI_MAX_OUTPUT_TOKENS` |
 | Pembayaran | `PAYMENT_BCA_NAMA/NOMOR, PAYMENT_CIMB_NAMA/NOMOR, PAYMENT_EXPIRE_HOURS, PAYMENT_LANGGANAN_BULANAN_HARGA, PAYMENT_LANGGANAN_TAHUNAN_HARGA` |
 | Admin | `ADMIN_USERNAME, ADMIN_PASSWORD` |
@@ -238,7 +238,7 @@ Proses yang harus hidup: **nginx**, **php-fpm**, **`php artisan horizon`** (work
 
 Scheduler ([bootstrap/app.php](bootstrap/app.php)): `hoki:kirim` harian 06:00 WIB; `subscription:sync` tiap jam.
 
-Perintah artisan kustom: `hoki:kirim`, `subscription:sync`.
+Perintah artisan kustom: `hoki:kirim`, `subscription:sync`, `mail:uji {email}` (kirim email uji + tampilkan konfigurasi SMTP aktif; berguna setelah mengganti `MAIL_*`).
 
 > **Jebakan config cache:** `bootstrap/cache/config.php` menyimpan konfigurasi produksi. Setelah mengubah `.env`, jalankan `php artisan config:cache`. Pastikan folder `storage/framework/views` dan `bootstrap/cache` dapat ditulis grup `www-data` (`chgrp -R www-data` + `chmod -R g+w`), kalau tidak halaman bisa 500 saat Blade dikompilasi ulang.
 
@@ -292,6 +292,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | Perintah `mail:uji` untuk memeriksa pengiriman email. Temuan: domain belum punya SPF/DKIM/DMARC sehingga OTP via Brevo tidak sampai; rencana pindah ke SMTP SumoPod (`smtp.sumopod.com:465`, `MAIL_SCHEME=smtps`) |
 | (10 Nov 2026) | Kredensial admin diganti (di `.env`, bukan di repo): username baru, password acak 20 karakter disimpan sebagai hash bcrypt (`ADMIN_PASSWORD='$2y$...'`, tanda kutip tunggal wajib). Cadangan `.env` lama di `/home/ubuntu/backup/` |
 | `128f84d` | **Pembersihan data:** semua user + data turunan (laporan AI, kuesioner, profil lahir, langganan, order) dihapus atas permintaan pemilik, dengan cadangan JSON di server (`/home/ubuntu/backup/`, di luar repo). Perbaikan: katalog dengan sesi usang (user sudah dihapus) kini diarahkan ke awal, bukan error; +1 tes (total 51) |
 | `6ee9559` | Harga uji sementara per-email (`PAYMENT_TEST_PRICE`/`PAYMENT_TEST_EMAIL`) untuk tes transaksi Live bernominal kecil; +2 tes (total 50) |
