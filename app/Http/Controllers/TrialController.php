@@ -154,7 +154,13 @@ class TrialController extends Controller
 
         $user = User::find($userId);
 
-        if (!Session::get('otp_verified') && !($user && $user->email_verified_at)) {
+        // Sesi usang (user sudah dihapus): bersihkan dan mulai dari awal, jangan render dengan user null.
+        if (!$user) {
+            Session::forget(['user_id', 'kalkulasi', 'otp_verified']);
+            return redirect()->route('trial.index');
+        }
+
+        if (!Session::get('otp_verified') && !$user->email_verified_at) {
             return redirect()->route('trial.hasil')
                 ->with('info', 'Verifikasi email Anda untuk mengakses fitur ini.');
         }

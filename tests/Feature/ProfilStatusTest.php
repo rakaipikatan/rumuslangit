@@ -59,4 +59,11 @@ class ProfilStatusTest extends TestCase
             ->assertOk()
             ->assertJson(['siap' => false, 'ulang' => true]);
     }
+
+    public function test_katalog_dengan_sesi_user_yang_sudah_dihapus_diarahkan_ke_awal(): void
+    {
+        $this->withSession(['user_id' => 99999999, 'otp_verified' => true])
+            ->get(route('trial.katalog'))
+            ->assertRedirect(route('trial.index'));
+    }
 }
