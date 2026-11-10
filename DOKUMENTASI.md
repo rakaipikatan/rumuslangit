@@ -294,7 +294,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Bugfix:** Tafsir Mimpi (freemium, Rp0) salah menampilkan paywall "Bayar Sekarang" dan membuat order QRIS; kini gratis untuk semua. Fitur Rp0 tak bisa dibeli eceran, harga uji tak berlaku untuk fitur gratis; +3 tes (total 55) |
+| `23f8049` | **Bugfix:** Tafsir Mimpi (freemium, Rp0) salah menampilkan paywall "Bayar Sekarang" dan membuat order QRIS; kini gratis untuk semua. Fitur Rp0 tak bisa dibeli eceran, harga uji tak berlaku untuk fitur gratis; +3 tes (total 55) |
 | `6d66fd1` | Email OTP kini punya versi teks polos (mengurangi risiko spam) + tes; harga uji dinaikkan ke Rp1.000 (minimum SumoPod). DNS email: SPF, DKIM (`trx_ke._domainkey`), verifikasi SumoPod terpasang dan terverifikasi; MAIL_* dipindah ke SMTP SumoPod (`smtp.sumopod.com:465`, smtps). Disarankan menambah DMARC (`_dmarc` TXT `v=DMARC1; p=none;`) |
 | `e178033` | Perintah `mail:uji` untuk memeriksa pengiriman email. Temuan: domain belum punya SPF/DKIM/DMARC sehingga OTP via Brevo tidak sampai; rencana pindah ke SMTP SumoPod (`smtp.sumopod.com:465`, `MAIL_SCHEME=smtps`) |
 | (10 Nov 2026) | Kredensial admin diganti (di `.env`, bukan di repo): username baru, password acak 20 karakter disimpan sebagai hash bcrypt (`ADMIN_PASSWORD='$2y$...'`, tanda kutip tunggal wajib). Cadangan `.env` lama di `/home/ubuntu/backup/` |
