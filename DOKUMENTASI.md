@@ -134,6 +134,8 @@ Metode kedua, di samping transfer manual. Aktif otomatis bila `SUMOPOD_PAY_API_K
 
 **Sandbox vs Live:** key Sandbox hanya berlaku di host sandbox. Untuk uji, set `SUMOPOD_PAY_BASE_URL=https://api-pay-sandbox.sumopod.com` (hasil uji 10 Nov 2026: key Sandbox di host Live → `401 Unauthorized`; di host Sandbox → payment berhasil dibuat). Untuk produksi: `SUMOPOD_PAY_BASE_URL=https://api-pay.sumopod.com` + key Live, lalu `php artisan config:cache`.
 
+**Harga uji (sementara):** `PAYMENT_TEST_PRICE` + `PAYMENT_TEST_EMAIL` di `.env` menurunkan harga **hanya untuk satu email terverifikasi** (untuk tes transaksi Live bernominal kecil). Pengguna lain tetap membayar harga normal. Setelah pengujian, **kosongkan kedua variabel** lalu `php artisan config:cache`.
+
 Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant), dana cair T+2. Kolom baru `orders.payment_id` (unik), `payment_link_url`, `payment_expires_at` (migration `2026_11_10_150000_...`).
 
 ### 4.4 Program afiliasi
@@ -248,7 +250,7 @@ Perintah artisan kustom: `hoki:kirim`, `subscription:sync`.
 php artisan test       # atau: composer test
 ```
 
-48 tes (147 assertion): `KalkulasiEngineTest`, `RepairJsonTest` (unit), `AdminLoginTest`, `SubscriptionPaymentTest`, `AffiliateTest`, `ProfilStatusTest`, `SumopodPaymentTest` (checkout QRIS, webhook: signature, replay, idempotensi, nominal, afiliasi), serta tes contoh.
+50 tes: `KalkulasiEngineTest`, `RepairJsonTest` (unit), `AdminLoginTest`, `SubscriptionPaymentTest`, `AffiliateTest`, `ProfilStatusTest`, `SumopodPaymentTest` (checkout QRIS, webhook: signature, replay, idempotensi, nominal, afiliasi), serta tes contoh.
 
 - **Database tes terisolasi.** Tes yang butuh DB memakai trait [tests/Concerns/UsesPostgresTestSchema.php](tests/Concerns/UsesPostgresTestSchema.php): skema PostgreSQL terpisah **`rumuslangit_test`** di server DB yang sama (dibuat dan dimigrasi otomatis), tiap tes dibungkus transaksi yang di-rollback. Skema produksi `public` tidak disentuh, dan ada pengaman yang menggagalkan tes bila skema aktif bukan `rumuslangit_test`. (Migration memakai SQL khusus Postgres sehingga sqlite tidak bisa dipakai.)
 - **Cache produksi diabaikan.** [tests/TestCase.php](tests/TestCase.php) mengarahkan `APP_CONFIG_CACHE` dan `APP_ROUTES_CACHE` ke file yang tidak ada, jadi `bootstrap/cache/*.php` (config/route produksi) tidak memengaruhi tes dan `php artisan test` aman dijalankan langsung.
@@ -290,6 +292,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | Harga uji sementara per-email (`PAYMENT_TEST_PRICE`/`PAYMENT_TEST_EMAIL`) untuk tes transaksi Live bernominal kecil; +2 tes (total 50) |
 | `e203f75` | Integrasi **QRIS SumoPod Managed Payment**: service klien API, webhook ber-signature Svix, `OrderSettlementService` bersama, pilihan metode di halaman pembayaran, migration kolom payment, 14 tes baru. **Belum aktif di produksi** sampai migration dijalankan dan `config:cache`/`route:cache` di-refresh (lihat bagian 9) |
 | `080df47` | **Bugfix produksi:** profil karakter menggantung di "Sedang menganalisis..." — Gemini mengembalikan JSON dengan trailing comma sehingga data tersimpan tapi tak terbaca. Perbaikan: `repairJson` + validasi + self-healing + tes regresi. Plus: hardening login admin (throttle), rekening ke `.env`, tes pada skema DB terpisah, hapus kode WhatsApp legacy, API key Gemini via header |
 | `0a837b8`, `7e8789e` | Patch keamanan: update dependensi Composer (laravel/framework 13.40, Symfony, Guzzle, dompdf, commonmark), hardening PHP2Shell, dokumentasi ini |

@@ -241,4 +241,38 @@ class SumopodPaymentTest extends TestCase
 
         $this->assertSame(9800, (int) \App\Models\AffiliateCommission::where('order_id', $order->id)->value('komisi_amount'));
     }
+
+    public function test_harga_uji_hanya_berlaku_untuk_email_yang_ditentukan(): void
+    {
+        Http::fake(['*' => fn () => Http::response([
+            'payment_id' => (string) Str::uuid(), 'payment_link_url' => 'https://pay.sumopod.test/pay/uji', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+
+        $penguji = $this->buatUser();
+        $lain    = $this->buatUser();
+        $penguji->update(['email_verified_at' => now()]);
+        $lain->update(['email_verified_at' => now()]);
+        config(['payment.test_price' => 500, 'payment.test_email' => strtoupper($penguji->email)]);
+
+        $this->withSession(['user_id' => $penguji->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+        $this->withSession(['user_id' => $lain->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+
+        $this->assertSame(500, (int) Order::where('user_id', $penguji->id)->value('amount'));
+        $this->assertSame(29000, (int) Order::where('user_id', $lain->id)->value('amount'));
+    }
+
+    public function test_harga_uji_nonaktif_bila_email_tidak_diisi(): void
+    {
+        Http::fake(['*' => Http::response([
+            'payment_id' => 'p-1', 'payment_link_url' => 'https://pay.sumopod.test/pay/1', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+
+        $user = $this->buatUser();
+        $user->update(['email_verified_at' => now()]);
+        config(['payment.test_price' => 500, 'payment.test_email' => null]);
+
+        $this->withSession(['user_id' => $user->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+
+        $this->assertSame(29000, (int) Order::where('user_id', $user->id)->value('amount'));
+    }
 }

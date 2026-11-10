@@ -25,6 +25,8 @@ class PaymentController extends Controller
                 ->with('info', 'Silakan isi data lahir Anda terlebih dahulu.');
         }
 
+        $fitur = $this->terapkanHargaUji($fitur, $user);
+
         $subscriptionMarker = $this->subscriptionFeatureId($featureId);
 
         if ($subscriptionMarker !== null) {
@@ -69,6 +71,8 @@ class PaymentController extends Controller
 
         $user = $this->userDariSession();
         if (!$user) abort(403);
+
+        $fitur = $this->terapkanHargaUji($fitur, $user);
 
         $sumopod = app(SumopodPayService::class);
         $metode  = $request->input('metode', 'manual');
@@ -142,6 +146,24 @@ class PaymentController extends Controller
 
         return redirect()->route('payment.konfirmasi', $featureId)
             ->with('success', 'Terima kasih! Transfer Anda akan kami verifikasi secepatnya (maks. 1x24 jam).');
+    }
+
+    /**
+     * Harga uji sementara (PAYMENT_TEST_PRICE) khusus untuk SATU email terverifikasi (PAYMENT_TEST_EMAIL).
+     * Pengguna lain tidak terpengaruh. Kosongkan kedua variabel .env setelah tes selesai.
+     */
+    private function terapkanHargaUji(array $fitur, User $user): array
+    {
+        $harga = config('payment.test_price');
+        $email = config('payment.test_email');
+
+        if (filled($harga) && filled($email)
+            && $user->email_verified_at
+            && strcasecmp((string) $user->email, (string) $email) === 0) {
+            $fitur['harga'] = max(1, (int) $harga);
+        }
+
+        return $fitur;
     }
 
     // Marker Order::SUBSCRIPTION_*_FEATURE_ID untuk literal langganan, null kalau bukan langganan.
