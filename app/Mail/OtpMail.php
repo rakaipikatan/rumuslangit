@@ -25,6 +25,7 @@ class OtpMail extends Mailable
     {
         return new Content(
             view: 'emails.otp',
+            text: 'emails.otp-text', // versi teks polos: email HTML-saja lebih sering dianggap spam
         );
     }
 }

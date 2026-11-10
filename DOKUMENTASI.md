@@ -134,6 +134,8 @@ Metode kedua, di samping transfer manual. Aktif otomatis bila `SUMOPOD_PAY_API_K
 
 **Sandbox vs Live:** key Sandbox hanya berlaku di host sandbox. Untuk uji, set `SUMOPOD_PAY_BASE_URL=https://api-pay-sandbox.sumopod.com` (hasil uji 10 Nov 2026: key Sandbox di host Live → `401 Unauthorized`; di host Sandbox → payment berhasil dibuat). Untuk produksi: `SUMOPOD_PAY_BASE_URL=https://api-pay.sumopod.com` + key Live, lalu `php artisan config:cache`.
 
+**Batas minimum SumoPod: Rp1.000** (nominal lebih kecil ditolak `400 INVALID_INPUT`), jadi harga uji minimal 1000.
+
 **Harga uji (sementara):** `PAYMENT_TEST_PRICE` + `PAYMENT_TEST_EMAIL` di `.env` menurunkan harga **hanya untuk satu email terverifikasi** (untuk tes transaksi Live bernominal kecil). Pengguna lain tetap membayar harga normal. Setelah pengujian, **kosongkan kedua variabel** lalu `php artisan config:cache`.
 
 Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant), dana cair T+2. Kolom baru `orders.payment_id` (unik), `payment_link_url`, `payment_expires_at` (migration `2026_11_10_150000_...`).
@@ -292,6 +294,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | Email OTP kini punya versi teks polos (mengurangi risiko spam) + tes; harga uji dinaikkan ke Rp1.000 (minimum SumoPod). DNS email: SPF, DKIM (`trx_ke._domainkey`), verifikasi SumoPod terpasang dan terverifikasi; MAIL_* dipindah ke SMTP SumoPod (`smtp.sumopod.com:465`, smtps). Disarankan menambah DMARC (`_dmarc` TXT `v=DMARC1; p=none;`) |
 | `e178033` | Perintah `mail:uji` untuk memeriksa pengiriman email. Temuan: domain belum punya SPF/DKIM/DMARC sehingga OTP via Brevo tidak sampai; rencana pindah ke SMTP SumoPod (`smtp.sumopod.com:465`, `MAIL_SCHEME=smtps`) |
 | (10 Nov 2026) | Kredensial admin diganti (di `.env`, bukan di repo): username baru, password acak 20 karakter disimpan sebagai hash bcrypt (`ADMIN_PASSWORD='$2y$...'`, tanda kutip tunggal wajib). Cadangan `.env` lama di `/home/ubuntu/backup/` |
 | `128f84d` | **Pembersihan data:** semua user + data turunan (laporan AI, kuesioner, profil lahir, langganan, order) dihapus atas permintaan pemilik, dengan cadangan JSON di server (`/home/ubuntu/backup/`, di luar repo). Perbaikan: katalog dengan sesi usang (user sudah dihapus) kini diarahkan ke awal, bukan error; +1 tes (total 51) |
