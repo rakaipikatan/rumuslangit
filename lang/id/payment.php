@@ -5,7 +5,7 @@ return [
     'heading' => 'Konfirmasi Pembayaran',
     'subtitle' => 'Periksa detail pesanan sebelum mengonfirmasi',
     'detail_pesanan' => 'Detail Pesanan',
-    'akses_selamanya' => ':n× pembuatan laporan · hasil tersimpan selamanya',
+    'akses_selamanya' => ':n× pembuatan laporan (dengan jawaban berbeda) · hasil tersimpan selamanya',
     'akses_langganan' => 'Akses semua laporan selama masa langganan',
     'per_bulan' => 'per bulan',
     'per_tahun' => 'per tahun',

@@ -7,7 +7,7 @@ return [
         'lihat_laporan_lama' => 'View my latest report',
         'title' => 'Unlock Access — :nama',
         'beli_title' => 'Buy This Report',
-        'beli_sub' => ':n generations · results saved forever',
+        'beli_sub' => ':n generations (with different answers) · results saved forever',
         'sekali_bayar' => 'one-time payment',
         'bayar_sekarang' => 'Pay Now',
         'atau' => 'or',
@@ -38,7 +38,7 @@ return [
 
     'form' => [
         'jatah' => 'Generations left: :sisa of :total',
-        'jatah_info' => 'A generation is used each time you create a new report. The exact same answers on the same day show the existing report without using a generation. The next day, a new report is generated and uses 1 generation.',
+        'jatah_info' => 'A generation is only used for answers that DIFFER from before. The exact same answers never use a generation: on the same day they show the existing report, and the next day a fresh report is generated.',
         'lihat_laporan_terakhir' => 'View my latest report (uses no generation)',
         'kembali' => '← Back',
         'error_title' => 'An error occurred — please fix and try again:',

@@ -221,7 +221,7 @@ class SkemaHargaTest extends TestCase
             ->assertOk()->assertSee('per tahun')->assertSee('Akses semua laporan selama masa langganan');
     }
 
-    public function test_jawaban_sama_di_hari_wib_yang_sama_dipakai_ulang_besok_dibuat_baru(): void
+    public function test_jawaban_sama_di_hari_yang_sama_dipakai_ulang_besok_dibuat_baru_tanpa_memakai_jatah(): void
     {
         $u = $this->user();
         $this->beli($u);
@@ -238,11 +238,12 @@ class SkemaHargaTest extends TestCase
         $this->assertSame(1, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
         $this->assertSame(2, $u->kuotaSisa(3));
 
-        // 11 Nov 00:05 WIB (17:05 UTC): sudah hari berikutnya di WIB → laporan BARU, memakai 1 jatah
+        // 11 Nov 00:05 WIB (17:05 UTC): sudah hari berikutnya di WIB → laporan BARU dibuat,
+        // tetapi jatah TIDAK berkurang karena jawabannya sama dengan yang pernah dibuat
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 17:05:00', 'UTC'));
         $this->kirim($u, 3, 0)->assertRedirect(route('laporan.status', 3));
         $this->assertSame(2, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
-        $this->assertSame(1, $u->kuotaSisa(3));
+        $this->assertSame(2, $u->kuotaSisa(3));
         Queue::assertPushed(GenerateAIReport::class, 2);
 
         // Setelah laporan hari baru selesai, pengiriman ulang di hari itu memakai laporan hari itu
@@ -271,5 +272,66 @@ class SkemaHargaTest extends TestCase
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 17:01:00', 'UTC'));
         $this->withSession(['user_id' => $u->id])->post(route('laporan.proses', 12), ['mimpi' => 'Mimpi pertama malam ini'])
             ->assertSessionHasNoErrors();
+    }
+
+    public function test_jatah_hanya_terpakai_untuk_jawaban_yang_berbeda(): void
+    {
+        $u = $this->user();
+        $this->beli($u);
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
+
+        // Jawaban A di hari 1 → memakai 1 jatah
+        $this->kirim($u, 3, 0); $this->selesaikanSemua($u);
+        $this->assertSame(2, $u->kuotaSisa(3));
+
+        // Hari 2-5, jawaban A yang sama berulang kali → laporan baru tiap hari, jatah tetap 2
+        foreach ([1, 2, 3, 4] as $hari) {
+            $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC')->addDays($hari));
+            $this->kirim($u, 3, 0)->assertRedirect(route('laporan.status', 3));
+            $this->selesaikanSemua($u);
+            $this->assertSame(2, $u->kuotaSisa(3), "hari ke-{$hari}: jawaban sama tidak boleh memakai jatah");
+        }
+        $this->assertSame(5, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
+
+        // Jawaban B (berbeda) → memakai 1 jatah
+        $this->kirim($u, 3, 1); $this->selesaikanSemua($u);
+        $this->assertSame(1, $u->kuotaSisa(3));
+
+        // Jawaban C (berbeda) → jatah terakhir
+        $this->kirim($u, 3, 2); $this->selesaikanSemua($u);
+        $this->assertSame(0, $u->kuotaSisa(3));
+        $this->assertFalse($u->fresh()->hasAccessToFeature(3));
+    }
+
+    public function test_ganti_bahasa_dengan_jawaban_sama_tidak_memakai_jatah(): void
+    {
+        $u = $this->user();
+        $this->beli($u);
+
+        $this->kirim($u, 3, 0); $this->selesaikanSemua($u);
+        $this->assertSame(2, $u->kuotaSisa(3));
+
+        app()->setLocale('en');
+        $this->withSession(['user_id' => $u->id, 'locale' => 'en'])->post(route('laporan.proses', 3), $this->jawaban(3, 0));
+        $this->selesaikanSemua($u);
+
+        $this->assertSame(2, AiReport::where('user_id', $u->id)->where('feature_id', 3)->count());
+        $this->assertSame(2, $u->kuotaSisa(3));
+    }
+
+    public function test_pembuatan_gagal_lalu_diulang_dengan_jawaban_sama_tetap_memakai_jatah_sekali(): void
+    {
+        $u = $this->user();
+        $this->beli($u);
+
+        // Percobaan pertama macet 20 menit (tak pernah selesai, tak dihitung)
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
+        $this->kirim($u, 3, 0);
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:20:00', 'UTC'));
+        $this->assertSame(3, $u->kuotaSisa(3));
+
+        // Diulang dengan jawaban sama → baru benar-benar memakai jatah (karena belum pernah berhasil)
+        $this->kirim($u, 3, 0); $this->selesaikanSemua($u);
+        $this->assertSame(2, $u->kuotaSisa(3));
     }
 }

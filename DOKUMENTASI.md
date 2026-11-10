@@ -48,7 +48,7 @@ Poin penting:
 - **Tidak ada registrasi klasik.** Identitas pengguna = baris `users` yang dibuat dari form data lahir; `user_id` disimpan di **session**. Login email+password (`/login`) hanya untuk akun yang sudah punya password (mis. dibuat admin).
 - **Akses fitur** (`User::hasAccessToFeature`): pelanggan aktif **atau** punya order `settlement` untuk fitur itu.
 - **Trial** dibatasi per email: satu email (di-hash SHA-256) hanya bisa pakai trial sekali (`email_verifications.trial_used_at`). Pembatasan dimatikan saat `APP_ENV=local`.
-- **Hasil AI: dipakai ulang di hari yang sama, dibuat baru besok.** Laporan dengan hash identik (fitur + kalkulasi + jawaban + tarot + locale) yang dibuat **hari ini menurut WIB** dipakai ulang tanpa memanggil Gemini dan tanpa memakai jatah. Pada hari kalender WIB berikutnya, jawaban yang sama menghasilkan **laporan baru** (memakai 1 jatah bagi pembeli satuan; laporan lama tetap tersimpan dan bisa dibuka lewat "Lihat laporan terakhir"). Cache respons Gemini di Redis juga per hari kalender WIB (kunci memuat tanggal), bukan 24 jam bergulir; **profil karakter (fitur 0) bersifat tetap**, tidak berganti harian. "Hari" dihitung oleh `App\Support\HariWib` (server & database tetap UTC).
+- **Hasil AI: dipakai ulang di hari yang sama, dibuat baru besok.** Laporan dengan hash identik (fitur + kalkulasi + jawaban + tarot + locale) yang dibuat **hari ini menurut WIB** dipakai ulang tanpa memanggil Gemini dan tanpa memakai jatah. Pada hari kalender WIB berikutnya, jawaban yang sama menghasilkan **laporan baru** **tanpa memakai jatah** (jatah hanya terpakai untuk jawaban yang berbeda); laporan lama tetap tersimpan dan bisa dibuka lewat "Lihat laporan terakhir". Cache respons Gemini di Redis juga per hari kalender WIB (kunci memuat tanggal), bukan 24 jam bergulir; **profil karakter (fitur 0) bersifat tetap**, tidak berganti harian. "Hari" dihitung oleh `App\Support\HariWib` (server & database tetap UTC).
 
 ---
 
@@ -78,7 +78,7 @@ Fitur 1–10 memakai 10 pertanyaan Ya/Tidak (`q1..q10`). Tarot (opsional, maks 3
 
 | Produk | Harga | Isi | Marker `orders.feature_id` |
 |---|---|---|---|
-| **Laporan satuan** | Rp29.000 | **3 kali pembuatan** laporan untuk fitur itu (`PAYMENT_JATAH_SATUAN`); hasil yang sudah dibuat **tersimpan selamanya**. Setiap pembelian baru menambah 3 jatah | 1–10 |
+| **Laporan satuan** | Rp29.000 | **3 kali pembuatan dengan jawaban berbeda** untuk fitur itu (`PAYMENT_JATAH_SATUAN`); jawaban yang sama dibuat ulang tanpa memakai jatah; hasil yang sudah dibuat **tersimpan selamanya**. Setiap pembelian baru menambah 3 jatah | 1–10 |
 | **Langganan bulanan** | Rp49.000 | Semua fitur tanpa jatah (batas wajar **20 laporan/hari**, `PAYMENT_BATAS_HARIAN_LANGGANAN`) + fitur 11 + Hoki Harian | `-1` (`Order::SUBSCRIPTION_MONTHLY_FEATURE_ID`) |
 | **Langganan tahunan** | **Rp399.000** (hemat 32% dari 12 × Rp49.000; `PAYMENT_LANGGANAN_TAHUNAN_HARGA`) | Sama dengan bulanan, 12 bulan | `-2` (`Order::SUBSCRIPTION_YEARLY_FEATURE_ID`) |
 
@@ -88,7 +88,7 @@ Fitur 1–10 memakai 10 pertanyaan Ya/Tidak (`q1..q10`). Tarot (opsional, maks 3
 
 **Cara kerja jatah** (`User::kuotaTotal/kuotaTerpakai/kuotaSisa`, `ai_reports.consumed_quota`):
 - Akses fitur = fitur gratis, **atau** pelanggan aktif, **atau** `kuotaSisa > 0`. Jatah total = 3 × jumlah pembelian lunas fitur itu; terpakai = pembuatan BARU yang menandai `consumed_quota=true`.
-- **Tidak memakai jatah:** jawaban identik dengan laporan yang dibuat **hari ini (WIB)** (diambil lewat `data_hash`; besoknya dibuat baru dan memakai jatah), pembuatan oleh pelanggan, fitur gratis, dan pembuatan yang gagal/macet lebih dari 15 menit. Pembuatan yang sedang berjalan (< 15 menit) tetap dihitung agar pengiriman serentak tidak menembus batas.
+- **Jatah dihitung per kumpulan jawaban yang BERBEDA** (hash fitur + kalkulasi + jawaban + tarot, tanpa memandang bahasa). **Tidak memakai jatah:** jawaban yang sama dengan yang pernah dibuat (hari yang sama menampilkan laporan yang ada; hari lain membuat laporan **baru** tanpa memotong jatah; ganti bahasa juga tidak), pembuatan oleh pelanggan, fitur gratis, dan pembuatan yang gagal/macet lebih dari 15 menit. Pembuatan yang sedang berjalan (< 15 menit) dianggap sudah ada. Bila percobaan lama gagal lalu jawaban yang sama diulang, beban jatah **dipindah** ke percobaan terbaru (`ReportController::pakaiJatahUntuk`) sehingga satu kumpulan jawaban tak pernah memotong jatah dua kali.
 - Jatah habis → paywall menampilkan "Jatah pembuatan laporan ini sudah habis" (beli lagi atau langganan) dan tautan **"Lihat laporan terakhir saya"** (`GET /laporan/{id}/terakhir`, tanpa memakai jatah dan tanpa butuh akses aktif; hanya laporan milik sendiri).
 - Form laporan menampilkan "Sisa jatah pembuatan: X dari 3" untuk pembeli satuan.
 - **Batas harian** (melindungi biaya AI; hari = hari kalender WIB, berganti tengah malam WIB): pelanggan 20 laporan/hari; fitur gratis (Tafsir Mimpi) 5/hari per pengguna (`PAYMENT_BATAS_HARIAN_GRATIS`). Hanya pembuatan baru yang dihitung.
@@ -326,6 +326,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Jatah hanya untuk jawaban berbeda:** jawaban sama (hari lain/bahasa lain) membuat laporan baru tanpa memotong jatah; percobaan gagal-lalu-diulang tidak memotong dua kali; teks form/paywall disesuaikan; +3 tes (total 115) |
 | `1534d32` | **Aturan hari yang sama/besok:** laporan identik hanya dipakai ulang bila dibuat hari ini (WIB); besoknya dibuat baru. Cache Gemini per hari kalender WIB (bukan 24 jam bergulir). Batas harian kini berganti tengah malam WIB (sebelumnya 07.00 WIB karena UTC). Helper `HariWib`; +4 tes (total 112) |
 | `523d10f` | **Skema harga baru:** satuan Rp29.000 = 3 kali pembuatan (hasil tersimpan selamanya) per pembelian; langganan tahunan Rp350.000 → **Rp399.000**; batas wajar harian (langganan 20/hari, fitur gratis 5/hari); halaman "laporan terakhir"; teks harga/akses diperbarui (tidak ada lagi "akses selamanya" / "12 laporan" yang menyesatkan); kolom `ai_reports.consumed_quota`; +10 tes (total 108) |
 | `900b7d9` | **Pengingat cek folder Spam/Junk** di semua email dan pesan layar terkait pengiriman email (OTP, login kode, bukti bayar, Hoki Harian, persetujuan afiliasi) + 3 tes (total 98) |

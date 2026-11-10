@@ -7,7 +7,7 @@ return [
         'lihat_laporan_lama' => 'Lihat laporan terakhir saya',
         'title' => 'Buka Akses — :nama',
         'beli_title' => 'Beli Laporan Ini',
-        'beli_sub' => ':n× pembuatan laporan · hasil tersimpan selamanya',
+        'beli_sub' => ':n× pembuatan laporan (dengan jawaban berbeda) · hasil tersimpan selamanya',
         'sekali_bayar' => 'sekali bayar',
         'bayar_sekarang' => 'Bayar Sekarang',
         'atau' => 'atau',
@@ -38,7 +38,7 @@ return [
 
     'form' => [
         'jatah' => 'Sisa jatah pembuatan: :sisa dari :total',
-        'jatah_info' => 'Jatah terpakai setiap Anda membuat laporan baru. Jawaban yang sama persis di hari yang sama menampilkan laporan yang sudah ada tanpa memakai jatah. Besoknya, laporan dibuat baru dan memakai 1 jatah.',
+        'jatah_info' => 'Jatah hanya terpakai untuk jawaban yang BERBEDA dari sebelumnya. Jawaban yang sama persis tidak memakai jatah: di hari yang sama menampilkan laporan yang sudah ada, dan besoknya dibuatkan laporan baru.',
         'lihat_laporan_terakhir' => 'Lihat laporan terakhir saya (tanpa memakai jatah)',
         'kembali' => '← Kembali',
         'error_title' => 'Terjadi kesalahan — harap perbaiki dan coba lagi:',

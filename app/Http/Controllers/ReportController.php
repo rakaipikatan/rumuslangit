@@ -153,8 +153,10 @@ class ReportController extends Controller
             'user_id'        => $user->id,
             'feature_id'     => $featureId,
             'locale'         => $locale,
-            // Pembeli satuan (bukan pelanggan, bukan fitur gratis) memakai 1 jatah per pembuatan baru
-            'consumed_quota' => !$user->isSubscriber() && empty($fitur['freemium']),
+            // Pembeli satuan memakai 1 jatah hanya untuk kumpulan jawaban yang BERBEDA dari yang pernah dibuat
+            // (jawaban sama di hari lain / bahasa lain tetap membuat laporan baru, tanpa memakai jatah).
+            'consumed_quota' => !$user->isSubscriber() && empty($fitur['freemium'])
+                && $this->pakaiJatahUntuk($user, $featureId, $kalkulasi, $validated, $tarotData),
             'data_hash'      => $dataHash,
             'cached_at'      => now(),
         ]);
@@ -288,6 +290,38 @@ class ReportController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Haruskah pembuatan baru ini memakai 1 jatah? Hanya bila kumpulan jawaban ini BELUM pernah dibuat
+     * (apa pun bahasa/harinya). "Pernah dibuat" = sudah selesai, atau sedang diproses (15 menit terakhir).
+     *
+     * Percobaan lama yang gagal/macet tidak lagi menanggung jatah: bebannya dipindah ke pembuatan baru ini,
+     * sehingga satu kumpulan jawaban tidak pernah memotong jatah dua kali walau percobaan lama selesai belakangan.
+     */
+    private function pakaiJatahUntuk(User $user, int $featureId, array $kalkulasi, array $validated, array $tarotData): bool
+    {
+        $hashSemuaBahasa = collect(['id', 'en'])
+            ->map(fn ($loc) => hash('sha256', json_encode([$featureId, $kalkulasi, $validated, $tarotData, $loc])))
+            ->all();
+
+        $serupa = AiReport::where('user_id', $user->id)
+            ->where('feature_id', $featureId)
+            ->whereIn('data_hash', $hashSemuaBahasa)
+            ->get();
+
+        $sudahAda = $serupa->contains(fn ($r) => $r->response_text !== null
+            || ($r->cached_at && $r->cached_at->gte(now()->subMinutes(15))));
+
+        if ($sudahAda) {
+            return false;
+        }
+
+        if ($serupa->isNotEmpty()) {
+            AiReport::whereIn('id', $serupa->pluck('id'))->update(['consumed_quota' => false]);
+        }
+
+        return true;
     }
 
     private function laporanTerakhir(User $user, int $featureId): ?AiReport
