@@ -277,7 +277,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Bugfix produksi:** profil karakter menggantung di "Sedang menganalisis..." — Gemini mengembalikan JSON dengan trailing comma sehingga data tersimpan tapi tak terbaca. Perbaikan: `repairJson` + validasi + self-healing + tes regresi. Plus: hardening login admin (throttle), rekening ke `.env`, tes pada skema DB terpisah, hapus kode WhatsApp legacy, API key Gemini via header |
+| `080df47` | **Bugfix produksi:** profil karakter menggantung di "Sedang menganalisis..." — Gemini mengembalikan JSON dengan trailing comma sehingga data tersimpan tapi tak terbaca. Perbaikan: `repairJson` + validasi + self-healing + tes regresi. Plus: hardening login admin (throttle), rekening ke `.env`, tes pada skema DB terpisah, hapus kode WhatsApp legacy, API key Gemini via header |
 | `0a837b8`, `7e8789e` | Patch keamanan: update dependensi Composer (laravel/framework 13.40, Symfony, Guzzle, dompdf, commonmark), hardening PHP2Shell, dokumentasi ini |
 | `619f858` | Program afiliasi (referral, komisi, payout manual) |
 | `5329d05` | Harga baru: laporan Rp29rb, langganan Rp49rb/bulan, tahunan Rp350rb |
