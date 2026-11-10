@@ -83,6 +83,10 @@
                             <span class="flex-shrink-0 text-xs {{ $color['badge'] }} border rounded-full px-2 py-0.5">
                                 {{ __('hasil.katalog.bebas') }}
                             </span>
+                        @elseif (in_array($id, $dibeli, true))
+                            <span class="flex-shrink-0 text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-full px-2 py-0.5">
+                                ✓ {{ __('payment.sudah_dibeli') }}
+                            </span>
                         @elseif (!empty($fitur['freemium']))
                             <span class="flex-shrink-0 text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-full px-2 py-0.5">
                                 {{ __('hasil.katalog.gratis') }}

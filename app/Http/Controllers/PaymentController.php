@@ -70,6 +70,41 @@ class PaymentController extends Controller
         return view('payment.konfirmasi', compact('user', 'fitur', 'featureId', 'order', 'rekening', 'qrisTersedia'));
     }
 
+    // GET /payment/selesai/{gatewayOrderId} — tujuan setelah bayar QRIS.
+    // Lunas → langsung ke kuesioner (atau katalog untuk langganan). Belum masuk → tunggu konfirmasi webhook.
+    public function selesai(string $gatewayOrderId, Request $request)
+    {
+        $user = $this->userDariSession();
+        if (!$user) {
+            return redirect()->route('trial.index');
+        }
+
+        $order = Order::where('gateway_order_id', $gatewayOrderId)->where('user_id', $user->id)->firstOrFail();
+        $slug  = app(SumopodPayService::class)->slugProduk($order);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status'   => $order->status,
+                'redirect' => $order->status === 'pending' ? null : route('payment.selesai', $gatewayOrderId),
+            ]);
+        }
+
+        if ($order->isSettled()) {
+            if ($order->feature_id > 0) {
+                return redirect()->route('laporan.form', $order->feature_id)
+                    ->with('success', __('payment.selesai_sukses_fitur'));
+            }
+
+            return redirect()->route('trial.katalog')->with('success', __('payment.selesai_sukses_langganan'));
+        }
+
+        if (in_array($order->status, ['cancel', 'expire'], true)) {
+            return redirect()->route('payment.konfirmasi', $slug)->withErrors(['metode' => __('payment.selesai_gagal')]);
+        }
+
+        return view('payment.selesai', compact('order'));
+    }
+
     // POST /payment/{featureId} — catat pengajuan transfer manual, menunggu verifikasi admin
     public function proses(string $featureId, Request $request)
     {

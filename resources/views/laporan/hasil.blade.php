@@ -918,7 +918,11 @@
             <span class="text-xl mt-0.5">{{ $f['icon'] }}</span>
             <div>
                 <div class="text-xs font-medium text-white/70 group-hover:text-white transition leading-tight">{{ $f['nama'] }}</div>
+                @if($user && $user->hasAccessToFeature($id))
+                <div class="text-xs text-emerald-300/70 mt-0.5">✓ {{ __('payment.sudah_dibeli') }}</div>
+                @else
                 <div class="text-xs text-white/25 mt-0.5">Rp {{ number_format($f['harga'],0,',','.') }}</div>
+                @endif
             </div>
         </a>
         @endforeach

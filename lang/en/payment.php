@@ -44,4 +44,15 @@ return [
     'qris_berlaku_sampai' => 'Valid until',
     'qris_tidak_tersedia' => 'QRIS payment is currently unavailable. Please choose manual bank transfer.',
     'qris_gagal' => 'Failed to create the QRIS payment. Please try again or choose manual bank transfer.',
+
+    'sudah_dibeli' => 'Purchased',
+    'selesai_title' => 'Checking Payment',
+    'selesai_menunggu' => 'Confirming your payment…',
+    'selesai_menunggu_sub' => 'Please wait a moment — this page will move on automatically once your payment is confirmed. Do not close this page.',
+    'selesai_lambat' => 'Confirmation has not arrived yet. If you have already paid, access will open automatically within a few minutes — you can close this page and return to the catalog.',
+    'selesai_cek' => 'Check again',
+    'selesai_ke_katalog' => 'Back to catalog',
+    'selesai_sukses_fitur' => 'Payment successful! Please fill in the questionnaire below to generate your report.',
+    'selesai_sukses_langganan' => 'Payment successful! Your subscription is active — all reports are unlocked.',
+    'selesai_gagal' => 'The payment was cancelled or expired. Please try again.',
 ];

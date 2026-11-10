@@ -44,4 +44,15 @@ return [
     'qris_berlaku_sampai' => 'Berlaku sampai',
     'qris_tidak_tersedia' => 'Pembayaran QRIS sedang tidak tersedia. Silakan pilih transfer bank manual.',
     'qris_gagal' => 'Gagal membuat pembayaran QRIS. Silakan coba lagi atau pilih transfer bank manual.',
+
+    'sudah_dibeli' => 'Sudah dibeli',
+    'selesai_title' => 'Memeriksa Pembayaran',
+    'selesai_menunggu' => 'Pembayaran sedang dikonfirmasi…',
+    'selesai_menunggu_sub' => 'Mohon tunggu sebentar, halaman akan berpindah otomatis begitu pembayaran Anda terkonfirmasi. Jangan tutup halaman ini.',
+    'selesai_lambat' => 'Konfirmasi belum masuk. Jika Anda sudah membayar, akses akan terbuka otomatis dalam beberapa menit — Anda boleh menutup halaman ini dan kembali ke katalog.',
+    'selesai_cek' => 'Periksa lagi',
+    'selesai_ke_katalog' => 'Kembali ke katalog',
+    'selesai_sukses_fitur' => 'Pembayaran berhasil! Silakan isi kuesioner di bawah untuk membuat laporan Anda.',
+    'selesai_sukses_langganan' => 'Pembayaran berhasil! Langganan Anda sudah aktif — semua laporan terbuka.',
+    'selesai_gagal' => 'Pembayaran dibatalkan atau kedaluwarsa. Silakan coba lagi.',
 ];

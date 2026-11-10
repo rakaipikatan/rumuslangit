@@ -55,6 +55,8 @@ Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
 
 // Payment (MVP: transfer bank manual + kode unik 3 digit; nanti: integrasi Midtrans/Xendit)
 Route::prefix('payment')->name('payment.')->group(function () {
+    // Halaman tujuan setelah bayar QRIS — HARUS sebelum /{featureId}
+    Route::get('/selesai/{gatewayOrderId}', [PaymentController::class, 'selesai'])->name('selesai');
     Route::get('/{featureId}', [PaymentController::class, 'konfirmasi'])->name('konfirmasi');
     Route::post('/{featureId}', [PaymentController::class, 'proses'])->name('proses');
 });

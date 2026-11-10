@@ -31,16 +31,34 @@ class SumopodPayService
             throw new RuntimeException('SumoPod Payment belum dikonfigurasi.');
         }
 
-        $response = Http::timeout(20)
+        $payload = [
+            'order_id'                 => $order->gateway_order_id,
+            'amount'                   => (int) $order->amount,
+            'currency'                 => 'IDR',
+            'expires_in_hours'         => min($expiresInHours, 24),
+            'payment_method_type_code' => 'qris',
+        ];
+
+        // Setelah bayar, user dikembalikan ke halaman yang tahu apa yang dibeli (bukan katalog umum).
+        $denganReturn = $payload + [
+            'success_return_url' => route('payment.selesai', $order->gateway_order_id),
+            'cancel_return_url'  => route('payment.konfirmasi', $this->slugProduk($order)),
+        ];
+
+        $kirim = fn (array $body) => Http::timeout(20)
             ->acceptJson()
             ->withHeaders(['X-Api-Key' => config('services.sumopod_pay.api_key')])
-            ->post(rtrim(config('services.sumopod_pay.base_url'), '/') . '/api/v1/payments', [
-                'order_id'                => $order->gateway_order_id,
-                'amount'                  => (int) $order->amount,
-                'currency'                => 'IDR',
-                'expires_in_hours'        => min($expiresInHours, 24),
-                'payment_method_type_code' => 'qris',
+            ->post(rtrim(config('services.sumopod_pay.base_url'), '/') . '/api/v1/payments', $body);
+
+        $response = $kirim($denganReturn);
+
+        // Jika SumoPod menolak override return URL (validasi), ulangi tanpa itu — alamat bawaan dashboard dipakai.
+        if (in_array($response->status(), [400, 422], true)) {
+            \Log::warning('SumoPod menolak return URL per-payment, ulangi tanpa override', [
+                'order' => $order->id, 'body' => substr($response->body(), 0, 200),
             ]);
+            $response = $kirim($payload);
+        }
 
         if ($response->failed()) {
             throw new RuntimeException('SumoPod API ' . $response->status() . ': ' . substr($response->body(), 0, 300));
@@ -62,6 +80,16 @@ class SumopodPayService
         ]);
 
         return $order;
+    }
+
+    /** Slug produk untuk route payment.konfirmasi (angka fitur atau literal langganan). */
+    public function slugProduk(Order $order): string
+    {
+        return match ($order->feature_id) {
+            Order::SUBSCRIPTION_MONTHLY_FEATURE_ID => 'langganan-bulanan',
+            Order::SUBSCRIPTION_YEARLY_FEATURE_ID  => 'langganan-tahunan',
+            default                                 => (string) $order->feature_id,
+        };
     }
 
     /**

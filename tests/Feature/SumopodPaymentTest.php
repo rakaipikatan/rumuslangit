@@ -319,4 +319,114 @@ class SumopodPaymentTest extends TestCase
         $this->withSession(['user_id' => $user->id])->post(route('payment.proses', 12), ['metode' => 'qris'])->assertStatus(422);
         $this->assertSame(0, Order::where('user_id', $user->id)->count());
     }
+
+    public function test_checkout_mengirim_return_url_ke_halaman_selesai_dan_halaman_produk(): void
+    {
+        Http::fake(['*' => Http::response([
+            'payment_id' => 'p-r', 'payment_link_url' => 'https://pay.sumopod.test/pay/r', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+        $user = $this->buatUser();
+
+        $this->withSession(['user_id' => $user->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+
+        $order = Order::where('user_id', $user->id)->firstOrFail();
+        Http::assertSent(fn ($r) => $r['success_return_url'] === route('payment.selesai', $order->gateway_order_id)
+            && $r['cancel_return_url'] === route('payment.konfirmasi', 3));
+    }
+
+    public function test_return_url_ditolak_api_diulang_tanpa_override(): void
+    {
+        Http::fake(['*' => Http::sequence()
+            ->push(['error' => 'return url not allowed'], 422)
+            ->push(['payment_id' => 'p-ok', 'payment_link_url' => 'https://pay.sumopod.test/pay/ok', 'expires_at' => now()->addDay()->toIso8601String()], 200)]);
+        $user = $this->buatUser();
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('payment.proses', 3), ['metode' => 'qris'])
+            ->assertRedirect('https://pay.sumopod.test/pay/ok');
+
+        Http::assertSentCount(2);
+        $this->assertSame('pending', Order::where('user_id', $user->id)->first()->status);
+    }
+
+    public function test_selesai_lunas_fitur_langsung_ke_kuesioner_dengan_pesan_sukses(): void
+    {
+        $user  = $this->buatUser();
+        $user->update(['email_verified_at' => now()]);
+        $order = $this->buatOrderQris($user, 3, 29000);
+        $order->update(['status' => 'settlement', 'settled_at' => now()]);
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.selesai', $order->gateway_order_id))
+            ->assertRedirect(route('laporan.form', 3))
+            ->assertSessionHas('success');
+    }
+
+    public function test_selesai_lunas_langganan_ke_katalog(): void
+    {
+        $user  = $this->buatUser();
+        $order = $this->buatOrderQris($user);
+        $order->update(['status' => 'settlement']);
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.selesai', $order->gateway_order_id))
+            ->assertRedirect(route('trial.katalog'));
+    }
+
+    public function test_selesai_pending_menampilkan_halaman_tunggu_dan_json_status(): void
+    {
+        $user  = $this->buatUser();
+        $order = $this->buatOrderQris($user, 3, 29000);
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.selesai', $order->gateway_order_id))
+            ->assertOk()->assertSee('dikonfirmasi');
+
+        $this->withSession(['user_id' => $user->id])
+            ->getJson(route('payment.selesai', $order->gateway_order_id))
+            ->assertOk()->assertJson(['status' => 'pending', 'redirect' => null]);
+
+        $order->update(['status' => 'settlement']);
+
+        $this->withSession(['user_id' => $user->id])
+            ->getJson(route('payment.selesai', $order->gateway_order_id))
+            ->assertJson(['status' => 'settlement', 'redirect' => route('payment.selesai', $order->gateway_order_id)]);
+    }
+
+    public function test_selesai_gagal_atau_kedaluwarsa_kembali_ke_halaman_bayar(): void
+    {
+        $user  = $this->buatUser();
+        $order = $this->buatOrderQris($user, 3, 29000);
+        $order->update(['status' => 'expire']);
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.selesai', $order->gateway_order_id))
+            ->assertRedirect(route('payment.konfirmasi', 3));
+    }
+
+    public function test_selesai_tidak_bisa_dibuka_user_lain_atau_tanpa_login(): void
+    {
+        $pemilik = $this->buatUser();
+        $lain    = $this->buatUser();
+        $order   = $this->buatOrderQris($pemilik, 3, 29000);
+
+        $this->withSession(['user_id' => $lain->id])->get(route('payment.selesai', $order->gateway_order_id))->assertNotFound();
+        $this->flushSession();
+        $this->get(route('payment.selesai', $order->gateway_order_id))->assertRedirect(route('trial.index'));
+    }
+
+    public function test_katalog_menandai_fitur_yang_sudah_dibeli_bukan_harga(): void
+    {
+        $user = $this->buatUser();
+        $user->update(['email_verified_at' => now()]);
+        $order = $this->buatOrderQris($user, 3, 29000);
+        $order->update(['status' => 'settlement']);
+
+        $html = $this->withSession(['user_id' => $user->id])->get(route('trial.katalog'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Sudah dibeli', $html);
+        // fitur 3 tidak lagi menampilkan harga; fitur lain yang belum dibeli tetap menampilkannya
+        $this->assertSame(1, substr_count($html, 'Sudah dibeli'));
+        $this->assertStringContainsString('Rp 29.000', $html);
+    }
 }

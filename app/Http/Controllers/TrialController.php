@@ -167,7 +167,11 @@ class TrialController extends Controller
 
         $fiturAll = \App\Data\FiturData::semua(app()->getLocale());
 
-        return view('trial.katalog', compact('user', 'fiturAll'));
+        // Fitur yang sudah dibayar — ditandai "Sudah dibeli" alih-alih menampilkan harga lagi.
+        $dibeli = $user->orders()->where('status', 'settlement')->where('feature_id', '>', 0)
+            ->pluck('feature_id')->all();
+
+        return view('trial.katalog', compact('user', 'fiturAll', 'dibeli'));
     }
 
     // AJAX: cek apakah profil AI sudah siap (cari langsung dari DB, bukan session)
