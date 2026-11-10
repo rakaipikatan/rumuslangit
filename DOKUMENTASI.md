@@ -292,7 +292,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | Harga uji sementara per-email (`PAYMENT_TEST_PRICE`/`PAYMENT_TEST_EMAIL`) untuk tes transaksi Live bernominal kecil; +2 tes (total 50) |
+| `6ee9559` | Harga uji sementara per-email (`PAYMENT_TEST_PRICE`/`PAYMENT_TEST_EMAIL`) untuk tes transaksi Live bernominal kecil; +2 tes (total 50) |
 | `e203f75` | Integrasi **QRIS SumoPod Managed Payment**: service klien API, webhook ber-signature Svix, `OrderSettlementService` bersama, pilihan metode di halaman pembayaran, migration kolom payment, 14 tes baru. **Belum aktif di produksi** sampai migration dijalankan dan `config:cache`/`route:cache` di-refresh (lihat bagian 9) |
 | `080df47` | **Bugfix produksi:** profil karakter menggantung di "Sedang menganalisis..." — Gemini mengembalikan JSON dengan trailing comma sehingga data tersimpan tapi tak terbaca. Perbaikan: `repairJson` + validasi + self-healing + tes regresi. Plus: hardening login admin (throttle), rekening ke `.env`, tes pada skema DB terpisah, hapus kode WhatsApp legacy, API key Gemini via header |
 | `0a837b8`, `7e8789e` | Patch keamanan: update dependensi Composer (laravel/framework 13.40, Symfony, Guzzle, dompdf, commonmark), hardening PHP2Shell, dokumentasi ini |
