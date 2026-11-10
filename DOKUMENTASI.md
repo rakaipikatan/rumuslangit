@@ -324,7 +324,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Skema harga baru:** satuan Rp29.000 = 3 kali pembuatan (hasil tersimpan selamanya) per pembelian; langganan tahunan Rp350.000 → **Rp399.000**; batas wajar harian (langganan 20/hari, fitur gratis 5/hari); halaman "laporan terakhir"; teks harga/akses diperbarui (tidak ada lagi "akses selamanya" / "12 laporan" yang menyesatkan); kolom `ai_reports.consumed_quota`; +10 tes (total 108) |
+| `523d10f` | **Skema harga baru:** satuan Rp29.000 = 3 kali pembuatan (hasil tersimpan selamanya) per pembelian; langganan tahunan Rp350.000 → **Rp399.000**; batas wajar harian (langganan 20/hari, fitur gratis 5/hari); halaman "laporan terakhir"; teks harga/akses diperbarui (tidak ada lagi "akses selamanya" / "12 laporan" yang menyesatkan); kolom `ai_reports.consumed_quota`; +10 tes (total 108) |
 | `900b7d9` | **Pengingat cek folder Spam/Junk** di semua email dan pesan layar terkait pengiriman email (OTP, login kode, bukti bayar, Hoki Harian, persetujuan afiliasi) + 3 tes (total 98) |
 | `118db64` | **Email bukti pembayaran otomatis** setelah order lunas (queue, sekali per order, HTML+teks) + 5 tes (total 95) |
 | `b50ffd9` | **Aturan komisi afiliasi:** batas 12 bulan sejak pembayaran pertama pelanggan, tanpa komisi untuk pembelian sendiri, masa tahan 14 hari sebelum bisa dibayar; **Syarat & Ketentuan** ditampilkan di `/afiliasi` dan dikirim di email persetujuan; +4 tes (total 90) |
