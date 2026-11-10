@@ -326,7 +326,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Jatah hanya untuk jawaban berbeda:** jawaban sama (hari lain/bahasa lain) membuat laporan baru tanpa memotong jatah; percobaan gagal-lalu-diulang tidak memotong dua kali; teks form/paywall disesuaikan; +3 tes (total 115) |
+| `fdd0e2c` | **Jatah hanya untuk jawaban berbeda:** jawaban sama (hari lain/bahasa lain) membuat laporan baru tanpa memotong jatah; percobaan gagal-lalu-diulang tidak memotong dua kali; teks form/paywall disesuaikan; +3 tes (total 115) |
 | `1534d32` | **Aturan hari yang sama/besok:** laporan identik hanya dipakai ulang bila dibuat hari ini (WIB); besoknya dibuat baru. Cache Gemini per hari kalender WIB (bukan 24 jam bergulir). Batas harian kini berganti tengah malam WIB (sebelumnya 07.00 WIB karena UTC). Helper `HariWib`; +4 tes (total 112) |
 | `523d10f` | **Skema harga baru:** satuan Rp29.000 = 3 kali pembuatan (hasil tersimpan selamanya) per pembelian; langganan tahunan Rp350.000 → **Rp399.000**; batas wajar harian (langganan 20/hari, fitur gratis 5/hari); halaman "laporan terakhir"; teks harga/akses diperbarui (tidak ada lagi "akses selamanya" / "12 laporan" yang menyesatkan); kolom `ai_reports.consumed_quota`; +10 tes (total 108) |
 | `900b7d9` | **Pengingat cek folder Spam/Junk** di semua email dan pesan layar terkait pengiriman email (OTP, login kode, bukti bayar, Hoki Harian, persetujuan afiliasi) + 3 tes (total 98) |
