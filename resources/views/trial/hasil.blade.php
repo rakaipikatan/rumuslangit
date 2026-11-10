@@ -205,6 +205,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (json.siap && json.data) {
                 clearInterval(polling);
                 renderProfil(json.data);
+            } else if (json.ulang) {
+                // Hasil tersimpan rusak — muat ulang agar server membuat profil baru (maks 1x)
+                if (!sessionStorage.getItem('profil_reload')) {
+                    sessionStorage.setItem('profil_reload', '1');
+                    clearInterval(polling);
+                    location.reload();
+                }
             }
         } catch(_) {}
     }, 2500);

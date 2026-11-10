@@ -6,6 +6,7 @@ use App\Jobs\GenerateAIReport;
 use App\Models\AiReport;
 use App\Models\BirthProfile;
 use App\Models\User;
+use App\Services\GeminiService;
 use App\Services\KalkulasiEngine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -125,11 +126,16 @@ class TrialController extends Controller
         $profilData     = null;
         $reportIdProfil = null;
 
-        if ($profilSelesai) {
-            // Sudah ada hasil — tampil langsung, jangan dispatch ulang
-            $profilData     = json_decode($profilSelesai->response_text, true);
+        $profilData = $profilSelesai ? $this->decodeProfil($profilSelesai->response_text) : null;
+
+        if ($profilSelesai && $profilData) {
+            // Sudah ada hasil valid — tampil langsung, jangan dispatch ulang
             $reportIdProfil = $profilSelesai->id;
         } else {
+            // Hasil tersimpan tapi JSON rusak tak terpulihkan: buang, lalu generate ulang
+            if ($profilSelesai) {
+                $profilSelesai->delete();
+            }
             // Belum ada — pastikan job sedang berjalan (dispatch sekali saja)
             $reportIdProfil = $this->ensureProfilJob($user, $kalkulasi, $locale);
         }
@@ -173,14 +179,27 @@ class TrialController extends Controller
             ->latest('cached_at')
             ->first();
 
-        if (!$report) {
-            return response()->json(['siap' => false]);
+        $data = $report ? $this->decodeProfil($report->response_text) : null;
+
+        // JSON rusak dianggap belum siap; memuat ulang /hasil akan memicu generate ulang.
+        if (!$data) {
+            return response()->json(['siap' => false, 'ulang' => (bool) $report]);
         }
 
-        return response()->json(['siap' => true, 'data' => json_decode($report->response_text, true)]);
+        return response()->json(['siap' => true, 'data' => $data]);
     }
 
     // ─── Private ─────────────────────────────────────────────────────────────
+
+    // Decode JSON profil AI; coba perbaiki dulu (mis. trailing comma). null jika tak terpulihkan.
+    private function decodeProfil(?string $text): ?array
+    {
+        if (!$text) return null;
+
+        $data = json_decode($text, true) ?? json_decode(GeminiService::repairJson($text), true);
+
+        return is_array($data) ? $data : null;
+    }
 
     private function ensureProfilJob(User $user, array $kalkulasi, string $locale): ?int
     {

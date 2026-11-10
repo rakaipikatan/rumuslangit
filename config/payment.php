@@ -1,19 +1,19 @@
 <?php
 
 return [
-    // Rekening tujuan transfer manual. "kode" dipakai sebagai value <option> di form.
+    // Rekening tujuan transfer manual. Nama & nomor WAJIB diisi lewat .env (PAYMENT_*), tanpa default di repo. "kode" dipakai sebagai value <option> di form.
     'bank_accounts' => [
         [
             'kode'   => 'bca',
             'bank'   => 'BCA',
-            'nama'   => env('PAYMENT_BCA_NAMA', 'Yohanes Sefrianto'),
-            'nomor'  => env('PAYMENT_BCA_NOMOR', '6630676183'),
+            'nama'   => env('PAYMENT_BCA_NAMA'),
+            'nomor'  => env('PAYMENT_BCA_NOMOR'),
         ],
         [
             'kode'   => 'cimb',
             'bank'   => 'CIMB Niaga',
-            'nama'   => env('PAYMENT_CIMB_NAMA', 'Yohanes Sefrianto'),
-            'nomor'  => env('PAYMENT_CIMB_NOMOR', '0702731304800'),
+            'nama'   => env('PAYMENT_CIMB_NAMA'),
+            'nomor'  => env('PAYMENT_CIMB_NOMOR'),
         ],
     ],
 

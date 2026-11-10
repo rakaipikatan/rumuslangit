@@ -34,13 +34,24 @@ class AdminController extends Controller
             'password' => 'required|string',
         ]);
 
-        $validUser = $request->username === config('admin.username')
-            && $request->password === config('admin.password');
+        // Perbandingan constant-time (anti timing attack). ADMIN_PASSWORD boleh plaintext
+        // atau hash bcrypt ($2y$...) — keduanya didukung.
+        $username = (string) config('admin.username');
+        $password = (string) config('admin.password');
+
+        $userOk = $username !== '' && hash_equals($username, (string) $request->username);
+        $passOk = $password !== '' && (
+            str_starts_with($password, '$2y$')
+                ? \Illuminate\Support\Facades\Hash::check((string) $request->password, $password)
+                : hash_equals($password, (string) $request->password)
+        );
+        $validUser = $userOk && $passOk;
 
         if (!$validUser) {
             return back()->withErrors(['username' => 'Username atau password salah.']);
         }
 
+        $request->session()->regenerate();
         Session::put('admin_logged_in', true);
         Session::put('admin_username', $request->username);
         return redirect()->route('admin.dashboard');

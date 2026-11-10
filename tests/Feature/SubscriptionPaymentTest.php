@@ -6,41 +6,22 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Concerns\UsesPostgresTestSchema;
 use Tests\TestCase;
 
 class SubscriptionPaymentTest extends TestCase
 {
+    use UsesPostgresTestSchema;
+
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Skema testing sqlite tidak kompatibel dengan migration raw-SQL project ini
-        // (mis. `ALTER TABLE ... ALTER COLUMN ... DROP NOT NULL` khusus Postgres).
-        // Jalankan langsung ke DB pgsql yang sudah bermigrasi penuh.
-        // phpunit.xml men-override DB_DATABASE=:memory: secara global (dipakai bareng oleh
-        // config sqlite & pgsql), jadi baca ulang .env asli tanpa lewat getenv().
-        $env = \Dotenv\Dotenv::parse(file_get_contents(base_path('.env')));
-
-        config([
-            'database.default' => 'pgsql',
-            'database.connections.pgsql.host'     => $env['DB_HOST'],
-            'database.connections.pgsql.port'     => $env['DB_PORT'],
-            'database.connections.pgsql.database' => $env['DB_DATABASE'],
-            'database.connections.pgsql.username' => $env['DB_USERNAME'],
-            'database.connections.pgsql.password' => $env['DB_PASSWORD'],
-            'database.connections.pgsql.sslmode'  => $env['DB_SSLMODE'],
-        ]);
-
-        // DatabaseTransactions trait mulai transaksi sebelum config di atas berlaku
-        // (setUpTraits dijalankan di dalam parent::setUp()), jadi kelola transaksi manual
-        // di sini supaya benar-benar membungkus koneksi pgsql yang dipakai test ini.
-        DB::connection('pgsql')->beginTransaction();
+        $this->setUpPostgresTestSchema();
     }
 
     protected function tearDown(): void
     {
-        DB::connection('pgsql')->rollBack();
-
+        $this->tearDownPostgresTestSchema();
         parent::tearDown();
     }
 

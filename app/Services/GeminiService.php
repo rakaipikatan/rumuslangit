@@ -23,8 +23,13 @@ class GeminiService
         $dataHash = hash('sha256', json_encode(compact('featureId', 'kalkulasi', 'answers', 'tarotData', 'locale')));
         $cacheKey = "gemini:{$locale}:{$featureId}:{$dataHash}";
 
+        // Cache lama untuk profil bisa berisi JSON rusak (sebelum validasi ditambahkan) — abaikan.
         if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
+            $cached = Cache::get($cacheKey);
+            if ($featureId !== 0 || json_decode(self::repairJson((string) $cached), true) !== null) {
+                return $cached;
+            }
+            Cache::forget($cacheKey);
         }
 
         $isProfile = ($featureId === 0);
@@ -55,7 +60,7 @@ class GeminiService
         $lastError = '';
 
         for ($attempt = 1; $attempt <= $maxTries; $attempt++) {
-            $response = Http::timeout(90)->post("{$endpoint}?key={$this->apiKey}", $payload);
+            $response = Http::timeout(90)->withHeaders(["x-goog-api-key" => $this->apiKey])->post($endpoint, $payload);
 
             if ($response->status() === 429) {
                 $body         = $response->body();
@@ -93,6 +98,12 @@ class GeminiService
 
         // Perbaiki JSON yang tidak valid (misal: newline literal di dalam string value)
         $text = self::repairJson($text);
+
+        // Profil (fitur 0) wajib JSON valid. Jika tetap rusak, lempar exception supaya job
+        // di-retry — jangan simpan/cache teks rusak (halaman hasil akan menunggu selamanya).
+        if ($isProfile && json_decode($text, true) === null) {
+            throw new \Exception('Gemini mengembalikan JSON profil yang tidak valid: ' . json_last_error_msg());
+        }
 
         Cache::put($cacheKey, $text, now()->addHours(24));
 
@@ -132,6 +143,9 @@ class GeminiService
                 // buang \r
             } elseif ($inString && $c === "\t") {
                 $fixed .= '\t'; // escape tab literal
+            } elseif (!$inString && ($c === '}' || $c === ']')) {
+                // Buang trailing comma sebelum penutup, mis. [ "a", "b", ]
+                $fixed = preg_replace('/,\s*$/', '', $fixed) . $c;
             } else {
                 $fixed .= $c;
             }

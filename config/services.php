@@ -41,27 +41,4 @@ return [
         'max_tokens' => env('GEMINI_MAX_OUTPUT_TOKENS', 1500),
     ],
 
-    'whatsapp' => [
-        'provider' => env('WHATSAPP_PROVIDER', 'fonnte'),
-    ],
-
-    'fonnte' => [
-        'token'   => env('FONNTE_TOKEN'),
-        'api_url' => env('FONNTE_API_URL', 'https://api.fonnte.com/send'),
-    ],
-
-    'waha' => [
-        'base_url' => env('WAHA_BASE_URL', 'http://127.0.0.1:3000'),
-        'session'  => env('WAHA_SESSION', 'default'),
-        'api_key'  => env('WAHA_API_KEY'),
-    ],
-
-    'duitku' => [
-        'merchant_code' => env('DUITKU_MERCHANT_CODE'),
-        'api_key'       => env('DUITKU_API_KEY'),
-        'callback_url'  => env('DUITKU_CALLBACK_URL'),
-        'return_url'    => env('DUITKU_RETURN_URL'),
-        'is_production' => env('DUITKU_IS_PRODUCTION', true),
-    ],
-
 ];

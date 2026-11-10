@@ -8,36 +8,22 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Concerns\UsesPostgresTestSchema;
 use Tests\TestCase;
 
 class AffiliateTest extends TestCase
 {
+    use UsesPostgresTestSchema;
+
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Lihat catatan yang sama di SubscriptionPaymentTest: migration project ini
-        // pakai raw SQL khusus Postgres, jadi test jalan langsung ke DB pgsql yang
-        // sudah bermigrasi, dibungkus transaksi manual supaya tidak mengotori data.
-        $env = \Dotenv\Dotenv::parse(file_get_contents(base_path('.env')));
-
-        config([
-            'database.default' => 'pgsql',
-            'database.connections.pgsql.host'     => $env['DB_HOST'],
-            'database.connections.pgsql.port'     => $env['DB_PORT'],
-            'database.connections.pgsql.database' => $env['DB_DATABASE'],
-            'database.connections.pgsql.username' => $env['DB_USERNAME'],
-            'database.connections.pgsql.password' => $env['DB_PASSWORD'],
-            'database.connections.pgsql.sslmode'  => $env['DB_SSLMODE'],
-        ]);
-
-        DB::connection('pgsql')->beginTransaction();
+        $this->setUpPostgresTestSchema();
     }
 
     protected function tearDown(): void
     {
-        DB::connection('pgsql')->rollBack();
-
+        $this->tearDownPostgresTestSchema();
         parent::tearDown();
     }
 
