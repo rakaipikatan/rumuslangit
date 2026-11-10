@@ -36,7 +36,7 @@ class GeminiCachePerHariTest extends TestCase
 
     public function test_cache_gemini_per_hari_kalender_wib(): void
     {
-        config(['payment.fitur_bergantung_tanggal' => [3]]);
+        config(['payment.fitur_harian' => [3]]);
         Cache::flush();
         Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
 
@@ -63,8 +63,9 @@ class GeminiCachePerHariTest extends TestCase
         $this->assertSame('2026-11-11', HariWib::tanggal());
     }
 
-    public function test_fitur_biasa_cache_tidak_bergantung_hari_dan_prompt_tanpa_tanggal(): void
+    public function test_fitur_non_harian_cache_tidak_bergantung_hari_dan_prompt_tanpa_tanggal(): void
     {
+        config(['payment.fitur_harian' => []]);
         Cache::flush();
         Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
 
@@ -79,7 +80,7 @@ class GeminiCachePerHariTest extends TestCase
 
     public function test_fitur_bergantung_tanggal_mengirim_tanggal_hari_ini_ke_ai(): void
     {
-        config(['payment.fitur_bergantung_tanggal' => [3]]);
+        config(['payment.fitur_harian' => [3]]);
         Cache::flush();
         Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
 

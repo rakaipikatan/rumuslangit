@@ -2,12 +2,13 @@
 
 return [
     'paywall' => [
+        'apa_itu_jatah' => 'Apa itu jatah?',
         'jatah_habis_title' => 'Jatah pembuatan laporan ini sudah habis',
         'jatah_habis_desc' => 'Semua jatah dari pembelian sebelumnya sudah terpakai. Hasil laporan lama tetap tersimpan. Beli lagi untuk jatah baru, atau berlangganan agar semua laporan terbuka.',
         'lihat_laporan_lama' => 'Lihat laporan terakhir saya',
         'title' => 'Buka Akses — :nama',
         'beli_title' => 'Beli Laporan Ini',
-        'beli_sub' => ':n× pembuatan laporan (dengan jawaban berbeda) · hasil tersimpan selamanya',
+        'beli_sub' => ':n jatah laporan · hasil tersimpan selamanya',
         'sekali_bayar' => 'sekali bayar',
         'bayar_sekarang' => 'Bayar Sekarang',
         'atau' => 'atau',
@@ -37,8 +38,8 @@ return [
     ],
 
     'form' => [
-        'jatah' => 'Sisa jatah pembuatan: :sisa dari :total',
-        'jatah_info' => 'Jatah hanya terpakai untuk jawaban yang BERBEDA dari sebelumnya. Jawaban yang sama persis tidak memakai jatah: di hari yang sama menampilkan laporan yang sudah ada, dan besoknya dibuatkan laporan baru.',
+        'jatah' => 'Sisa jatah: :sisa dari :total',
+        'jatah_info' => 'Jatah hanya terpakai untuk jawaban yang BERBEDA. Jawaban yang sama tidak memakai jatah: di hari yang sama hasilnya tetap sama, di hari berikutnya dibuatkan laporan baru.',
         'lihat_laporan_terakhir' => 'Lihat laporan terakhir saya (tanpa memakai jatah)',
         'kembali' => '← Kembali',
         'error_title' => 'Terjadi kesalahan — harap perbaiki dan coba lagi:',

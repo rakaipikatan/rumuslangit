@@ -26,7 +26,14 @@ return [
     'subscriber_daily_reports' => env('PAYMENT_BATAS_HARIAN_LANGGANAN', 20),
     'free_daily_reports'       => env('PAYMENT_BATAS_HARIAN_GRATIS', 5), // fitur gratis (Tafsir Mimpi) per pengguna
 
-    // ID fitur yang dibuat ulang tiap hari WIB walau jawabannya sama (isinya bergantung tanggal), dipisah koma.
-    // Default kosong = jawaban sama SELALU memakai laporan tersimpan (tanpa AI). Contoh: PAYMENT_FITUR_HARIAN=11
-    'fitur_bergantung_tanggal' => array_values(array_filter(array_map('trim', explode(',', (string) env('PAYMENT_FITUR_HARIAN', ''))), 'strlen')),
+    // Fitur yang HASILNYA berganti tiap hari WIB: jawaban sama di hari yang sama = hasil tersimpan yang sama;
+    // di hari berikutnya = laporan baru (tanpa memotong jatah). Nilai: "semua" (default), daftar ID dipisah koma
+    // (mis. "3,10,11"), atau kosong = jawaban sama SELALU memakai laporan tersimpan.
+    'fitur_harian' => (function () {
+        $v = strtolower(trim((string) env('PAYMENT_FITUR_HARIAN', 'semua')));
+
+        return $v === 'semua'
+            ? range(1, 12)
+            : array_values(array_filter(array_map('trim', explode(',', $v)), 'strlen'));
+    })(),
 ];

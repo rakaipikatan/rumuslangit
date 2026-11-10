@@ -6,6 +6,7 @@ use App\Http\Controllers\AfiliasiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\PanduanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SumopodWebhookController;
@@ -42,6 +43,9 @@ Route::prefix('otp')->name('otp.')->group(function () {
     Route::post('/kirim', [OtpController::class, 'kirim'])->name('kirim');
     Route::post('/verifikasi', [OtpController::class, 'verifikasi'])->name('verifikasi');
 });
+
+// Panduan pengguna (setelah login)
+Route::get('/panduan', [PanduanController::class, 'index'])->name('panduan');
 
 // Laporan AI (fitur berbayar)
 Route::prefix('laporan')->name('laporan.')->middleware('throttle:10,1')->group(function () {

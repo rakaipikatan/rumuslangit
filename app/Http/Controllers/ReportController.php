@@ -128,14 +128,14 @@ class ReportController extends Controller
         $kalkulasi = $this->kalkulasiUser($user);
         $dataHash  = hash('sha256', json_encode([$featureId, $kalkulasi, $validated, $tarotData, $locale]));
 
-        // Jawaban yang sama (bahasa sama) memakai laporan TERSIMPAN — tanpa AI, tanpa memakai jatah.
-        // Pengecualian: fitur yang isinya bergantung tanggal (Hari Baik, Ruwat, Angka & Warna Harian)
-        // hanya memakai laporan yang dibuat HARI INI (WIB); hari baru = dibuat baru (tanpa memotong jatah).
+        // Jawaban yang sama di HARI YANG SAMA (WIB) memakai laporan tersimpan — hasil identik, tanpa AI, tanpa jatah.
+        // Hari berikutnya, jawaban yang sama membuat laporan BARU (tetap tanpa memotong jatah).
+        // (Bila fitur dikeluarkan dari config payment.fitur_harian, laporan tersimpan dipakai selamanya.)
         $existing = AiReport::where('user_id', $user->id)
             ->where('feature_id', $featureId)
             ->where('locale', $locale)
             ->where('data_hash', $dataHash)
-            ->when(!empty($fitur['bergantung_tanggal']), fn ($q) => $q->where('cached_at', '>=', HariWib::awal()))
+            ->when(!empty($fitur['harian']), fn ($q) => $q->where('cached_at', '>=', HariWib::awal()))
             ->whereNotNull('response_text')
             ->latest('id')
             ->first();

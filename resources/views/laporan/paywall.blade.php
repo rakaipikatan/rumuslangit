@@ -27,7 +27,7 @@
             <div class="flex items-center justify-between mb-3">
                 <div>
                     <div class="font-semibold text-sm">{{ __('laporan.paywall.beli_title') }}</div>
-                    <div class="text-white/40 text-xs">{{ __('laporan.paywall.beli_sub', ['n' => config('payment.single_generations', 3)]) }}</div>
+                    <div class="text-white/40 text-xs">{{ __('laporan.paywall.beli_sub', ['n' => config('payment.single_generations', 3)]) }} · <a href="{{ route('panduan') }}#jatah" class="underline underline-offset-2 hover:text-white/70">{{ __('laporan.paywall.apa_itu_jatah') }}</a></div>
                 </div>
                 <div class="text-right">
                     <div class="text-xl font-bold text-white">Rp {{ number_format($fitur['harga'], 0, ',', '.') }}</div>

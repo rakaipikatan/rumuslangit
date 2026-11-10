@@ -23,9 +23,9 @@ class GeminiService
     public function generate(int $featureId, array $kalkulasi, array $answers, array $userProfile, array $tarotData = [], string $locale = 'id'): string
     {
         $dataHash = hash('sha256', json_encode(compact('featureId', 'kalkulasi', 'answers', 'tarotData', 'locale')));
-        // Fitur yang isinya bergantung tanggal di-cache per HARI KALENDER (WIB); fitur lain (dan profil karakter) tetap.
-        $bergantungTanggal = !empty(\App\Data\FiturData::cari($featureId)['bergantung_tanggal']);
-        $hari     = $bergantungTanggal ? HariWib::tanggal() : 'tetap';
+        // Fitur harian di-cache per HARI KALENDER (WIB); fitur lain dan profil karakter (fitur 0) tetap.
+        $fiturMeta = \App\Data\FiturData::cari($featureId) ?? [];
+        $hari      = !empty($fiturMeta['harian']) ? HariWib::tanggal() : 'tetap';
         $cacheKey = "gemini:{$locale}:{$featureId}:{$hari}:{$dataHash}";
 
         // Cache lama untuk profil bisa berisi JSON rusak (sebelum validasi ditambahkan) — abaikan.
@@ -43,7 +43,7 @@ class GeminiService
             : $this->buildPrompt($featureId, $kalkulasi, $answers, $userProfile, $tarotData, $locale);
 
         // Laporan yang bergantung tanggal harus tahu "hari ini" yang sebenarnya (AI tidak punya jam sendiri).
-        if ($bergantungTanggal) {
+        if (!empty($fiturMeta['konteks_tanggal'])) {
             $tgl = \Illuminate\Support\Carbon::now(HariWib::ZONA)->locale($locale === 'en' ? 'en' : 'id')->isoFormat('dddd, D MMMM YYYY');
             $prompt .= $locale === 'en'
                 ? "\n\nTIME CONTEXT: Today's date (Western Indonesia Time) is {$tgl}. Use it as the reference for 'today', 'this week', 'the next 3 months' and 'the current year'."

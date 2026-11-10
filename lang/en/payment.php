@@ -5,7 +5,7 @@ return [
     'heading' => 'Payment Confirmation',
     'subtitle' => 'Review your order details before confirming',
     'detail_pesanan' => 'Order Details',
-    'akses_selamanya' => ':n generations (with different answers) · results saved forever',
+    'akses_selamanya' => ':n report credits · results saved forever',
     'akses_langganan' => 'Access to every report during your subscription',
     'per_bulan' => 'per month',
     'per_tahun' => 'per year',

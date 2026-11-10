@@ -395,12 +395,16 @@ class FiturData
         $meta   = self::meta();
         $text   = self::text()[$locale] ?? self::text()['id'];
 
-        // Fitur yang dibuat ulang tiap hari (WIB) walau jawabannya sama — default: tidak ada (selalu pakai data tersimpan).
-        $harian = array_map('intval', (array) config('payment.fitur_bergantung_tanggal', []));
+        // Fitur yang hasilnya berganti tiap hari WIB (config payment.fitur_harian) dan fitur yang prompt-nya
+        // perlu tahu tanggal hari ini (isinya bergantung kalender: Hari Baik, Ruwat tahun berjalan, Angka & Warna Harian).
+        $harian = array_map('intval', (array) config('payment.fitur_harian', []));
 
         $hasil = [];
         foreach ($meta as $id => $m) {
-            $hasil[$id] = array_merge($m, $text[$id] ?? [], ['bergantung_tanggal' => in_array($id, $harian, true)]);
+            $hasil[$id] = array_merge($m, $text[$id] ?? [], [
+                'harian'          => in_array($id, $harian, true),
+                'konteks_tanggal' => in_array($id, [3, 10, 11], true),
+            ]);
         }
 
         return $hasil;

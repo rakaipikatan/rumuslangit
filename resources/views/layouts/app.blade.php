@@ -65,6 +65,7 @@
                 </div>
                 @if (session('user_id'))
                     @php $namaUser = \App\Models\User::find(session('user_id'))?->name ?? '' @endphp
+                    <a href="{{ route('panduan') }}" class="text-xs text-white/40 hover:text-white/70 transition">{{ __('nav.panduan') }}</a>
                     <a href="{{ route('auth.pengaturan') }}" title="{{ __('nav.pengaturan') }}"
                        class="text-xs text-white/40 hover:text-white/70 transition">⚙<span class="hidden sm:inline"> {{ Str::words($namaUser, 1, '') }}</span></a>
                     <form method="POST" action="{{ route('auth.logout') }}" class="inline">

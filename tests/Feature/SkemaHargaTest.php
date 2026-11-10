@@ -175,7 +175,7 @@ class SkemaHargaTest extends TestCase
         $this->selesaikanSemua($u);
 
         $this->withSession(['user_id' => $u->id])->get(route('laporan.form', 3))
-            ->assertOk()->assertSee('Sisa jatah pembuatan: 2 dari 3');
+            ->assertOk()->assertSee('Sisa jatah: 2 dari 3');
     }
 
     public function test_langganan_tidak_memakai_jatah_tetapi_dibatasi_per_hari(): void
@@ -212,7 +212,7 @@ class SkemaHargaTest extends TestCase
 
         $u = $this->user();
         $this->withSession(['user_id' => $u->id])->get(route('laporan.form', 3))
-            ->assertOk()->assertSee('3× pembuatan laporan')->assertSee('Hemat 32%')->assertDontSee('Akses selamanya');
+            ->assertOk()->assertSee('3 jatah laporan · hasil tersimpan selamanya')->assertSee('Apa itu jatah?')->assertSee('Hemat 32%')->assertDontSee('Akses selamanya');
 
         $this->withSession(['user_id' => $u->id])->get(route('trial.katalog'))
             ->assertOk()->assertSee('Rp 399.000/tahun');
@@ -223,7 +223,7 @@ class SkemaHargaTest extends TestCase
 
     public function test_jawaban_sama_di_hari_yang_sama_dipakai_ulang_besok_dibuat_baru_tanpa_memakai_jatah(): void
     {
-        config(['payment.fitur_bergantung_tanggal' => [3]]); // mekanisme harian dinyalakan untuk fitur 3
+        config(['payment.fitur_harian' => [3]]); // mekanisme harian dinyalakan untuk fitur 3
         $u = $this->user();
         $this->beli($u);
 
@@ -277,7 +277,7 @@ class SkemaHargaTest extends TestCase
 
     public function test_jatah_hanya_terpakai_untuk_jawaban_yang_berbeda(): void
     {
-        config(['payment.fitur_bergantung_tanggal' => [3]]); // agar tiap hari membuat laporan baru (bukti jatah tak terpotong)
+        config(['payment.fitur_harian' => [3]]); // agar tiap hari membuat laporan baru (bukti jatah tak terpotong)
         $u = $this->user();
         $this->beli($u);
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
@@ -337,8 +337,9 @@ class SkemaHargaTest extends TestCase
         $this->assertSame(2, $u->kuotaSisa(3));
     }
 
-    public function test_semua_fitur_default_jawaban_sama_selalu_memakai_laporan_tersimpan_termasuk_3_10_11(): void
+    public function test_bila_diatur_kosong_jawaban_sama_selalu_memakai_laporan_tersimpan_termasuk_3_10_11(): void
     {
+        config(['payment.fitur_harian' => []]); // PAYMENT_FITUR_HARIAN= (kosong)
         $u = $this->user();
         $this->beli($u, 3);
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
@@ -353,8 +354,9 @@ class SkemaHargaTest extends TestCase
         $this->assertSame(2, $u->kuotaSisa(3));
     }
 
-    public function test_fitur_biasa_jawaban_sama_selalu_memakai_laporan_tersimpan_tanpa_ai(): void
+    public function test_fitur_di_luar_daftar_harian_jawaban_sama_selalu_memakai_laporan_tersimpan_tanpa_ai(): void
     {
+        config(['payment.fitur_harian' => [3]]); // fitur 1 tidak harian
         $u = $this->user();
         $this->beli($u, 1); // Arah Mata Angin Rezeki — tidak bergantung tanggal
 
@@ -376,16 +378,17 @@ class SkemaHargaTest extends TestCase
 
     public function test_fitur_bergantung_tanggal_dibuat_baru_tiap_hari_tanpa_memotong_jatah(): void
     {
-        // Default produksi: tidak ada fitur harian → semua memakai data tersimpan
-        $this->assertTrue(empty(FiturData::cari(3)['bergantung_tanggal']));
-        $this->assertTrue(empty(FiturData::cari(11)['bergantung_tanggal']));
+        // Default: SEMUA fitur berganti harian (hari sama = hasil sama, hari baru = laporan baru)
+        foreach (range(1, 12) as $id) {
+            $this->assertTrue(!empty(FiturData::cari($id)['harian']), "fitur {$id}");
+        }
 
-        // Dinyalakan lewat PAYMENT_FITUR_HARIAN (di sini: fitur 3 dan 11)
-        config(['payment.fitur_bergantung_tanggal' => [3, 11]]);
-        $this->assertTrue(!empty(FiturData::cari(3)['bergantung_tanggal']));
-        $this->assertTrue(!empty(FiturData::cari(11)['bergantung_tanggal']));
-        $this->assertTrue(empty(FiturData::cari(1)['bergantung_tanggal']));
-        $this->assertTrue(empty(FiturData::cari(10)['bergantung_tanggal']));
+        // PAYMENT_FITUR_HARIAN dapat membatasi daftar
+        config(['payment.fitur_harian' => [3, 11]]);
+        $this->assertTrue(!empty(FiturData::cari(3)['harian']));
+        $this->assertTrue(!empty(FiturData::cari(11)['harian']));
+        $this->assertTrue(empty(FiturData::cari(1)['harian']));
+        $this->assertTrue(empty(FiturData::cari(10)['harian']));
 
         $u = $this->user();
         $this->beli($u, 3);
@@ -398,5 +401,29 @@ class SkemaHargaTest extends TestCase
         $this->kirim($u, 3, 0)->assertRedirect(route('laporan.status', 3));  // hari baru → dibuat baru
         $this->assertSame(2, $u->kuotaSisa(3), 'jawaban sama tidak memotong jatah');
         Queue::assertPushed(GenerateAIReport::class, 2);
+    }
+
+    public function test_default_semua_fitur_hari_sama_hasil_sama_hari_baru_laporan_baru_jatah_tetap(): void
+    {
+        $u = $this->user();
+        $this->beli($u, 1); // fitur biasa, tanpa konfigurasi khusus
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
+        $this->kirim($u, 1, 0); $this->selesaikanSemua($u);
+        $pertama = AiReport::where('user_id', $u->id)->where('feature_id', 1)->value('id');
+
+        // berkali-kali di hari yang sama → hasil yang sama persis (laporan yang sama)
+        foreach ([1, 5, 9] as $jam) {
+            $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC')->addHours($jam));
+            $this->kirim($u, 1, 0)->assertRedirect(route('laporan.hasil', 1));
+            $this->assertSame($pertama, session('report_id_1'));
+        }
+        Queue::assertPushed(GenerateAIReport::class, 1);
+
+        // hari berikutnya → laporan baru, jatah tetap
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 03:00:00', 'UTC'));
+        $this->kirim($u, 1, 0)->assertRedirect(route('laporan.status', 1));
+        Queue::assertPushed(GenerateAIReport::class, 2);
+        $this->assertSame(2, $u->kuotaSisa(1));
     }
 }

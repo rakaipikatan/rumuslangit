@@ -2,12 +2,13 @@
 
 return [
     'paywall' => [
+        'apa_itu_jatah' => 'What is a credit?',
         'jatah_habis_title' => 'No generations left for this report',
         'jatah_habis_desc' => 'All generations from your previous purchases have been used. Your earlier results stay saved. Buy again for new generations, or subscribe to unlock every report.',
         'lihat_laporan_lama' => 'View my latest report',
         'title' => 'Unlock Access — :nama',
         'beli_title' => 'Buy This Report',
-        'beli_sub' => ':n generations (with different answers) · results saved forever',
+        'beli_sub' => ':n report credits · results saved forever',
         'sekali_bayar' => 'one-time payment',
         'bayar_sekarang' => 'Pay Now',
         'atau' => 'or',
@@ -37,8 +38,8 @@ return [
     ],
 
     'form' => [
-        'jatah' => 'Generations left: :sisa of :total',
-        'jatah_info' => 'A generation is only used for answers that DIFFER from before. The exact same answers never use a generation: on the same day they show the existing report, and the next day a fresh report is generated.',
+        'jatah' => 'Credits left: :sisa of :total',
+        'jatah_info' => 'A credit is only used for DIFFERENT answers. The same answers never use a credit: on the same day the result stays the same, and the next day a fresh report is generated.',
         'lihat_laporan_terakhir' => 'View my latest report (uses no generation)',
         'kembali' => '← Back',
         'error_title' => 'An error occurred — please fix and try again:',
