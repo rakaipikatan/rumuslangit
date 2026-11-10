@@ -183,5 +183,6 @@ class AfiliasiPendaftaranTest extends TestCase
         $mail->assertSeeInText('ditahan 14 hari');
         $mail->assertSeeInText('Komisi sebesar 25%');
         $mail->assertSeeInText('BUDI42');
+        $mail->assertSeeInText('folder Spam atau Junk');
     }
 }

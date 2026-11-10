@@ -35,7 +35,7 @@ return [
         'email_placeholder' => 'name@email.com',
         'kirim_kode' => 'Send OTP Code',
         'mengirim' => 'Sending…',
-        'kode_info' => 'A 6-digit code was sent to your email. Valid for 5 minutes.',
+        'kode_info' => 'A 6-digit code was sent to your email. Valid for 5 minutes. Not in your Inbox? Check your Spam or Junk folder.',
         'verifikasi_lanjutkan' => 'Verify & Continue',
         'memverifikasi' => 'Verifying…',
         'ubah_email' => '← Change email',

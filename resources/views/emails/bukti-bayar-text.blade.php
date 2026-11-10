@@ -18,6 +18,7 @@ TOTAL DIBAYAR: Rp {{ number_format($order->amount, 0, ',', '.') }}
 Jika diminta masuk, gunakan kode yang dikirim ke email ini: {{ $loginUrl }}
 
 Ini adalah bukti pembayaran elektronik dan bukan faktur pajak. Simpan email ini sebagai arsip.
+Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai "Bukan spam" agar email berikutnya masuk ke Inbox.
 Ada kendala? Balas email ini dengan menyertakan nomor order di atas.
 
 Rumus Langit - rumuslangit.biz.id

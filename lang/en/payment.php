@@ -34,7 +34,7 @@ return [
     'selesai_lambat' => 'Confirmation has not arrived yet. If you have already paid, access will open automatically within a few minutes — you can close this page and return to the catalog.',
     'selesai_cek' => 'Check again',
     'selesai_ke_katalog' => 'Back to catalog',
-    'selesai_sukses_fitur' => 'Payment successful! Please fill in the questionnaire below to generate your report.',
-    'selesai_sukses_langganan' => 'Payment successful! Your subscription is active — all reports are unlocked.',
+    'selesai_sukses_fitur' => 'Payment successful! Please fill in the questionnaire below to generate your report. A payment receipt was emailed to you (check Spam or Junk if it is not in your Inbox).',
+    'selesai_sukses_langganan' => 'Payment successful! Your subscription is active — all reports are unlocked. A payment receipt was emailed to you (check Spam or Junk if it is not in your Inbox).',
     'selesai_gagal' => 'The payment was cancelled or expired. Please try again.',
 ];

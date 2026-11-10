@@ -158,4 +158,10 @@ class LoginKodeTest extends TestCase
             ->assertRedirect(route('auth.login.form'));
         $this->assertNull($belum->fresh()->password);
     }
+
+    public function test_pesan_setelah_kode_dikirim_mengingatkan_folder_spam(): void
+    {
+        $this->postJson(route('auth.kode.kirim'), ['email' => 'siapa-saja@example.test'])
+            ->assertOk()->assertJsonPath('message', fn ($m) => str_contains($m, 'folder Spam'));
+    }
 }

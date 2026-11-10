@@ -35,7 +35,7 @@ return [
         'email_placeholder' => 'nama@email.com',
         'kirim_kode' => 'Kirim Kode OTP',
         'mengirim' => 'Mengirim…',
-        'kode_info' => 'Kode 6 digit dikirim ke email Anda. Berlaku 5 menit.',
+        'kode_info' => 'Kode 6 digit dikirim ke email Anda. Berlaku 5 menit. Belum ada di Inbox? Cek folder Spam atau Junk.',
         'verifikasi_lanjutkan' => 'Verifikasi & Lanjutkan',
         'memverifikasi' => 'Memverifikasi…',
         'ubah_email' => '← Ubah email',

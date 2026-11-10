@@ -18,6 +18,7 @@
       <li style="margin-bottom:6px;">{{ __('afiliasi.syarat_' . $n, ['komisi' => $affiliate->komisi_persen, 'bulan' => config('payment.affiliate_commission_months', 12), 'hari' => config('payment.affiliate_hold_days', 14)], 'id') }}</li>
       @endforeach
     </ol>
+    <p style="line-height:1.5;color:#777;font-size:12px;">Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai &quot;Bukan spam&quot; agar email berikutnya masuk ke Inbox.</p>
     <p style="line-height:1.6;color:#666;font-size:13px;">Bagikan link di atas ke audiens Anda. Pengguna yang masuk lewat link Anda tercatat atas nama Anda secara permanen.</p>
   </div>
 </body>

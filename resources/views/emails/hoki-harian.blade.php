@@ -32,6 +32,7 @@
         </div>
 
         <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:0 0 16px;">
+        <p style="margin:0 0 12px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.4);">Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai &quot;Bukan spam&quot; agar email berikutnya masuk ke Inbox.</p>
         <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.25);text-align:center;">
           Rumus Langit · Platform Konsultasi Metafisika
         </p>

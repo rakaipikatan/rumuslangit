@@ -516,6 +516,8 @@ class SumopodPaymentTest extends TestCase
         $mail->assertSeeInHtml('bukan faktur pajak');
         $mail->assertSeeInHtml(route('laporan.form', 3));
         $mail->assertSeeInText('TOTAL DIBAYAR: Rp 29.000');
+        $mail->assertSeeInHtml('folder Spam atau Junk');
+        $mail->assertSeeInText('folder Spam atau Junk');
     }
 
     public function test_isi_bukti_bayar_langganan_memuat_masa_aktif(): void

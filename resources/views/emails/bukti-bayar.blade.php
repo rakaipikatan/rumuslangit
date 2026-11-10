@@ -26,6 +26,7 @@
     </p>
     <p style="text-align:center;font-size:12px;color:#888;margin:0 0 20px;">Jika diminta masuk, gunakan <a href="{{ $loginUrl }}" style="color:#7c3aed;">kode yang dikirim ke email</a> ini.</p>
 
+    <p style="font-size:12px;color:#777;line-height:1.5;margin:0 0 12px;">Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai &quot;Bukan spam&quot; agar email berikutnya masuk ke Inbox.</p>
     <p style="font-size:12px;color:#999;line-height:1.5;border-top:1px solid #eee;padding-top:14px;margin:0;">
       Ini adalah bukti pembayaran elektronik dan bukan faktur pajak. Simpan email ini sebagai arsip.
       Ada kendala? Balas email ini dengan menyertakan nomor order di atas.

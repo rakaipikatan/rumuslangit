@@ -34,7 +34,7 @@ return [
     'selesai_lambat' => 'Konfirmasi belum masuk. Jika Anda sudah membayar, akses akan terbuka otomatis dalam beberapa menit — Anda boleh menutup halaman ini dan kembali ke katalog.',
     'selesai_cek' => 'Periksa lagi',
     'selesai_ke_katalog' => 'Kembali ke katalog',
-    'selesai_sukses_fitur' => 'Pembayaran berhasil! Silakan isi kuesioner di bawah untuk membuat laporan Anda.',
-    'selesai_sukses_langganan' => 'Pembayaran berhasil! Langganan Anda sudah aktif — semua laporan terbuka.',
+    'selesai_sukses_fitur' => 'Pembayaran berhasil! Silakan isi kuesioner di bawah untuk membuat laporan Anda. Bukti pembayaran dikirim ke email Anda (cek folder Spam atau Junk jika tidak ada di Inbox).',
+    'selesai_sukses_langganan' => 'Pembayaran berhasil! Langganan Anda sudah aktif — semua laporan terbuka. Bukti pembayaran dikirim ke email Anda (cek folder Spam atau Junk jika tidak ada di Inbox).',
     'selesai_gagal' => 'Pembayaran dibatalkan atau kedaluwarsa. Silakan coba lagi.',
 ];

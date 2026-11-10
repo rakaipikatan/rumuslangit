@@ -14,7 +14,7 @@ return [
     'kode_desc' => 'Tanpa password. Kami kirim kode 6 digit ke email Anda (cek juga folder Spam).',
     'kode_kirim' => 'Kirim kode',
     'kode_mengirim' => 'Mengirim…',
-    'kode_terkirim' => 'Jika email terdaftar, kode telah dikirim. Berlaku 5 menit.',
+    'kode_terkirim' => 'Jika email terdaftar, kode telah dikirim. Berlaku 5 menit. Belum ada di Inbox? Cek folder Spam atau Junk.',
     'kode_placeholder' => '6 digit kode',
     'kode_masuk' => 'Masuk',
     'kode_salah' => 'Kode salah atau sudah kedaluwarsa.',

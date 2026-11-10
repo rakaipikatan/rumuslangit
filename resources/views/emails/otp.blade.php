@@ -55,6 +55,7 @@
         {{-- Footer --}}
         <tr>
           <td align="center" style="padding-top:24px;">
+            <p style="margin:0 0 12px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.4);">Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai &quot;Bukan spam&quot; agar email berikutnya masuk ke Inbox.</p>
             <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);">
               © {{ date('Y') }} Rumus Langit · Platform Konsultasi Metafisika
             </p>

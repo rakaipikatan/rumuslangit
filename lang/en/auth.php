@@ -14,7 +14,7 @@ return [
     'kode_desc' => 'No password needed. We email you a 6-digit code (check your Spam folder too).',
     'kode_kirim' => 'Send code',
     'kode_mengirim' => 'Sending…',
-    'kode_terkirim' => 'If the email is registered, a code has been sent. Valid for 5 minutes.',
+    'kode_terkirim' => 'If the email is registered, a code has been sent. Valid for 5 minutes. Not in your Inbox? Check your Spam or Junk folder.',
     'kode_placeholder' => '6-digit code',
     'kode_masuk' => 'Sign in',
     'kode_salah' => 'The code is wrong or has expired.',
