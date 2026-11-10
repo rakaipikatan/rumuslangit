@@ -65,7 +65,8 @@
                 </div>
                 @if (session('user_id'))
                     @php $namaUser = \App\Models\User::find(session('user_id'))?->name ?? '' @endphp
-                    <span class="text-xs text-white/40 hidden sm:block">{{ Str::words($namaUser, 1, '') }}</span>
+                    <a href="{{ route('auth.pengaturan') }}" title="{{ __('nav.pengaturan') }}"
+                       class="text-xs text-white/40 hover:text-white/70 transition">⚙<span class="hidden sm:inline"> {{ Str::words($namaUser, 1, '') }}</span></a>
                     <form method="POST" action="{{ route('auth.logout') }}" class="inline">
                         @csrf
                         <button type="submit"

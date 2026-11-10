@@ -99,4 +99,63 @@ class LoginKodeTest extends TestCase
     {
         $this->get(route('auth.login.form'))->assertOk()->assertSee('Masuk dengan kode email');
     }
+
+    public function test_pengguna_tanpa_password_bisa_membuat_password_lalu_login_dengannya(): void
+    {
+        $user = $this->userTerverifikasi();
+
+        $this->withSession(['user_id' => $user->id])->get(route('auth.pengaturan'))
+            ->assertOk()->assertSee('belum punya password');
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('auth.password'), ['password' => 'PasswordBaru123', 'password_confirmation' => 'PasswordBaru123'])
+            ->assertRedirect(route('auth.pengaturan'))->assertSessionHas('success');
+
+        $this->flushSession();
+        $this->post(route('auth.login'), ['email' => $user->email, 'password' => 'PasswordBaru123'])
+            ->assertRedirect();
+        $this->assertSame($user->id, session('user_id'));
+    }
+
+    public function test_ubah_password_mewajibkan_password_lama_yang_benar(): void
+    {
+        $user = $this->userTerverifikasi();
+        $user->update(['password' => 'Lama12345']);
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('auth.password'), ['current_password' => 'salah', 'password' => 'Baru123456', 'password_confirmation' => 'Baru123456'])
+            ->assertSessionHasErrors('current_password');
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('Lama12345', $user->fresh()->password));
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('auth.password'), ['current_password' => 'Lama12345', 'password' => 'Baru123456', 'password_confirmation' => 'Baru123456'])
+            ->assertSessionHas('success');
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('Baru123456', $user->fresh()->password));
+    }
+
+    public function test_password_baru_harus_8_karakter_dan_terkonfirmasi(): void
+    {
+        $user = $this->userTerverifikasi();
+
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('auth.password'), ['password' => 'pendek', 'password_confirmation' => 'pendek'])
+            ->assertSessionHasErrors('password');
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('auth.password'), ['password' => 'PasswordPanjang1', 'password_confirmation' => 'beda'])
+            ->assertSessionHasErrors('password');
+
+        $this->assertNull($user->fresh()->password);
+    }
+
+    public function test_pengaturan_hanya_untuk_pengguna_login_dengan_email_terverifikasi(): void
+    {
+        $this->get(route('auth.pengaturan'))->assertRedirect(route('auth.login.form'));
+
+        $belum = User::create(['name' => 'Belum', 'dob' => '1990-01-01']);
+        $this->withSession(['user_id' => $belum->id])->get(route('auth.pengaturan'))->assertRedirect(route('auth.login.form'));
+        $this->withSession(['user_id' => $belum->id])
+            ->post(route('auth.password'), ['password' => 'PasswordBaru123', 'password_confirmation' => 'PasswordBaru123'])
+            ->assertRedirect(route('auth.login.form'));
+        $this->assertNull($belum->fresh()->password);
+    }
 }

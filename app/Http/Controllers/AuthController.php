@@ -99,6 +99,50 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'redirect' => route('trial.katalog')]);
     }
 
+    // GET /pengaturan — pengaturan akun (saat ini: atur password).
+    public function pengaturan()
+    {
+        $user = $this->penggunaTerverifikasi();
+        if (!$user) {
+            return redirect()->route('auth.login.form');
+        }
+
+        return view('auth.pengaturan', compact('user'));
+    }
+
+    // POST /pengaturan/password — buat password (akun belum punya) atau ubah (wajib password lama).
+    public function passwordSimpan(Request $request)
+    {
+        $user = $this->penggunaTerverifikasi();
+        if (!$user) {
+            return redirect()->route('auth.login.form');
+        }
+
+        $punyaPassword = filled($user->password);
+
+        $request->validate([
+            'password'         => 'required|string|min:8|max:100|confirmed',
+            'current_password' => $punyaPassword ? 'required|string' : 'nullable',
+        ]);
+
+        if ($punyaPassword && !Hash::check((string) $request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => __('auth.password_lama_salah')]);
+        }
+
+        $user->update(['password' => $request->password]); // cast 'hashed' pada model
+
+        return redirect()->route('auth.pengaturan')->with('success', __('auth.password_tersimpan'));
+    }
+
+    // Pengguna yang sedang login dengan email terverifikasi (syarat mengatur password).
+    private function penggunaTerverifikasi(): ?User
+    {
+        $id = Session::get('user_id');
+        $user = $id ? User::find($id) : null;
+
+        return ($user && $user->email && $user->email_verified_at) ? $user : null;
+    }
+
     public function logout(Request $request)
     {
         Session::flush();

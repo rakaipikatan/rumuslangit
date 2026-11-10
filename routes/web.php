@@ -29,6 +29,8 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 Route::post('/login/kode', [AuthController::class, 'kodeKirim'])->middleware('throttle:6,1')->name('auth.kode.kirim');
 Route::post('/login/kode/verifikasi', [AuthController::class, 'kodeVerifikasi'])->middleware('throttle:10,1')->name('auth.kode.verifikasi');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get('/pengaturan', [AuthController::class, 'pengaturan'])->name('auth.pengaturan');
+Route::post('/pengaturan/password', [AuthController::class, 'passwordSimpan'])->middleware('throttle:5,1')->name('auth.password');
 
 // OTP Email
 Route::prefix('otp')->name('otp.')->group(function () {

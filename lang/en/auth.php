@@ -21,4 +21,17 @@ return [
     'kode_ubah_email' => 'Change email',
     'kode_password_toggle' => 'Have a password? Sign in with password',
     'kode_error' => 'Something went wrong. Please try again.',
+
+    'pengaturan_title' => 'Account Settings',
+    'pengaturan_email' => 'Email',
+    'pengaturan_password_judul' => 'Password',
+    'pengaturan_password_info_belum' => 'You do not have a password yet. Create one to sign in without waiting for an email code.',
+    'pengaturan_password_info_ada' => 'Change your password. You can still sign in with an email code at any time.',
+    'password_lama' => 'Current password',
+    'password_baru' => 'New password (min. 8 characters)',
+    'password_ulangi' => 'Repeat new password',
+    'password_simpan' => 'Save password',
+    'password_tersimpan' => 'Password saved. From now on you can sign in with your email and password.',
+    'password_lama_salah' => 'The current password is incorrect.',
+    'pengaturan_kembali' => '← Back to catalog',
 ];

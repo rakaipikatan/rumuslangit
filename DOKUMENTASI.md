@@ -153,6 +153,7 @@ Pengguna **tidak punya password** (akun dibuat dari form data lahir + verifikasi
 - Hanya akun dengan email **terverifikasi** yang dikirimi kode; respons selalu sama (tidak membocorkan apakah email terdaftar).
 - Batas: 6 permintaan/menit per IP, 3 kode/10 menit per email, maks. **5 tebakan salah** per kode (setelah itu kode dibatalkan), 10 verifikasi/menit per IP.
 - Login password (`POST /login`, 10/menit) tetap ada, dilipat di bawah ("Punya password?"), untuk akun yang dibuat admin (user testing).
+- **Menu Pengaturan** (`/pengaturan`, ikon ⚙ di navbar): pengguna login dengan email terverifikasi dapat membuat password (akun belum punya) atau mengubahnya (wajib password lama), min. 8 karakter + konfirmasi, 5 percobaan/menit. Kode email tetap bisa dipakai kapan saja.
 - Pengguna yang kehilangan sesi/cookie cukup login ulang dengan kode email; data laporan dan pembelian mengikuti akun (berdasarkan email).
 
 ### 4.6 Lokalisasi
@@ -165,7 +166,7 @@ Pengguna **tidak punya password** (akun dibuat dari form data lahir + verifikasi
 | Area | Rute |
 |---|---|
 | Publik | `/`, `/mulai-analisis`, `POST /proses`, `/hasil`, `/profil-status` (AJAX), `/analisis` (katalog), `/lokal/{locale}`, `/tarot/pilih`, `/health` |
-| Auth | `/login`, `POST /login` (password), `POST /login/kode` + `POST /login/kode/verifikasi` (kode email), `POST /logout` |
+| Auth | `/login`, `POST /login` (password), `POST /login/kode` + `POST /login/kode/verifikasi` (kode email), `POST /logout`, `GET /pengaturan`, `POST /pengaturan/password` |
 | OTP | `POST /otp/kirim`, `POST /otp/verifikasi` |
 | Laporan | `/laporan/{id}` (form), `POST`, `/laporan/{id}/status` (polling), `/laporan/{id}/hasil` — throttle 10 req/menit |
 | Payment | `GET/POST /payment/{id}` `POST /webhook/sumopod` (id numerik atau `langganan`, `langganan-bulanan`, `langganan-tahunan`) |
@@ -300,6 +301,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Menu Pengaturan akun** untuk membuat/mengubah password (⚙ di navbar); +4 tes (total 75) |
 | `24aa214` | **Login dengan kode email** (tanpa password) di `/login`, dengan pembatasan percobaan; login password dilipat. Admin → Users menampilkan "N laporan dibeli" (status `free` = bukan pelanggan langganan; pembelian satuan tidak mengubah status). +6 tes (total 71) |
 | `ca24ee5` | **Transfer bank manual dihapus** (halaman bayar, controller, config rekening, teks bahasa, env `PAYMENT_BCA/CIMB`); QRIS jadi satu-satunya metode. Konfirmasi admin dipertahankan sebagai cadangan; rekening untuk **payout komisi afiliator** tidak terkait dan tetap. Tes disesuaikan (total 65) |
 | `2b3b60b` | **Perbaikan alur pasca-bayar QRIS:** return URL per-payment ke halaman `payment.selesai` (tunggu konfirmasi → otomatis ke kuesioner), katalog & upsell menandai fitur yang sudah dibeli, pesan sukses; +8 tes (total 63) |

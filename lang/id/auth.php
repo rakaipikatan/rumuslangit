@@ -21,4 +21,17 @@ return [
     'kode_ubah_email' => 'Ubah email',
     'kode_password_toggle' => 'Punya password? Masuk dengan password',
     'kode_error' => 'Terjadi kendala. Coba lagi.',
+
+    'pengaturan_title' => 'Pengaturan Akun',
+    'pengaturan_email' => 'Email',
+    'pengaturan_password_judul' => 'Password',
+    'pengaturan_password_info_belum' => 'Anda belum punya password. Buat password agar bisa masuk tanpa menunggu kode email.',
+    'pengaturan_password_info_ada' => 'Ubah password Anda. Anda tetap bisa masuk dengan kode email kapan saja.',
+    'password_lama' => 'Password saat ini',
+    'password_baru' => 'Password baru (min. 8 karakter)',
+    'password_ulangi' => 'Ulangi password baru',
+    'password_simpan' => 'Simpan password',
+    'password_tersimpan' => 'Password berhasil disimpan. Mulai sekarang Anda bisa masuk dengan email dan password.',
+    'password_lama_salah' => 'Password saat ini salah.',
+    'pengaturan_kembali' => '← Kembali ke katalog',
 ];
