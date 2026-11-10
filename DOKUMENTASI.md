@@ -82,6 +82,8 @@ Fitur 1–10 memakai 10 pertanyaan Ya/Tidak (`q1..q10`). Tarot (opsional, maks 3
 | **Langganan bulanan** | Rp49.000 | Semua fitur tanpa jatah (batas wajar **20 laporan/hari**, `PAYMENT_BATAS_HARIAN_LANGGANAN`) + fitur 11 + Hoki Harian | `-1` (`Order::SUBSCRIPTION_MONTHLY_FEATURE_ID`) |
 | **Langganan tahunan** | **Rp399.000** (hemat 32% dari 12 × Rp49.000; `PAYMENT_LANGGANAN_TAHUNAN_HARGA`) | Sama dengan bulanan, 12 bulan | `-2` (`Order::SUBSCRIPTION_YEARLY_FEATURE_ID`) |
 
+**Biaya per transaksi (acuan perhitungan margin, per 11 Nov 2026):** QRIS SumoPod 0,7% + Rp300 (dari saldo merchant, cair T+2); email SumoPod **Rp5 per email** (OTP, bukti bayar, Hoki Harian; Hoki Harian ≈ Rp150/bulan atau Rp1.825/tahun per pelanggan); AI Gemini taksiran Rp25–250 per laporan; komisi afiliasi 20% (maks. 12 bulan per pelanggan). Perkiraan sisa bersih: tahunan Rp399.000 ≈ Rp300.000, bulanan Rp49.000 ≈ Rp37.000, satuan Rp29.000 ≈ Rp22.500. **Saldo email habis = OTP/login kode gagal** — top up secara berkala dan pantau saldo di dashboard SumoPod (tidak bisa dibaca dari aplikasi).
+
 **Alasan skema (ditetapkan 11 Nov 2026):** sebelumnya membeli 10 laporan satuan (Rp290.000, akses selamanya tanpa batas) lebih murah daripada langganan tahunan (Rp350.000), sehingga langganan tidak masuk akal. Sekarang satuan = untuk mencoba (jatah terbatas), langganan = pemakaian terus-menerus. Pembeli 2 laporan (Rp58.000) sudah lebih untung berlangganan bulanan (Rp49.000).
 
 **Cara kerja jatah** (`User::kuotaTotal/kuotaTerpakai/kuotaSisa`, `ai_reports.consumed_quota`):
