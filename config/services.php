@@ -38,7 +38,6 @@ return [
     'gemini' => [
         'key'        => env('GEMINI_API_KEY'),
         'model'      => env('GEMINI_MODEL', 'gemini-2.5-flash-lite'),
-        'max_tokens' => env('GEMINI_MAX_OUTPUT_TOKENS', 1500),
     ],
 
     // SumoPod Managed Payment (QRIS). Isi nilai di .env — jangan di-commit.

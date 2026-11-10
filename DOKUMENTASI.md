@@ -240,13 +240,14 @@ Variabel yang dipakai (nilai rahasia jangan di-commit; `.env` sudah di-gitignore
 | Database | `DB_CONNECTION=pgsql, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD, DB_SSLMODE` |
 | Redis | `SESSION_DRIVER=redis, QUEUE_CONNECTION=redis, CACHE_DRIVER=redis, REDIS_*` |
 | Mail | `MAIL_MAILER=smtp, MAIL_HOST, MAIL_PORT, MAIL_SCHEME (smtps untuk port 465), MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_*`. Domain pengirim harus punya SPF/DKIM (DNS domain dikelola di SumoPod); tanpa itu email OTP masuk spam/terbuang |
-| Gemini | `GEMINI_API_KEY, GEMINI_MODEL, GEMINI_MAX_OUTPUT_TOKENS` |
+| Gemini | `GEMINI_API_KEY, GEMINI_MODEL` |
 | Pembayaran | `PAYMENT_EXPIRE_HOURS, PAYMENT_LANGGANAN_BULANAN_HARGA, PAYMENT_LANGGANAN_TAHUNAN_HARGA` |
 | Admin | `ADMIN_USERNAME, ADMIN_PASSWORD` |
 | SumoPod Payment (QRIS) | `SUMOPOD_PAY_API_KEY, SUMOPOD_PAY_WEBHOOK_SECRET, SUMOPOD_PAY_BASE_URL` (default `https://api-pay.sumopod.com`) |
-| Legacy (tidak dipakai kode saat ini) | `FONNTE_*, WHATSAPP_PROVIDER, WAHA_*, DUITKU_*` |
 
 `.env.example` masih berisi template bawaan Laravel (sqlite) dan **belum** mencantumkan variabel di atas.
+
+**Pembersihan `.env` (11 Nov 2026):** dihapus variabel yang tidak dipakai — `CACHE_DRIVER` (Laravel 13 membaca `CACHE_STORE`, jadi nilai ini diabaikan), `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, sisa integrasi lama (`FONNTE_*`, `WHATSAPP_PROVIDER`, `WAHA_*`, `DUITKU_*`), placeholder `AWS_*` bawaan skeleton, `PAYMENT_TEST_PRICE`/`PAYMENT_TEST_EMAIL` (harga uji sementara; kodenya tetap ada, aktifkan lagi bila perlu tes transaksi kecil), dan komentar placeholder. Cadangan `.env` sebelum dibersihkan: `/home/ubuntu/backup/` (berisi rahasia, hapus bila tak dibutuhkan). **Catatan:** `cache.default` saat ini **`database`** (bukan Redis) karena `CACHE_STORE` tidak diatur; OTP, rate limiter, dan cache Gemini memakai tabel `cache`. Untuk memindah ke Redis set `CACHE_STORE=redis` lalu `config:cache` (kode OTP yang sedang aktif hangus).
 
 ---
 
@@ -329,6 +330,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
 | `8d0bee4` | **Halaman Panduan Pengguna** `/panduan` (setelah login); teks jatah diperjelas ("3 jatah laporan" + tautan "Apa itu jatah?"); aturan hasil diselaraskan dengan keputusan pemilik: **hari sama = hasil sama, hari berikutnya = laporan baru (tanpa memotong jatah), jatah hanya untuk jawaban berbeda**, berlaku untuk semua fitur (`PAYMENT_FITUR_HARIAN=semua` default); +5 tes (total 126) |
 | `2231b85` | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
 | `193ba86` | **Jawaban sama = pakai data tersimpan (tanpa AI)** untuk semua fitur kecuali yang bergantung tanggal (3, 10, 11) yang diperbarui tiap hari WIB; prompt fitur bergantung tanggal kini memuat tanggal hari ini; +4 tes (total 119) |
