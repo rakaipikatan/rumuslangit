@@ -132,6 +132,8 @@ Metode kedua, di samping transfer manual. Aktif otomatis bila `SUMOPOD_PAY_API_K
 3. `payment.completed` → nominal harus sama dengan order, lalu [OrderSettlementService](app/Services/OrderSettlementService.php) melunasi order (idempoten, dengan row lock): membuka akses fitur / mengaktifkan langganan dan mencatat komisi afiliasi. `payment.failed` → `cancel`; `payment.expired` → `expire`; `payment.test` dan order tak dikenal → 200 (dicatat di log).
 4. Konfirmasi admin untuk transfer manual kini memakai `OrderSettlementService` yang sama.
 
+**Sandbox vs Live:** key Sandbox hanya berlaku di host sandbox. Untuk uji, set `SUMOPOD_PAY_BASE_URL=https://api-pay-sandbox.sumopod.com` (hasil uji 10 Nov 2026: key Sandbox di host Live → `401 Unauthorized`; di host Sandbox → payment berhasil dibuat). Untuk produksi: `SUMOPOD_PAY_BASE_URL=https://api-pay.sumopod.com` + key Live, lalu `php artisan config:cache`.
+
 Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant), dana cair T+2. Kolom baru `orders.payment_id` (unik), `payment_link_url`, `payment_expires_at` (migration `2026_11_10_150000_...`).
 
 ### 4.4 Program afiliasi
