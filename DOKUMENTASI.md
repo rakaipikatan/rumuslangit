@@ -292,6 +292,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (10 Nov 2026) | Kredensial admin diganti (di `.env`, bukan di repo): username baru, password acak 20 karakter disimpan sebagai hash bcrypt (`ADMIN_PASSWORD='$2y$...'`, tanda kutip tunggal wajib). Cadangan `.env` lama di `/home/ubuntu/backup/` |
 | `128f84d` | **Pembersihan data:** semua user + data turunan (laporan AI, kuesioner, profil lahir, langganan, order) dihapus atas permintaan pemilik, dengan cadangan JSON di server (`/home/ubuntu/backup/`, di luar repo). Perbaikan: katalog dengan sesi usang (user sudah dihapus) kini diarahkan ke awal, bukan error; +1 tes (total 51) |
 | `6ee9559` | Harga uji sementara per-email (`PAYMENT_TEST_PRICE`/`PAYMENT_TEST_EMAIL`) untuk tes transaksi Live bernominal kecil; +2 tes (total 50) |
 | `e203f75` | Integrasi **QRIS SumoPod Managed Payment**: service klien API, webhook ber-signature Svix, `OrderSettlementService` bersama, pilihan metode di halaman pembayaran, migration kolom payment, 14 tes baru. **Belum aktif di produksi** sampai migration dijalankan dan `config:cache`/`route:cache` di-refresh (lihat bagian 9) |
