@@ -10,15 +10,15 @@ class FiturData
         return [
             1  => ['hub' => 'Wealth Hub', 'icon' => '🧭', 'harga' => 29000],
             2  => ['hub' => 'Wealth Hub', 'icon' => '📈', 'harga' => 29000],
-            3  => ['hub' => 'Wealth Hub', 'icon' => '📅', 'harga' => 29000, 'bergantung_tanggal' => true],
+            3  => ['hub' => 'Wealth Hub', 'icon' => '📅', 'harga' => 29000],
             4  => ['hub' => 'Wealth Hub', 'icon' => '🏪', 'harga' => 29000],
             5  => ['hub' => 'Social Hub', 'icon' => '💑', 'harga' => 29000],
             6  => ['hub' => 'Social Hub', 'icon' => '🏢', 'harga' => 29000],
             7  => ['hub' => 'Social Hub', 'icon' => '👨‍👧', 'harga' => 29000],
             8  => ['hub' => 'Personal Wellness Hub', 'icon' => '✍️', 'harga' => 29000],
             9  => ['hub' => 'Personal Wellness Hub', 'icon' => '💚', 'harga' => 29000, 'tanya_golongan_darah' => true],
-            10 => ['hub' => 'Personal Wellness Hub', 'icon' => '🛡️', 'harga' => 29000, 'bergantung_tanggal' => true],
-            11 => ['hub' => 'Personal Wellness Hub', 'icon' => '🎯', 'harga' => 0, 'bergantung_tanggal' => true, 'subscriber_only' => true],
+            10 => ['hub' => 'Personal Wellness Hub', 'icon' => '🛡️', 'harga' => 29000],
+            11 => ['hub' => 'Personal Wellness Hub', 'icon' => '🎯', 'harga' => 0, 'subscriber_only' => true],
             12 => ['hub' => 'Traffic Driver', 'icon' => '🌙', 'harga' => 0, 'freemium' => true],
         ];
     }
@@ -395,9 +395,12 @@ class FiturData
         $meta   = self::meta();
         $text   = self::text()[$locale] ?? self::text()['id'];
 
+        // Fitur yang dibuat ulang tiap hari (WIB) walau jawabannya sama — default: tidak ada (selalu pakai data tersimpan).
+        $harian = array_map('intval', (array) config('payment.fitur_bergantung_tanggal', []));
+
         $hasil = [];
         foreach ($meta as $id => $m) {
-            $hasil[$id] = array_merge($m, $text[$id] ?? []);
+            $hasil[$id] = array_merge($m, $text[$id] ?? [], ['bergantung_tanggal' => in_array($id, $harian, true)]);
         }
 
         return $hasil;

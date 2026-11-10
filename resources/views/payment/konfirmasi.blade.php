@@ -80,6 +80,10 @@
                 </div>
             </div>
 
+            <div class="px-5 pt-3">
+                <p class="text-xs text-white/35 leading-relaxed">{{ __('payment.qris_catatan') }}</p>
+            </div>
+
             <div class="p-5">
                 @if($qrisTersedia)
                 <button

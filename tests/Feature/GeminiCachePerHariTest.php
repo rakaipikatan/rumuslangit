@@ -36,6 +36,7 @@ class GeminiCachePerHariTest extends TestCase
 
     public function test_cache_gemini_per_hari_kalender_wib(): void
     {
+        config(['payment.fitur_bergantung_tanggal' => [3]]);
         Cache::flush();
         Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
 
@@ -78,6 +79,7 @@ class GeminiCachePerHariTest extends TestCase
 
     public function test_fitur_bergantung_tanggal_mengirim_tanggal_hari_ini_ke_ai(): void
     {
+        config(['payment.fitur_bergantung_tanggal' => [3]]);
         Cache::flush();
         Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'Teks laporan']]]]]], 200)]);
 

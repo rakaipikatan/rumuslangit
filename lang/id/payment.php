@@ -40,4 +40,5 @@ return [
     'selesai_sukses_fitur' => 'Pembayaran berhasil! Silakan isi kuesioner di bawah untuk membuat laporan Anda. Bukti pembayaran dikirim ke email Anda (cek folder Spam atau Junk jika tidak ada di Inbox).',
     'selesai_sukses_langganan' => 'Pembayaran berhasil! Langganan Anda sudah aktif — semua laporan terbuka. Bukti pembayaran dikirim ke email Anda (cek folder Spam atau Junk jika tidak ada di Inbox).',
     'selesai_gagal' => 'Pembayaran dibatalkan atau kedaluwarsa. Silakan coba lagi.',
+    'qris_catatan' => 'QRIS hanya bisa dibayar dari aplikasi e-wallet atau mobile banking Indonesia. Membayar dari luar negeri? Simpan gambar QR lalu buka lewat menu pindai/unggah QR di aplikasi bank atau e-wallet Indonesia Anda.',
 ];

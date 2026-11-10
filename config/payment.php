@@ -25,4 +25,8 @@ return [
     'single_generations'       => env('PAYMENT_JATAH_SATUAN', 3),
     'subscriber_daily_reports' => env('PAYMENT_BATAS_HARIAN_LANGGANAN', 20),
     'free_daily_reports'       => env('PAYMENT_BATAS_HARIAN_GRATIS', 5), // fitur gratis (Tafsir Mimpi) per pengguna
+
+    // ID fitur yang dibuat ulang tiap hari WIB walau jawabannya sama (isinya bergantung tanggal), dipisah koma.
+    // Default kosong = jawaban sama SELALU memakai laporan tersimpan (tanpa AI). Contoh: PAYMENT_FITUR_HARIAN=11
+    'fitur_bergantung_tanggal' => array_values(array_filter(array_map('trim', explode(',', (string) env('PAYMENT_FITUR_HARIAN', ''))), 'strlen')),
 ];

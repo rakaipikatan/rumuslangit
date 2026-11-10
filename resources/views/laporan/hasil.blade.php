@@ -214,7 +214,8 @@
         $L = json_decode(\App\Services\GeminiService::repairJson($report->response_text), true);
     }
     $isJ  = is_array($L);
-    $tgl  = \Carbon\Carbon::now()->locale(app()->getLocale())->isoFormat('D MMMM Y');
+    // Tanggal = kapan laporan ini DIBUAT (WIB), bukan hari ini — laporan tersimpan bisa dibuka lama setelahnya.
+    $tgl  = \Carbon\Carbon::parse($report->cached_at ?? now())->timezone('Asia/Jakarta')->locale(app()->getLocale())->isoFormat('D MMMM Y');
     $dob  = \Carbon\Carbon::parse($user->dob)->locale(app()->getLocale())->isoFormat('D MMMM Y');
     $skor = $L['skor'] ?? [];
     $nil  = (int)($skor['nilai'] ?? 0);

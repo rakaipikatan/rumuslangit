@@ -223,6 +223,7 @@ class SkemaHargaTest extends TestCase
 
     public function test_jawaban_sama_di_hari_yang_sama_dipakai_ulang_besok_dibuat_baru_tanpa_memakai_jatah(): void
     {
+        config(['payment.fitur_bergantung_tanggal' => [3]]); // mekanisme harian dinyalakan untuk fitur 3
         $u = $this->user();
         $this->beli($u);
 
@@ -276,6 +277,7 @@ class SkemaHargaTest extends TestCase
 
     public function test_jatah_hanya_terpakai_untuk_jawaban_yang_berbeda(): void
     {
+        config(['payment.fitur_bergantung_tanggal' => [3]]); // agar tiap hari membuat laporan baru (bukti jatah tak terpotong)
         $u = $this->user();
         $this->beli($u);
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
@@ -335,6 +337,22 @@ class SkemaHargaTest extends TestCase
         $this->assertSame(2, $u->kuotaSisa(3));
     }
 
+    public function test_semua_fitur_default_jawaban_sama_selalu_memakai_laporan_tersimpan_termasuk_3_10_11(): void
+    {
+        $u = $this->user();
+        $this->beli($u, 3);
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC'));
+        $this->kirim($u, 3, 0); $this->selesaikanSemua($u);
+
+        foreach ([1, 30] as $hari) {
+            $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 03:00:00', 'UTC')->addDays($hari));
+            $this->kirim($u, 3, 0)->assertRedirect(route('laporan.hasil', 3));
+        }
+
+        Queue::assertPushed(GenerateAIReport::class, 1);
+        $this->assertSame(2, $u->kuotaSisa(3));
+    }
+
     public function test_fitur_biasa_jawaban_sama_selalu_memakai_laporan_tersimpan_tanpa_ai(): void
     {
         $u = $this->user();
@@ -358,11 +376,16 @@ class SkemaHargaTest extends TestCase
 
     public function test_fitur_bergantung_tanggal_dibuat_baru_tiap_hari_tanpa_memotong_jatah(): void
     {
+        // Default produksi: tidak ada fitur harian → semua memakai data tersimpan
+        $this->assertTrue(empty(FiturData::cari(3)['bergantung_tanggal']));
+        $this->assertTrue(empty(FiturData::cari(11)['bergantung_tanggal']));
+
+        // Dinyalakan lewat PAYMENT_FITUR_HARIAN (di sini: fitur 3 dan 11)
+        config(['payment.fitur_bergantung_tanggal' => [3, 11]]);
         $this->assertTrue(!empty(FiturData::cari(3)['bergantung_tanggal']));
-        $this->assertTrue(!empty(FiturData::cari(10)['bergantung_tanggal']));
         $this->assertTrue(!empty(FiturData::cari(11)['bergantung_tanggal']));
         $this->assertTrue(empty(FiturData::cari(1)['bergantung_tanggal']));
-        $this->assertTrue(empty(FiturData::cari(5)['bergantung_tanggal']));
+        $this->assertTrue(empty(FiturData::cari(10)['bergantung_tanggal']));
 
         $u = $this->user();
         $this->beli($u, 3);

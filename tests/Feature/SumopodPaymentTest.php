@@ -533,4 +533,10 @@ class SumopodPaymentTest extends TestCase
         $mail->assertSeeInHtml('Aktif sampai');
         $mail->assertSeeInHtml(route('trial.katalog'));
     }
+
+    public function test_halaman_bayar_menjelaskan_syarat_qris_untuk_pembeli_luar_negeri(): void
+    {
+        $this->withSession(['user_id' => $this->buatUser()->id])->get(route('payment.konfirmasi', 3))
+            ->assertOk()->assertSee('Membayar dari luar negeri?');
+    }
 }
