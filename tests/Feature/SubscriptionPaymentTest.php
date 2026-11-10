@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\Concerns\UsesPostgresTestSchema;
 use Tests\TestCase;
@@ -50,9 +51,15 @@ class SubscriptionPaymentTest extends TestCase
     {
         $user = $this->buatUser();
 
+        config(['services.sumopod_pay.api_key' => 'k', 'services.sumopod_pay.base_url' => 'https://api-pay.sumopod.test']);
+        Http::fake(['*' => fn () => Http::response([
+            'payment_id' => (string) \Illuminate\Support\Str::uuid(), 'payment_link_url' => 'https://pay.sumopod.test/pay/x',
+            'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+
         $this->withSession(['user_id' => $user->id])
-            ->post(route('payment.proses', 'langganan-bulanan'), ['bank' => 'bca'])
-            ->assertRedirect(route('payment.konfirmasi', 'langganan-bulanan'));
+            ->post(route('payment.proses', 'langganan-bulanan'), ['metode' => 'qris'])
+            ->assertRedirect('https://pay.sumopod.test/pay/x');
 
         $order = Order::where('user_id', $user->id)
             ->where('feature_id', Order::SUBSCRIPTION_MONTHLY_FEATURE_ID)
@@ -80,9 +87,15 @@ class SubscriptionPaymentTest extends TestCase
     {
         $user = $this->buatUser();
 
+        config(['services.sumopod_pay.api_key' => 'k', 'services.sumopod_pay.base_url' => 'https://api-pay.sumopod.test']);
+        Http::fake(['*' => fn () => Http::response([
+            'payment_id' => (string) \Illuminate\Support\Str::uuid(), 'payment_link_url' => 'https://pay.sumopod.test/pay/x',
+            'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+
         $this->withSession(['user_id' => $user->id])
-            ->post(route('payment.proses', 'langganan-tahunan'), ['bank' => 'bca'])
-            ->assertRedirect(route('payment.konfirmasi', 'langganan-tahunan'));
+            ->post(route('payment.proses', 'langganan-tahunan'), ['metode' => 'qris'])
+            ->assertRedirect('https://pay.sumopod.test/pay/x');
 
         $order = Order::where('user_id', $user->id)
             ->where('feature_id', Order::SUBSCRIPTION_YEARLY_FEATURE_ID)

@@ -429,4 +429,36 @@ class SumopodPaymentTest extends TestCase
         $this->assertSame(1, substr_count($html, 'Sudah dibeli'));
         $this->assertStringContainsString('Rp 29.000', $html);
     }
+
+    public function test_transfer_bank_manual_sudah_dihapus_semua_pembayaran_lewat_qris(): void
+    {
+        Http::fake(['*' => Http::response([
+            'payment_id' => 'p-m', 'payment_link_url' => 'https://pay.sumopod.test/pay/m', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+        $user = $this->buatUser();
+
+        // Permintaan lama bergaya transfer manual (field bank saja) tetap berujung QRIS — tak ada order manual.
+        $this->withSession(['user_id' => $user->id])
+            ->post(route('payment.proses', 3), ['bank' => 'bca', 'metode' => 'manual'])
+            ->assertRedirect('https://pay.sumopod.test/pay/m');
+
+        $order = Order::where('user_id', $user->id)->firstOrFail();
+        $this->assertSame('qris', $order->payment_method);
+        $this->assertNull($order->unique_code);
+        $this->assertNull($order->bank_tujuan);
+
+        $html = $this->withSession(['user_id' => $this->buatUser()->id])->get(route('payment.konfirmasi', 3))->assertOk()->getContent();
+        $this->assertStringNotContainsString('Transfer Bank', $html);
+        $this->assertStringNotContainsString('Nomor Rekening', $html);
+    }
+
+    public function test_tanpa_konfigurasi_qris_pembayaran_ditolak_dengan_pesan(): void
+    {
+        config(['services.sumopod_pay.api_key' => null]);
+        $user = $this->buatUser();
+
+        $this->withSession(['user_id' => $user->id])
+            ->get(route('payment.konfirmasi', 3))
+            ->assertOk()->assertSee('QRIS sedang tidak tersedia');
+    }
 }

@@ -96,7 +96,7 @@ class AffiliateTest extends TestCase
         $order = Order::create([
             'user_id' => $user->id, 'feature_id' => 1, 'amount' => 29000,
             'unique_code' => 111, 'transfer_amount' => 29111, 'bank_tujuan' => 'bca',
-            'payment_method' => 'manual_transfer',
+            'payment_method' => 'qris',
             'gateway_order_id' => 'MANUAL-' . strtoupper(Str::random(10)),
             'status' => 'pending',
         ]);
@@ -126,7 +126,7 @@ class AffiliateTest extends TestCase
         $order = Order::create([
             'user_id' => $user->id, 'feature_id' => 1, 'amount' => 29000,
             'unique_code' => 222, 'transfer_amount' => 29222, 'bank_tujuan' => 'bca',
-            'payment_method' => 'manual_transfer',
+            'payment_method' => 'qris',
             'gateway_order_id' => 'MANUAL-' . strtoupper(Str::random(10)),
             'status' => 'pending',
         ]);
@@ -169,7 +169,7 @@ class AffiliateTest extends TestCase
             $order = Order::create([
                 'user_id' => $user->id, 'feature_id' => $featureId, 'amount' => 29000,
                 'unique_code' => 300 + $featureId, 'transfer_amount' => 29000 + 300 + $featureId,
-                'bank_tujuan' => 'bca', 'payment_method' => 'manual_transfer',
+                'bank_tujuan' => 'bca', 'payment_method' => 'qris',
                 'gateway_order_id' => 'MANUAL-' . strtoupper(Str::random(10)),
                 'status' => 'pending',
             ]);

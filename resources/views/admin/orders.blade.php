@@ -74,7 +74,7 @@
                 <td class="px-5 py-3 text-white/80">
                     @if($o->transfer_amount)
                         <div>Rp {{ number_format($o->transfer_amount, 0, ',', '.') }}</div>
-                        <div class="text-xs text-white/30">{{ strtoupper($o->bank_tujuan) }} · kode {{ $o->unique_code }}</div>
+                        <div class="text-xs text-white/30">{{ $o->payment_method === 'qris' ? 'QRIS' : strtoupper((string) $o->bank_tujuan) . ' · kode ' . $o->unique_code }}</div>
                     @else
                         <span class="text-white/20">—</span>
                     @endif

@@ -55,6 +55,7 @@ class PaymentController extends Controller
         $order = Order::where('user_id', $user->id)
             ->where('feature_id', $orderFeatureId)
             ->where('status', 'pending')
+            ->where('payment_method', 'qris')
             ->latest()
             ->first();
 
@@ -64,10 +65,9 @@ class PaymentController extends Controller
             $order = null;
         }
 
-        $rekening      = config('payment.bank_accounts');
-        $qrisTersedia  = app(SumopodPayService::class)->terkonfigurasi();
+        $qrisTersedia = app(SumopodPayService::class)->terkonfigurasi();
 
-        return view('payment.konfirmasi', compact('user', 'fitur', 'featureId', 'order', 'rekening', 'qrisTersedia'));
+        return view('payment.konfirmasi', compact('user', 'fitur', 'featureId', 'order', 'qrisTersedia'));
     }
 
     // GET /payment/selesai/{gatewayOrderId} — tujuan setelah bayar QRIS.
@@ -105,7 +105,7 @@ class PaymentController extends Controller
         return view('payment.selesai', compact('order'));
     }
 
-    // POST /payment/{featureId} — catat pengajuan transfer manual, menunggu verifikasi admin
+    // POST /payment/{featureId} — buat pembayaran QRIS (SumoPod) lalu arahkan user ke halaman bayar.
     public function proses(string $featureId, Request $request)
     {
         $fitur = $this->resolveFitur($featureId);
@@ -118,80 +118,52 @@ class PaymentController extends Controller
             abort(422, 'Fitur ini tidak dijual eceran.');
         }
 
-        $fitur = $this->terapkanHargaUji($fitur, $user);
-
+        $fitur   = $this->terapkanHargaUji($fitur, $user);
         $sumopod = app(SumopodPayService::class);
-        $metode  = $request->input('metode', 'manual');
 
-        $request->validate([
-            'metode' => 'nullable|in:manual,qris',
-            'bank'   => 'required_unless:metode,qris|in:' . collect(config('payment.bank_accounts'))->pluck('kode')->implode(','),
-        ]);
-
-        if ($metode === 'qris' && ! $sumopod->terkonfigurasi()) {
+        if (! $sumopod->terkonfigurasi()) {
             return back()->withErrors(['metode' => __('payment.qris_tidak_tersedia')]);
         }
 
         $orderFeatureId = $this->subscriptionFeatureId($featureId) ?? (int) $featureId;
         $amount         = $fitur['harga'];
 
-        // Idempotency: pakai ulang order pending dengan metode yang sama (tak membuat kode unik/payment baru tiap submit)
+        // Idempotency: pakai ulang order QRIS pending (tak membuat payment baru tiap submit)
         $order = Order::where('user_id', $user->id)
             ->where('feature_id', $orderFeatureId)
             ->where('status', 'pending')
-            ->where('payment_method', $metode === 'qris' ? 'qris' : 'manual_transfer')
+            ->where('payment_method', 'qris')
             ->latest()
             ->first();
 
-        if ($metode === 'qris') {
-            if ($order && $order->payment_expires_at && $order->payment_expires_at->isPast()) {
-                $order->update(['status' => 'expire']);
-                $order = null;
-            }
-
-            if (! $order) {
-                $order = Order::create([
-                    'user_id'          => $user->id,
-                    'feature_id'       => $orderFeatureId,
-                    'amount'           => $amount,
-                    'transfer_amount'  => $amount,
-                    'payment_method'   => 'qris',
-                    'gateway_order_id' => 'RL-' . strtoupper(Str::random(12)),
-                    'status'           => 'pending',
-                ]);
-            }
-
-            if (! $order->payment_link_url) {
-                try {
-                    $sumopod->buatPembayaran($order, (int) config('payment.expire_hours', 24));
-                } catch (\Throwable $e) {
-                    \Log::error('SumoPod: gagal membuat pembayaran', ['order' => $order->id, 'error' => $e->getMessage()]);
-                    $order->update(['status' => 'cancel']);
-                    return back()->withErrors(['metode' => __('payment.qris_gagal')]);
-                }
-            }
-
-            return redirect()->away($order->payment_link_url);
+        if ($order && $order->payment_expires_at && $order->payment_expires_at->isPast()) {
+            $order->update(['status' => 'expire']);
+            $order = null;
         }
 
-        if (!$order) {
-            $uniqueCode = $this->generateUniqueCode($amount);
-
+        if (! $order) {
             $order = Order::create([
                 'user_id'          => $user->id,
                 'feature_id'       => $orderFeatureId,
                 'amount'           => $amount,
-                'unique_code'      => $uniqueCode,
-                'transfer_amount'  => $amount + $uniqueCode,
-                'bank_tujuan'      => $request->bank,
-                'payment_method'   => 'manual_transfer',
-                'gateway_order_id' => 'MANUAL-' . strtoupper(Str::random(10)),
+                'transfer_amount'  => $amount,
+                'payment_method'   => 'qris',
+                'gateway_order_id' => 'RL-' . strtoupper(Str::random(12)),
                 'status'           => 'pending',
             ]);
         }
 
-        return redirect()->route('payment.konfirmasi', $featureId)
-            ->with('success', 'Terima kasih! Transfer Anda akan kami verifikasi secepatnya (maks. 1x24 jam).');
+        if (! $order->payment_link_url) {
+            try {
+                $sumopod->buatPembayaran($order, (int) config('payment.expire_hours', 24));
+            } catch (\Throwable $e) {
+                \Log::error('SumoPod: gagal membuat pembayaran', ['order' => $order->id, 'error' => $e->getMessage()]);
+                $order->update(['status' => 'cancel']);
+                return back()->withErrors(['metode' => __('payment.qris_gagal')]);
+            }
+        }
+
+        return redirect()->away($order->payment_link_url);
     }
 
     /**
@@ -246,25 +218,6 @@ class PaymentController extends Controller
         if (!ctype_digit($featureId)) return null;
 
         return FiturData::cari((int) $featureId);
-    }
-
-    /**
-     * Kode unik 3 digit ditambahkan ke nominal supaya tiap transfer bisa dicocokkan
-     * satu-satu dengan mutasi rekening. Dicek ulang agar tidak ada dua order pending
-     * dengan harga dasar sama yang menghasilkan total transfer sama persis.
-     */
-    private function generateUniqueCode(int $amount): int
-    {
-        do {
-            $code = random_int(1, 999);
-        } while (
-            Order::where('status', 'pending')
-                ->where('amount', $amount)
-                ->where('unique_code', $code)
-                ->exists()
-        );
-
-        return $code;
     }
 
     private function userDariSession(): ?User
