@@ -53,7 +53,7 @@ class KirimHokiHarian extends Command
 
     private function generateHoki(array $kalkulasi, int $userId): array
     {
-        $seed   = $kalkulasi['weton']['neptu'] + $userId + (int) now()->format('Ymd');
+        $seed   = $kalkulasi['weton']['neptu'] + $userId + (int) str_replace('-', '', \App\Support\HariWib::tanggal()); // tanggal WIB agar angka berganti tengah malam WIB
         $warna  = ['Merah', 'Biru', 'Hijau', 'Kuning', 'Ungu', 'Putih', 'Hitam', 'Oranye', 'Tosca', 'Krem'];
         $mantra = [
             'Hari ini adalah kanvas terbaik untuk melukis impian Anda.',

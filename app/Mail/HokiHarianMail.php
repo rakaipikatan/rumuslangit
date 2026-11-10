@@ -19,7 +19,7 @@ class HokiHarianMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $tgl = now()->locale('id')->isoFormat('D MMMM Y');
+        $tgl = \Illuminate\Support\Carbon::now(\App\Support\HariWib::ZONA)->locale('id')->isoFormat('D MMMM Y'); // tanggal WIB, bukan UTC
         return new Envelope(subject: "✦ Peta Hoki Harian Anda — {$tgl}");
     }
 
