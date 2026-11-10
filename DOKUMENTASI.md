@@ -332,7 +332,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Perbaikan email Hoki Harian:** "Krem &amp; Oranye" (kode HTML tampil mentah akibat escape ganda) dan tanggal email yang memakai UTC (tampil tanggal kemarin pada pengiriman 06.00 WIB); angka hoki kini berdasar tanggal WIB; +3 tes (total 132) |
+| `2e74fde` | **Perbaikan email Hoki Harian:** "Krem &amp; Oranye" (kode HTML tampil mentah akibat escape ganda) dan tanggal email yang memakai UTC (tampil tanggal kemarin pada pengiriman 06.00 WIB); angka hoki kini berdasar tanggal WIB; +3 tes (total 132) |
 | `6628866` | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 132 tes) |
 | `4c511bb` | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
 | `8d0bee4` | **Halaman Panduan Pengguna** `/panduan` (setelah login); teks jatah diperjelas ("3 jatah laporan" + tautan "Apa itu jatah?"); aturan hasil diselaraskan dengan keputusan pemilik: **hari sama = hasil sama, hari berikutnya = laporan baru (tanpa memotong jatah), jatah hanya untuk jawaban berbeda**, berlaku untuk semua fitur (`PAYMENT_FITUR_HARIAN=semua` default); +5 tes (total 126) |
