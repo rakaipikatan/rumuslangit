@@ -356,7 +356,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Backup database otomatis** (`db:backup` harian 02:00 WIB, verifikasi isi, rotasi 14 hari + 6 bulan, izin aman, status di panel) dan **`db:uji-pulih`** (uji pulih aman ke tabel sementara); klien `postgresql-client-16` dipasang; +10 tes (total 177) |
+| `9a7593a` | **Backup database otomatis** (`db:backup` harian 02:00 WIB, verifikasi isi, rotasi 14 hari + 6 bulan, izin aman, status di panel) dan **`db:uji-pulih`** (uji pulih aman ke tabel sementara); klien `postgresql-client-16` dipasang; +10 tes (total 177) |
 | `4181277` | **Pencatatan lengkap hari ini:** bagian 15 (ringkasan pembaruan 10–11 Nov per tema + log kronologis dari git, 34 commit, berpenanda agar bisa dibuat ulang) dan aturan "setiap perubahan wajib dicatat"; checklist peluncuran (bagian 14) |
 | `4cb3a54` | **Bukti uji tiga alur pembayaran** (satuan, bulanan, tahunan) uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`, 4 tes / 122 pemeriksaan) + **checklist peluncuran & operasional** (bagian 14); temuan: perpanjangan langganan saat masih aktif diblokir, tidak ada pengingat kedaluwarsa, tidak ada halaman kebijakan/kontak (total 177 tes) |
 | `10db7fb` | **Riwayat email:** semua email keluar dicatat (jenis, penerima, pengguna, status, biaya); halaman admin **Email** (ringkasan, per jenis/hari/pengguna, email uji terpisah, rekonsiliasi dengan SumoPod, ekspor CSV) + kartu email di detail pengguna; email uji tidak menempel ke pengguna; migration `email_logs`; +14 tes (total 163) |
@@ -487,4 +487,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `10db7fb` | 11/11 10:06 | Riwayat email: catat semua email keluar, halaman admin Email, rekonsiliasi SumoPod, CSV |
 | `4cb3a54` | 11/11 10:14 | Tes uji-ujung-ke-ujung 3 alur pembayaran + checklist peluncuran/operasional |
 | `4181277` | 11/11 10:20 | Dokumentasi: catatan pembaruan 10-11 Nov (ringkasan per tema + log git kronologis) |
+| `9a7593a` | 11/11 10:29 | Backup database otomatis harian + verifikasi + uji pulih aman |
 <!-- LOG-GIT:AKHIR -->
