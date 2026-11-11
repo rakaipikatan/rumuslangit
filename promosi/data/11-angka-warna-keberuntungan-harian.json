@@ -1,0 +1,79 @@
+{
+  "nomor": "11",
+  "slug": "angka-warna-keberuntungan-harian",
+  "judul": "Angka & Warna Keberuntungan Harian",
+  "total": 58.0,
+  "adegan": [
+    {
+      "kode": "S1",
+      "mulai": 0.0,
+      "durasi": 5,
+      "nama": "Hook",
+      "teks": "Pilih baju apa?",
+      "vo": "Besok acara penting. Pakai baju yang mana?"
+    },
+    {
+      "kode": "S2",
+      "mulai": 5.0,
+      "durasi": 9,
+      "nama": "Masalah / kasus",
+      "teks": "Bingung tiap pagi",
+      "vo": "Setiap pagi kamu bingung memilih, dan percaya dirimu ikut naik turun."
+    },
+    {
+      "kode": "S3",
+      "mulai": 14.0,
+      "durasi": 6,
+      "nama": "Titik balik: menemukan Rumus Langit",
+      "teks": "Kiriman pagi di emailmu",
+      "vo": "Lalu setiap pagi, ada kiriman kecil dari Rumus Langit di emailmu."
+    },
+    {
+      "kode": "S4",
+      "mulai": 20.0,
+      "durasi": 7,
+      "nama": "Cara pakai (isi data)",
+      "teks": "Isi data lahir • Jawab Ya/Tidak",
+      "vo": "Fitur ini untuk pelanggan aktif: isi tanggal lahirmu sekali, dan kiriman datang setiap pagi."
+    },
+    {
+      "kode": "S5",
+      "mulai": 27.0,
+      "durasi": 10,
+      "nama": "Laporan terbuka — inti fitur",
+      "teks": "3 angka • 2 warna • 1 mantra",
+      "vo": "Tiga angka pegangan, dua warna busana beserta alasannya, dan satu mantra untuk memulai harimu."
+    },
+    {
+      "kode": "S6",
+      "mulai": 37.0,
+      "durasi": 8,
+      "nama": "Langkah nyata dari laporan",
+      "teks": "Pagi lebih mantap",
+      "vo": "Sederhana, tapi cukup untuk membuat pagimu lebih mantap."
+    },
+    {
+      "kode": "S7",
+      "mulai": 45.0,
+      "durasi": 6,
+      "nama": "Transformasi",
+      "teks": "Dari bingung → percaya diri",
+      "vo": "Dari bingung, menjadi lebih percaya diri."
+    },
+    {
+      "kode": "S8",
+      "mulai": 51.0,
+      "durasi": 7,
+      "nama": "Penutup + CTA",
+      "teks": [
+        "Rumus Langit — Solusi untuk setiap persimpangan hidup",
+        "Coba gratis: rumuslangit.biz.id",
+        "Untuk hiburan & refleksi diri"
+      ],
+      "vo": "Rumus Langit. Solusi untuk setiap persimpangan hidup. Coba gratis sekarang di rumus langit titik biz titik id."
+    }
+  ],
+  "tagline": "Solusi untuk setiap persimpangan hidup",
+  "url": "rumuslangit.biz.id",
+  "disclaimer": "Untuk hiburan & refleksi diri"
+}

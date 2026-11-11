@@ -1,0 +1,79 @@
+{
+  "nomor": "09",
+  "slug": "kesehatan-vitalitas-energi",
+  "judul": "Kesehatan & Vitalitas Energi Tubuh",
+  "total": 58.0,
+  "adegan": [
+    {
+      "kode": "S1",
+      "mulai": 0.0,
+      "durasi": 5,
+      "nama": "Hook",
+      "teks": "Energi cepat habis?",
+      "vo": "Sulit tidur, pundak tegang, energi cepat habis?"
+    },
+    {
+      "kode": "S2",
+      "mulai": 5.0,
+      "durasi": 9,
+      "nama": "Masalah / kasus",
+      "teks": "Kenapa selalu lelah?",
+      "vo": "Rasanya aktivitasmu tidak seberat itu, tapi tubuhmu terus kelelahan."
+    },
+    {
+      "kode": "S3",
+      "mulai": 14.0,
+      "durasi": 6,
+      "nama": "Titik balik: menemukan Rumus Langit",
+      "teks": "Pahami ritme energimu",
+      "vo": "Kamu mencoba Rumus Langit untuk memahami ritme energimu."
+    },
+    {
+      "kode": "S4",
+      "mulai": 20.0,
+      "durasi": 7,
+      "nama": "Cara pakai (isi data)",
+      "teks": "Isi data lahir • Jawab Ya/Tidak",
+      "vo": "Isi tanggal lahirmu dan, kalau tahu, golongan darahmu. Lalu jawab pertanyaan Ya atau Tidak soal kebiasaan harianmu."
+    },
+    {
+      "kode": "S5",
+      "mulai": 27.0,
+      "durasi": 10,
+      "nama": "Laporan terbuka — inti fitur",
+      "teks": "Zona perhatian • Gaya hidup",
+      "vo": "Muncul zona yang perlu kamu perhatikan dan panduan gaya hidup yang selaras dengan ritme energi lahirmu."
+    },
+    {
+      "kode": "S6",
+      "mulai": 37.0,
+      "durasi": 8,
+      "nama": "Langkah nyata dari laporan",
+      "teks": "Bukan pengganti dokter",
+      "vo": "Panduannya sederhana: ritme tidur, makan, dan gerak. Ingat, ini bukan pengganti pemeriksaan dokter."
+    },
+    {
+      "kode": "S7",
+      "mulai": 45.0,
+      "durasi": 6,
+      "nama": "Transformasi",
+      "teks": "Dari lelah → lebih seimbang",
+      "vo": "Dari lelah, menjadi lebih bertenaga dan seimbang."
+    },
+    {
+      "kode": "S8",
+      "mulai": 51.0,
+      "durasi": 7,
+      "nama": "Penutup + CTA",
+      "teks": [
+        "Rumus Langit — Solusi untuk setiap persimpangan hidup",
+        "Coba gratis: rumuslangit.biz.id",
+        "Untuk hiburan & refleksi diri"
+      ],
+      "vo": "Rumus Langit. Solusi untuk setiap persimpangan hidup. Coba gratis sekarang di rumus langit titik biz titik id."
+    }
+  ],
+  "tagline": "Solusi untuk setiap persimpangan hidup",
+  "url": "rumuslangit.biz.id",
+  "disclaimer": "Untuk hiburan & refleksi diri"
+}

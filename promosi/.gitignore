@@ -1,0 +1,5 @@
+# klip mentah dan hasil video berukuran besar: jangan masuk git
+produksi/*
+!produksi/PETUNJUK.md
+hasil/
+__pycache__/

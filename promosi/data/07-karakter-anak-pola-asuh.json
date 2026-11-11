@@ -1,0 +1,79 @@
+{
+  "nomor": "07",
+  "slug": "karakter-anak-pola-asuh",
+  "judul": "Karakter Anak & Pola Asuh",
+  "total": 58.0,
+  "adegan": [
+    {
+      "kode": "S1",
+      "mulai": 0.0,
+      "durasi": 5,
+      "nama": "Hook",
+      "teks": "Kehabisan sabar?",
+      "vo": "Anakmu sulit diatur, dan kamu sudah kehabisan kesabaran?"
+    },
+    {
+      "kode": "S2",
+      "mulai": 5.0,
+      "durasi": 9,
+      "nama": "Masalah / kasus",
+      "teks": "Marah salah, diam juga salah",
+      "vo": "Kamu tidak mau terus marah, tapi juga bingung cara bicara yang bisa ia dengar."
+    },
+    {
+      "kode": "S3",
+      "mulai": 14.0,
+      "durasi": 6,
+      "nama": "Titik balik: menemukan Rumus Langit",
+      "teks": "Pahami anakmu",
+      "vo": "Malam itu kamu mencoba memahami anakmu lewat Rumus Langit."
+    },
+    {
+      "kode": "S4",
+      "mulai": 20.0,
+      "durasi": 7,
+      "nama": "Cara pakai (isi data)",
+      "teks": "Isi data lahir • Jawab Ya/Tidak",
+      "vo": "Isi tanggal lahir anakmu, dan jawab pertanyaan Ya atau Tidak tentang kebiasaannya di rumah."
+    },
+    {
+      "kode": "S5",
+      "mulai": 27.0,
+      "durasi": 10,
+      "nama": "Laporan terbuka — inti fitur",
+      "teks": "Profil energi anak • Bakat",
+      "vo": "Kamu melihat profil energi anak, bakat uniknya, dan pendekatan komunikasi yang paling cocok dengan karakternya."
+    },
+    {
+      "kode": "S6",
+      "mulai": 37.0,
+      "durasi": 8,
+      "nama": "Langkah nyata dari laporan",
+      "teks": "Tegas tapi hangat",
+      "vo": "Panduannya praktis, tegas tapi hangat, dan bisa langsung dicoba sore ini."
+    },
+    {
+      "kode": "S7",
+      "mulai": 45.0,
+      "durasi": 6,
+      "nama": "Transformasi",
+      "teks": "Dari lelah → lebih dekat",
+      "vo": "Dari lelah, menjadi lebih dekat dengan buah hati."
+    },
+    {
+      "kode": "S8",
+      "mulai": 51.0,
+      "durasi": 7,
+      "nama": "Penutup + CTA",
+      "teks": [
+        "Rumus Langit — Solusi untuk setiap persimpangan hidup",
+        "Coba gratis: rumuslangit.biz.id",
+        "Untuk hiburan & refleksi diri"
+      ],
+      "vo": "Rumus Langit. Solusi untuk setiap persimpangan hidup. Coba gratis sekarang di rumus langit titik biz titik id."
+    }
+  ],
+  "tagline": "Solusi untuk setiap persimpangan hidup",
+  "url": "rumuslangit.biz.id",
+  "disclaimer": "Untuk hiburan & refleksi diri"
+}
