@@ -345,11 +345,12 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Bukti uji tiga alur pembayaran** (satuan, bulanan, tahunan) uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`, 4 tes / 122 pemeriksaan) + **checklist peluncuran & operasional** (bagian 14); temuan: perpanjangan langganan saat masih aktif diblokir, tidak ada pengingat kedaluwarsa, tidak ada halaman kebijakan/kontak (total 167 tes) |
 | `10db7fb` | **Riwayat email:** semua email keluar dicatat (jenis, penerima, pengguna, status, biaya); halaman admin **Email** (ringkasan, per jenis/hari/pengguna, email uji terpisah, rekonsiliasi dengan SumoPod, ekspor CSV) + kartu email di detail pengguna; email uji tidak menempel ke pengguna; migration `email_logs`; +14 tes (total 163) |
 | `1271562` | **Panel admin 1–3:** (1) Status layanan (email, Gemini, QRIS, webhook, Hoki, cron, Horizon, konfigurasi, mode SumoPod) + tombol tes email/Gemini; (2) detail pengguna + beri jatah/langganan gratis (order Rp0 `komplimen`); (3) kirim ulang bukti bayar + tabel order yang benar. Perbaikan: komisi afiliator tidak lagi terhapus bersama pengguna, dashboard memakai hari WIB + pendapatan per periode. 3 migration (`service_events`, `orders.catatan`, FK komisi `SET NULL`); +17 tes (total 149) |
 | `0b89b89` | **Harga langganan naik:** bulanan Rp49.000 → **Rp59.000**, tahunan Rp399.000 → **Rp499.000** (hemat 30%); tes tidak lagi mengunci angka lama (komisi dan nominal mengikuti konfigurasi) |
 | `2e74fde` | **Perbaikan email Hoki Harian:** "Krem &amp; Oranye" (kode HTML tampil mentah akibat escape ganda) dan tanggal email yang memakai UTC (tampil tanggal kemarin pada pengiriman 06.00 WIB); angka hoki kini berdasar tanggal WIB; +3 tes (total 132) |
-| `6628866` | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 163 tes) |
+| `6628866` | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 167 tes) |
 | `4c511bb` | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
 | `8d0bee4` | **Halaman Panduan Pengguna** `/panduan` (setelah login); teks jatah diperjelas ("3 jatah laporan" + tautan "Apa itu jatah?"); aturan hasil diselaraskan dengan keputusan pemilik: **hari sama = hasil sama, hari berikutnya = laporan baru (tanpa memotong jatah), jatah hanya untuk jawaban berbeda**, berlaku untuk semua fitur (`PAYMENT_FITUR_HARIAN=semua` default); +5 tes (total 126) |
 | `2231b85` | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
@@ -379,3 +380,41 @@ php artisan test       # atau: composer test
 | `077e5f8` | Fix crash langganan bulanan di paywall & aktivasi |
 | `8554ac3` | Fix title-case singkatan DKI |
 | `6283fcb` | Initial commit |
+
+---
+
+## 14. Checklist peluncuran & operasional (per 11 Nov 2026)
+
+Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran (satuan, bulanan, tahunan) lulus uji-ujung-ke-ujung (halaman bayar → QRIS → menunggu → webhook → akses → bukti bayar → komisi → webhook ganda tak menggandakan → masa berlaku); server: disk 65%, 0 migration tertunda, 0 antrean gagal, `APP_DEBUG=false`, SSL Let's Encrypt diperpanjang otomatis (`certbot.timer`; berakhir 27 Des 2026), SPF/DKIM/DMARC terpasang, `composer audit` bersih.
+
+### A. Wajib sebelum promosi / iklan / mengajak afiliator
+- [ ] **Halaman hukum**: Kebijakan Privasi (data lahir + email dikumpulkan), Syarat Layanan, Kebijakan Refund/Pembatalan; tautan di footer dan halaman bayar. *(Belum ada.)*
+- [ ] **Kanal dukungan** (email/WhatsApp) ditampilkan di panduan, FAQ, dan footer; pasang **Reply-To** email bukti bayar ke kotak masuk nyata (pengirim `noreply@` tidak punya kotak masuk, padahal email menyuruh "balas email ini"). *(Belum ada.)*
+- [ ] **Perpanjangan & upgrade langganan**: pelanggan yang masih aktif saat ini **diblokir** membayar lagi (`PaymentController::konfirmasi` mengalihkan), jadi tidak bisa memperpanjang sebelum habis atau upgrade bulanan → tahunan; masa aktif sudah mendukung penyambungan (`aktifkanLangganan`). Izinkan pembelian saat aktif.
+- [ ] **Pengingat langganan hampir habis** (email H-3 dan H-1) — saat ini tidak ada; pelanggan baru tahu setelah akses hilang.
+- [ ] **Tes pembayaran Live ulang untuk 3 produk** setelah semua perubahan: aktifkan sementara `PAYMENT_TEST_PRICE=1000` + `PAYMENT_TEST_EMAIL` (hapus `#`, `config:cache`), uji satuan/bulanan/tahunan sampai akses terbuka + bukti bayar masuk, lalu komentari lagi.
+- [ ] **Top up kredit email SumoPod** (Rp5/email; sebelumnya 60 email) dan catat sisa kredit sebagai titik awal rekonsiliasi (Admin → Email).
+- [ ] **Backup database**: database ada di server SumoPod terpisah — pastikan backup otomatis aktif di sisi SumoPod **atau** jadwalkan `pg_dump` ke penyimpanan di luar server; **uji restore** satu kali. *(Tidak ada cron backup di server aplikasi.)*
+- [ ] **Pemantau uptime eksternal** untuk `https://rumuslangit.biz.id/health` dengan notifikasi (mis. UptimeRobot).
+- [ ] **Peringatan tagihan Gemini** di Google Cloud (batas bulanan) agar biaya AI tak melonjak tanpa terlihat.
+
+### B. Minggu pertama
+- [ ] **Alur refund**: kebijakan dulu, lalu fitur "tandai refund" (cabut akses/langganan + batalkan komisi + status order). *(Belum dibangun; saat ini manual.)*
+- [ ] **Uji afiliasi nyata**: daftar `/afiliasi` → setujui di admin → email persetujuan masuk → buka link `?ref=` → beli → komisi tercatat → (14 hari) siap dibayar.
+- [ ] **Cek tampilan HP**: beranda, hasil, katalog, paywall, bayar, panduan, `/afiliasi`, admin.
+- [ ] **Deliverability**: kirim OTP ke Gmail, Yahoo, Outlook; "Tampilkan asli" harus SPF/DKIM/DMARC = PASS; tandai "Bukan spam" bila masuk Spam.
+- [ ] **Rotasi log** (`LOG_STACK=daily` atau logrotate) — `laravel.log` saat ini satu berkas tanpa rotasi.
+- [ ] **Cabut token lama** yang tak dipakai (Fonnte, WAHA, Duitku) di dashboard masing-masing.
+- [ ] **Ganti password admin** lalu simpan di password manager (password sekarang pernah tampil di percakapan).
+- [ ] Putuskan **`CACHE_STORE`** (sekarang `database`, bukan Redis).
+- [ ] Hapus berkas sensitif yang tak perlu di `/home/ubuntu/backup/` (cadangan `.env`, ekspor pengguna JSON).
+
+### C. Pemantauan rutin
+- **Harian:** Admin → Sistem → Status layanan semua "normal"; antrean gagal = 0; cron berdetak.
+- **Mingguan:** sisa kredit email SumoPod; Admin → Email → rekonsiliasi; tagihan Gemini; ruang disk; pesan dukungan.
+- **Tanggal 25:** bayar komisi afiliasi (Admin → Afiliator → hanya komisi "Siap dibayar"), tandai lunas.
+- **Bulanan:** ekspor CSV email/order untuk pembukuan; `composer audit`; `apt` security update PHP; evaluasi harga/margin.
+- **Tahunan:** perpanjang domain (berakhir 31 Mei 2027); SSL otomatis (cek `certbot certificates` sekitar 27 Nov 2026).
+
+### D. Setelah ada transaksi nyata
+- [ ] Ekspor CSV order & daftar payout afiliator; pendapatan per produk; catatan aksi admin; 2FA/IP-allowlist untuk admin; evaluasi harga Rp59.000/Rp499.000 dengan data konversi; evaluasi biaya AI per laporan.
