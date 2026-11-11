@@ -43,6 +43,7 @@ class KirimHokiHarian extends Command
                 // Dicatat ke log (output konsol cron dibuang), supaya kegagalan — mis. saldo email habis — terlihat.
                 Log::warning('Hoki harian gagal dikirim', ['user' => $user->id, 'error' => $e->getMessage()]);
                 \App\Support\LayananStatus::gagal('email', "Hoki user #{$user->id}: " . $e->getMessage());
+                \App\Support\EmailLogger::catatGagal('hoki_harian', $user->email, $e->getMessage());
                 $this->warn("Gagal kirim ke user #{$user->id}: {$e->getMessage()}");
             }
         }

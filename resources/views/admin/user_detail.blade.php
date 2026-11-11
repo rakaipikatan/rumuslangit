@@ -108,6 +108,27 @@
     </div>
 </div>
 
+<div class="{{ $card }} mb-6">
+    <h2 class="{{ $h }}">Email yang dikirim ke pengguna ini</h2>
+    <div class="text-sm text-white/70 mb-3">
+        <span class="text-white font-semibold">{{ $emailStat['jumlah'] }}</span> terkirim · biaya ±<span class="text-white font-semibold">Rp {{ number_format($emailStat['biaya'], 0, ',', '.') }}</span>
+        @if($emailStat['gagal'] > 0)<span class="text-amber-300"> · {{ $emailStat['gagal'] }} gagal</span>@endif
+        @if($emailStat['perJenis']->isNotEmpty())
+        <span class="text-white/40"> — {{ $emailStat['perJenis']->map(fn ($x) => (\App\Models\EmailLog::JENIS[$x->jenis] ?? $x->jenis) . ' ' . $x->n)->implode(', ') }}</span>
+        @endif
+    </div>
+    @forelse($emailStat['terbaru'] as $e)
+    <div class="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0 text-xs">
+        <span class="text-white/70">{{ \App\Models\EmailLog::JENIS[$e->jenis] ?? $e->jenis }}</span>
+        <span class="text-white/30">{{ $wib($e->created_at) }}</span>
+        <span class="{{ $e->status === 'terkirim' ? 'text-emerald-300' : 'text-amber-300' }}">{{ $e->status }}{{ $e->pesan_error ? ' — ' . \Illuminate\Support\Str::limit($e->pesan_error, 60) : '' }}</span>
+    </div>
+    @empty
+    <p class="text-sm text-white/30">Belum ada email tercatat untuk pengguna ini.</p>
+    @endforelse
+    <a href="{{ route('admin.email', ['cari' => $user->email, 'dari' => '2020-01-01']) }}" class="inline-block mt-3 text-xs text-purple-300/80 hover:text-purple-200">Lihat semua di riwayat email →</a>
+</div>
+
 <div class="{{ $card }} mb-6 overflow-x-auto">
     <h2 class="{{ $h }}">Order ({{ $user->orders->count() }})</h2>
     <table class="w-full text-sm">

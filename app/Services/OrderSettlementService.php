@@ -64,6 +64,7 @@ class OrderSettlementService
         } catch (\Throwable $e) {
             Log::warning('Bukti bayar gagal diantrekan', ['order' => $order->id, 'error' => $e->getMessage()]);
             \App\Support\LayananStatus::gagal('email', "Bukti bayar order #{$order->id}: " . $e->getMessage());
+            \App\Support\EmailLogger::catatGagal('bukti_bayar', $email, $e->getMessage());
         }
     }
 

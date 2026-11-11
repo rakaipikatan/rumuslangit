@@ -60,7 +60,7 @@ class AuthController extends Controller
             $ada = User::whereRaw('lower(email) = ?', [$email])->whereNotNull('email_verified_at')->exists();
             if ($ada) {
                 try {
-                    $otp->kirimOTP($email);
+                    $otp->kirimOTP($email, 'login_kode');
                 } catch (\Throwable $e) {
                     \Log::warning('Kode login gagal dikirim', ['error' => $e->getMessage()]);
                 }

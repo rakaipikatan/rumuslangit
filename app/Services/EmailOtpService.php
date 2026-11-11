@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Mail;
 
 class EmailOtpService
 {
-    public function kirimOTP(string $email): void
+    public function kirimOTP(string $email, string $jenis = 'otp'): void
     {
         $otp  = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $hash = hash('sha256', strtolower(trim($email)));
@@ -18,9 +18,10 @@ class EmailOtpService
         Cache::put("otp:{$hash}", $otp, now()->addMinutes(5));
 
         try {
-            Mail::to($email)->send(new OtpMail($otp));
+            Mail::to($email)->send(new OtpMail($otp, $jenis));
         } catch (\Throwable $e) {
             \App\Support\LayananStatus::gagal('email', 'Kirim kode gagal: ' . $e->getMessage());
+            \App\Support\EmailLogger::catatGagal($jenis, $email, $e->getMessage());
             throw $e;
         }
 

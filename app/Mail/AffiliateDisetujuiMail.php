@@ -17,7 +17,10 @@ class AffiliateDisetujuiMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Pendaftaran Afiliasi Rumus Langit Disetujui');
+        return new Envelope(
+            subject: 'Pendaftaran Afiliasi Rumus Langit Disetujui',
+            using: [fn (\Symfony\Component\Mime\Email $m) => \App\Support\EmailLogger::tandai($m, 'afiliasi_disetujui')],
+        );
     }
 
     public function content(): Content

@@ -18,7 +18,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Panel admin "Status layanan": setiap email yang berhasil dikirim memperbarui penanda "terakhir sukses".
-        Event::listen(MessageSent::class, fn () => LayananStatus::ok('email'));
+        Event::listen(MessageSent::class, function (MessageSent $e) {
+            LayananStatus::ok('email');
+            // Riwayat email (konsolidasi pemakaian per pengguna/jenis)
+            $pesan = $e->sent->getOriginalMessage();
+            if ($pesan instanceof \Symfony\Component\Mime\Email) {
+                \App\Support\EmailLogger::catatTerkirim($pesan);
+            }
+        });
 
         // Pekerjaan antrean yang gagal (mis. bukti bayar/email gagal terkirim di Horizon) → dicatat sebagai kegagalan.
         Event::listen(JobFailed::class, fn (JobFailed $e) => LayananStatus::dariJobGagal($e->job->resolveName(), $e->exception));

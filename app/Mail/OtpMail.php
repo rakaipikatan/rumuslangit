@@ -12,12 +12,13 @@ class OtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly string $otp) {}
+    public function __construct(public readonly string $otp, public readonly string $jenis = 'otp') {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Kode Verifikasi Rumus Langit: ' . $this->otp,
+            using: [fn (\Symfony\Component\Mime\Email $m) => \App\Support\EmailLogger::tandai($m, $this->jenis)],
         );
     }
 

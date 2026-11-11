@@ -36,4 +36,7 @@ return [
             ? range(1, 12)
             : array_values(array_filter(array_map('trim', explode(',', $v)), 'strlen'));
     })(),
+
+    // Biaya satu email di SumoPod (rupiah) — dipakai catatan riwayat email untuk perkiraan biaya/rekonsiliasi.
+    'biaya_email' => env('PAYMENT_BIAYA_EMAIL', 5),
 ];

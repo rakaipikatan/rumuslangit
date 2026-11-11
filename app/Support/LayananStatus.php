@@ -46,6 +46,7 @@ class LayananStatus
     {
         if (str_contains($namaJob, 'SendQueuedMailable')) {
             self::gagal('email', 'Antrean email gagal: ' . $e->getMessage());
+            EmailLogger::catatGagal('antrean', null, $e->getMessage());
         }
     }
 

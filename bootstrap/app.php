@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Buang catatan kegagalan layanan yang lebih dari 30 hari
         $schedule->call(fn () => \App\Models\ServiceEvent::where('created_at', '<', now()->subDays(30))->delete())->daily()->name('bersihkan-service-events');
 
+        // Riwayat email disimpan ±13 bulan
+        $schedule->call(fn () => \App\Models\EmailLog::where('created_at', '<', now()->subDays(400))->delete())->daily()->name('bersihkan-email-logs');
+
         // Sinkronisasi status subscription yang expired setiap jam
         $schedule->command('subscription:sync')->hourly();
     })

@@ -28,9 +28,13 @@ class KirimEmailUji extends Command
         try {
             Mail::raw(
                 "Ini email uji dari Rumus Langit ({$_SERVER['REQUEST_TIME']}).\nJika Anda menerima ini, pengiriman email berfungsi.",
-                fn ($m) => $m->to($email)->subject('Uji Email Rumus Langit')
+                function ($m) use ($email) {
+                    $m->to($email)->subject('Uji Email Rumus Langit');
+                    \App\Support\EmailLogger::tandai($m->getSymfonyMessage(), 'tes_cli');
+                }
             );
         } catch (\Throwable $e) {
+            \App\Support\EmailLogger::catatGagal('tes_cli', $email, $e->getMessage());
             $this->error('GAGAL dikirim: ' . $e->getMessage());
             return self::FAILURE;
         }

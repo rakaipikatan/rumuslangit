@@ -20,7 +20,10 @@ class HokiHarianMail extends Mailable
     public function envelope(): Envelope
     {
         $tgl = \Illuminate\Support\Carbon::now(\App\Support\HariWib::ZONA)->locale('id')->isoFormat('D MMMM Y'); // tanggal WIB, bukan UTC
-        return new Envelope(subject: "✦ Peta Hoki Harian Anda — {$tgl}");
+        return new Envelope(
+            subject: "✦ Peta Hoki Harian Anda — {$tgl}",
+            using: [fn (\Symfony\Component\Mime\Email $m) => \App\Support\EmailLogger::tandai($m, 'hoki_harian')],
+        );
     }
 
     public function content(): Content

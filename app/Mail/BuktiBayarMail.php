@@ -22,7 +22,10 @@ class BuktiBayarMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Bukti Pembayaran Rumus Langit — ' . $this->order->gateway_order_id);
+        return new Envelope(
+            subject: 'Bukti Pembayaran Rumus Langit — ' . $this->order->gateway_order_id,
+            using: [fn (\Symfony\Component\Mime\Email $m) => \App\Support\EmailLogger::tandai($m, 'bukti_bayar')],
+        );
     }
 
     public function content(): Content

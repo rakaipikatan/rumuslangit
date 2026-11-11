@@ -177,6 +177,107 @@ class AdminController extends Controller
         return back()->with('password_reset_info', $pesan);
     }
 
+    // ─── Riwayat email (konsolidasi pemakaian & rekonsiliasi dengan SumoPod) ───
+
+    /** Periode (hari WIB) dari query string: default 30 hari terakhir. Mengembalikan batas dalam zona waktu aplikasi. */
+    private function periodeEmail(Request $r): array
+    {
+        $zona = \App\Support\HariWib::ZONA;
+        $valid = fn ($v) => is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $v) && strtotime($v) !== false;
+
+        $sampaiStr = $valid($r->input('sampai')) ? $r->input('sampai') : \App\Support\HariWib::tanggal();
+        $dariStr   = $valid($r->input('dari')) ? $r->input('dari')
+            : \Illuminate\Support\Carbon::parse($sampaiStr, $zona)->subDays(29)->toDateString();
+
+        return [
+            $dariStr,
+            $sampaiStr,
+            \Illuminate\Support\Carbon::parse($dariStr, $zona)->startOfDay()->setTimezone(config('app.timezone')),
+            \Illuminate\Support\Carbon::parse($sampaiStr, $zona)->endOfDay()->setTimezone(config('app.timezone')),
+        ];
+    }
+
+    private function queryEmail(Request $r, $dari, $sampai)
+    {
+        $q = \App\Models\EmailLog::whereBetween('created_at', [$dari, $sampai]);
+
+        if ($r->filled('jenis')) $q->where('jenis', $r->input('jenis'));
+        if ($r->filled('status') && in_array($r->input('status'), ['terkirim', 'gagal'], true)) $q->where('status', $r->input('status'));
+        if ($r->filled('cari')) {
+            $cari = '%' . $r->input('cari') . '%';
+            $q->where(fn ($qb) => $qb->where('email', 'ilike', $cari)
+                ->orWhereHas('user', fn ($u) => $u->where('name', 'ilike', $cari)->orWhere('email', 'ilike', $cari)));
+        }
+
+        return $q;
+    }
+
+    public function email(Request $request)
+    {
+        [$dariStr, $sampaiStr, $dari, $sampai] = $this->periodeEmail($request);
+        $base = fn () => $this->queryEmail($request, $dari, $sampai);
+
+        $ringkasan = [
+            'total'    => $base()->count(),
+            'terkirim' => $base()->where('status', 'terkirim')->count(),
+            'gagal'    => $base()->where('status', 'gagal')->count(),
+            'biaya'    => (int) $base()->sum('biaya'),
+        ];
+
+        $perJenis = $base()->selectRaw("jenis, sum(case when status = 'terkirim' then 1 else 0 end) as terkirim, sum(case when status = 'gagal' then 1 else 0 end) as gagal, sum(biaya) as biaya")
+            ->groupBy('jenis')->orderByDesc('terkirim')->get();
+
+        $perHari = $base()->selectRaw("(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date as hari, sum(case when status = 'terkirim' then 1 else 0 end) as terkirim, sum(case when status = 'gagal' then 1 else 0 end) as gagal, sum(biaya) as biaya")
+            ->groupByRaw("(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')::date")->orderByDesc('hari')->limit(45)->get();
+
+        $topPengguna = $base()->where('status', 'terkirim')->whereNotNull('user_id')
+            ->selectRaw('user_id, count(*) as jumlah, sum(biaya) as biaya')->groupBy('user_id')->orderByDesc('jumlah')->limit(15)->get();
+        $namaPengguna = User::whereIn('id', $topPengguna->pluck('user_id'))->get(['id', 'name', 'email'])->keyBy('id');
+
+        $tanpaPengguna = [
+            'uji'    => $base()->where('status', 'terkirim')->where('jenis', 'like', 'tes%')->count(),
+            'lainnya' => $base()->where('status', 'terkirim')->whereNull('user_id')->where('jenis', 'not like', 'tes%')->count(),
+        ];
+
+        // Rekonsiliasi: pemakaian menurut dashboard SumoPod (diisi admin) vs catatan lokal
+        $sumopod  = $request->filled('sumopod') && ctype_digit((string) $request->input('sumopod')) ? (int) $request->input('sumopod') : null;
+        $selisih  = $sumopod !== null ? $sumopod - $ringkasan['terkirim'] : null;
+
+        $daftar = $base()->with('user:id,name')->latest('id')->paginate(50)->withQueryString();
+
+        return view('admin.email', [
+            'dariStr' => $dariStr, 'sampaiStr' => $sampaiStr,
+            'ringkasan' => $ringkasan, 'perJenis' => $perJenis, 'perHari' => $perHari,
+            'topPengguna' => $topPengguna, 'namaPengguna' => $namaPengguna, 'tanpaPengguna' => $tanpaPengguna,
+            'sumopod' => $sumopod, 'selisih' => $selisih, 'daftar' => $daftar,
+            'jenisList' => \App\Models\EmailLog::JENIS, 'biayaEmail' => \App\Support\EmailLogger::biaya(),
+        ]);
+    }
+
+    // Ekspor CSV (waktu WIB) mengikuti filter yang sama — untuk pembukuan / pencocokan dengan tagihan SumoPod.
+    public function emailCsv(Request $request)
+    {
+        [$dariStr, $sampaiStr, $dari, $sampai] = $this->periodeEmail($request);
+        $q = $this->queryEmail($request, $dari, $sampai)->latest('id');
+
+        $nama = "riwayat-email-{$dariStr}_sd_{$sampaiStr}.csv";
+
+        return response()->streamDownload(function () use ($q) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF"); // BOM agar Excel membaca UTF-8
+            fputcsv($out, ['waktu_wib', 'jenis', 'penerima', 'pengguna_id', 'status', 'biaya_rp', 'pesan_error']);
+            $q->chunkById(500, function ($baris) use ($out) {
+                foreach ($baris as $b) {
+                    fputcsv($out, [
+                        $b->created_at->copy()->timezone(\App\Support\HariWib::ZONA)->format('Y-m-d H:i:s'),
+                        $b->jenis, $b->email, $b->user_id, $b->status, $b->biaya, $b->pesan_error,
+                    ]);
+                }
+            });
+            fclose($out);
+        }, $nama, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     // ─── Detail pengguna & pemberian akses gratis ─────────────────────────────
 
     public function userDetail(int $id)
@@ -199,7 +300,15 @@ class AdminController extends Controller
         $laporan  = AiReport::where('user_id', $id)->latest('id')->limit(15)->get();
         $fiturBerbayar = collect($fitur)->filter(fn ($f) => ($f['harga'] ?? 0) > 0 && empty($f['freemium']) && empty($f['subscriber_only']));
 
-        return view('admin.user_detail', compact('user', 'fitur', 'kuota', 'laporan', 'fiturBerbayar'));
+        $emailStat = [
+            'jumlah'  => \App\Models\EmailLog::where('user_id', $id)->where('status', 'terkirim')->count(),
+            'biaya'   => (int) \App\Models\EmailLog::where('user_id', $id)->sum('biaya'),
+            'gagal'   => \App\Models\EmailLog::where('user_id', $id)->where('status', 'gagal')->count(),
+            'terbaru' => \App\Models\EmailLog::where('user_id', $id)->latest('id')->limit(10)->get(),
+            'perJenis' => \App\Models\EmailLog::where('user_id', $id)->where('status', 'terkirim')->selectRaw('jenis, count(*) as n')->groupBy('jenis')->orderByDesc('n')->get(),
+        ];
+
+        return view('admin.user_detail', compact('user', 'fitur', 'kuota', 'laporan', 'fiturBerbayar', 'emailStat'));
     }
 
     // Beri N paket jatah gratis (tiap paket = payment.single_generations jatah) untuk satu fitur berbayar.
@@ -436,6 +545,7 @@ class AdminController extends Controller
         } catch (\Throwable $e) {
             \Log::warning('Email persetujuan afiliasi gagal', ['affiliate' => $affiliate->id, 'error' => $e->getMessage()]);
             \App\Support\LayananStatus::gagal('email', "Persetujuan afiliasi #{$affiliate->id}: " . $e->getMessage());
+            \App\Support\EmailLogger::catatGagal('afiliasi_disetujui', $app->email, $e->getMessage());
             $pesan .= ' PERHATIAN: email gagal terkirim — kirim link manual: ' . url('/') . '?ref=' . $affiliate->referral_code;
         }
 
@@ -562,10 +672,14 @@ class AdminController extends Controller
             \Illuminate\Support\Facades\Mail::raw(
                 'Ini email uji dari panel admin Rumus Langit. Jika Anda menerimanya, pengiriman email berfungsi. '
                 . 'Tidak ada di Inbox? Cek folder Spam atau Junk.',
-                fn ($m) => $m->to($request->email)->subject('Uji Email Rumus Langit (admin)')
+                function ($m) use ($request) {
+                    $m->to($request->email)->subject('Uji Email Rumus Langit (admin)');
+                    \App\Support\EmailLogger::tandai($m->getSymfonyMessage(), 'tes_admin');
+                }
             );
         } catch (\Throwable $e) {
             \App\Support\LayananStatus::gagal('email', 'Tes admin: ' . $e->getMessage());
+            \App\Support\EmailLogger::catatGagal('tes_admin', $request->email, $e->getMessage());
             return back()->with('error', 'GAGAL kirim email uji: ' . $e->getMessage());
         }
 

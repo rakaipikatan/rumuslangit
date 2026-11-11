@@ -99,6 +99,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/users/{id}/reset-password', [AdminController::class, 'resetPasswordUser'])->name('users.reset-password');
         Route::delete('/users/{id}',      [AdminController::class, 'hapusUser'])->name('users.hapus');
         Route::get('/reports',       [AdminController::class, 'reports'])->name('reports');
+        Route::get('/email',         [AdminController::class, 'email'])->name('email');
+        Route::get('/email/csv',     [AdminController::class, 'emailCsv'])->name('email.csv');
         Route::get('/orders',        [AdminController::class, 'orders'])->name('orders');
         Route::post('/orders/{id}/konfirmasi', [AdminController::class, 'konfirmasiOrder'])->name('orders.konfirmasi');
         Route::post('/orders/{id}/tolak',      [AdminController::class, 'tolakOrder'])->name('orders.tolak');
