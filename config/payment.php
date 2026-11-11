@@ -12,6 +12,7 @@ return [
     // Aktif bila keduanya terisi di .env; hapus/kosongkan setelah pengujian selesai.
     'test_price' => env('PAYMENT_TEST_PRICE'),
     'test_email' => env('PAYMENT_TEST_EMAIL'),
+    'test_until' => env('PAYMENT_TEST_UNTIL'), // pengaman: harga uji otomatis mati setelah waktu ini (ISO 8601, mis. 2026-11-11T20:00:00+07:00)
 
     // Komisi default (%) untuk afiliator yang disetujui dari halaman pendaftaran.
     'affiliate_default_commission' => env('AFFILIATE_DEFAULT_COMMISSION', 20),

@@ -345,4 +345,15 @@ class AdminPanelTest extends TestCase
         // halaman detail afiliator tetap bisa dibuka walau pengguna terkait sudah tidak ada
         $this->admin()->get(route('admin.affiliates.detail', $aff->id))->assertOk();
     }
+
+    public function test_panel_sistem_memperingatkan_selama_harga_uji_aktif(): void
+    {
+        $this->admin()->get(route('admin.system'))->assertDontSee('HARGA UJI AKTIF');
+
+        config(['payment.test_price' => 1000, 'payment.test_email' => 'penguji@example.test', 'payment.test_until' => now()->addHours(3)->toIso8601String()]);
+        $this->admin()->get(route('admin.system'))->assertSee('HARGA UJI AKTIF')->assertSee('otomatis mati')->assertSee('Ada yang perlu dicek');
+
+        config(['payment.test_until' => now()->subMinute()->toIso8601String()]); // sudah lewat
+        $this->admin()->get(route('admin.system'))->assertDontSee('HARGA UJI AKTIF');
+    }
 }

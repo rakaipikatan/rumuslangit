@@ -660,7 +660,19 @@ class AdminController extends Controller
         ];
         $modeSumopod = str_contains((string) config('services.sumopod_pay.base_url'), 'sandbox') ? 'SANDBOX (uji)' : 'LIVE';
 
-        return view('admin.system', compact('info', 'layanan', 'detak', 'penjadwalOk', 'horizon', 'konfigurasi', 'modeSumopod'));
+        // Peringatan: harga uji masih aktif (jangan sampai tertinggal di produksi)
+        $peringatan = [];
+        $sampai = config('payment.test_until');
+        $hargaUjiAktif = filled(config('payment.test_price')) && filled(config('payment.test_email'))
+            && (blank($sampai) || \Illuminate\Support\Carbon::parse($sampai)->isFuture());
+        if ($hargaUjiAktif) {
+            $peringatan[] = 'HARGA UJI AKTIF: Rp' . number_format((int) config('payment.test_price'), 0, ',', '.')
+                . ' untuk satu email pengujian'
+                . (filled($sampai) ? ', otomatis mati ' . \Illuminate\Support\Carbon::parse($sampai)->timezone('Asia/Jakarta')->format('d/m H:i') . ' WIB' : ' — TANPA batas waktu')
+                . '. Matikan setelah tes selesai (beri tanda # di .env, lalu config:cache).';
+        }
+
+        return view('admin.system', compact('info', 'layanan', 'detak', 'penjadwalOk', 'horizon', 'konfigurasi', 'modeSumopod', 'peringatan'));
     }
 
     // Tombol "Tes kirim email": kirim email uji ke alamat yang diketik admin dan tampilkan hasilnya apa adanya.

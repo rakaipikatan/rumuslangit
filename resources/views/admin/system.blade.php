@@ -7,7 +7,7 @@
 @php
     $wibS = fn ($t) => $t ? $t->copy()->timezone('Asia/Jakarta')->format('d/m H:i') . ' WIB' : null;
     $rel  = fn ($t) => $t ? $t->copy()->locale('id')->diffForHumans() : null;
-    $semuaBaik = collect($layanan)->every(fn ($l) => !$l['perlu_cek']) && $penjadwalOk && $horizon === 'berjalan' && collect($konfigurasi)->every(fn ($v) => $v);
+    $semuaBaik = empty($peringatan) && collect($layanan)->every(fn ($l) => !$l['perlu_cek']) && $penjadwalOk && $horizon === 'berjalan' && collect($konfigurasi)->every(fn ($v) => $v);
 @endphp
 <div class="bg-cosmic-800/60 border {{ $semuaBaik ? 'border-emerald-500/20' : 'border-amber-500/30' }} rounded-2xl p-6 mb-6">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -16,6 +16,10 @@
             {{ $semuaBaik ? '✓ Semua normal' : '⚠ Ada yang perlu dicek' }}
         </span>
     </div>
+
+    @foreach($peringatan as $w)
+    <div class="mb-4 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 text-xs text-amber-300 leading-relaxed">⚠ {{ $w }}</div>
+    @endforeach
 
     <div class="overflow-x-auto">
         <table class="w-full text-sm">

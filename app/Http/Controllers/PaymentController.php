@@ -178,6 +178,12 @@ class PaymentController extends Controller
         $harga = config('payment.test_price');
         $email = config('payment.test_email');
 
+        // Pengaman: lewat batas waktu → harga uji mati sendiri (tidak bisa tertinggal aktif di produksi)
+        $sampai = config('payment.test_until');
+        if (filled($sampai) && \Illuminate\Support\Carbon::parse($sampai)->isPast()) {
+            return $fitur;
+        }
+
         if ((int) $fitur['harga'] > 0 && filled($harga) && filled($email)
             && $user->email_verified_at
             && strcasecmp((string) $user->email, (string) $email) === 0) {

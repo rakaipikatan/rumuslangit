@@ -539,4 +539,23 @@ class SumopodPaymentTest extends TestCase
         $this->withSession(['user_id' => $this->buatUser()->id])->get(route('payment.konfirmasi', 3))
             ->assertOk()->assertSee('Membayar dari luar negeri?');
     }
+
+    public function test_harga_uji_mati_otomatis_setelah_batas_waktu(): void
+    {
+        Http::fake(['*' => fn () => Http::response([
+            'payment_id' => (string) Str::uuid(), 'payment_link_url' => 'https://pay.sumopod.test/pay/u', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+        $u = $this->buatUser();
+        $u->update(['email_verified_at' => now()]);
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 10:00:00', 'UTC'));
+        config(['payment.test_price' => 1000, 'payment.test_email' => $u->email, 'payment.test_until' => '2026-11-11T18:00:00+07:00']); // 11:00 UTC
+
+        $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+        $this->assertSame(1000, (int) Order::where('user_id', $u->id)->value('amount'), 'sebelum batas waktu: harga uji berlaku');
+        Order::where('user_id', $u->id)->delete();
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 11:01:00', 'UTC'));
+        $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+        $this->assertSame(29000, (int) Order::where('user_id', $u->id)->value('amount'), 'lewat batas waktu: kembali ke harga normal');
+    }
 }
