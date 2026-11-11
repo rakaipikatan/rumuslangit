@@ -2,6 +2,12 @@
 
 return [
     'paywall' => [
+        'langganan_setara_bulan' => 'equal to Rp :nilai/month',
+        'pilih_paket_title' => 'Choose a Subscription Plan',
+        'fitur_semua_laporan' => 'Every report unlocked',
+        'fitur_angka_warna' => 'Daily Lucky Numbers & Colors',
+        'fitur_hoki' => 'Daily Fortune email every morning',
+        'fitur_batas' => 'Fair-use limit of :n reports per day',
         'apa_itu_jatah' => 'What is a credit?',
         'jatah_habis_title' => 'No generations left for this report',
         'jatah_habis_desc' => 'All generations from your previous purchases have been used. Your earlier results stay saved. Buy again for new generations, or subscribe to unlock every report.',

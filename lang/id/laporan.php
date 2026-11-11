@@ -2,6 +2,12 @@
 
 return [
     'paywall' => [
+        'langganan_setara_bulan' => 'setara Rp :nilai/bulan',
+        'pilih_paket_title' => 'Pilih Paket Langganan',
+        'fitur_semua_laporan' => 'Semua laporan terbuka',
+        'fitur_angka_warna' => 'Angka & Warna Keberuntungan Harian',
+        'fitur_hoki' => 'Email Hoki Harian setiap pagi',
+        'fitur_batas' => 'Batas wajar :n laporan per hari',
         'apa_itu_jatah' => 'Apa itu jatah?',
         'jatah_habis_title' => 'Jatah pembuatan laporan ini sudah habis',
         'jatah_habis_desc' => 'Semua jatah dari pembelian sebelumnya sudah terpakai. Hasil laporan lama tetap tersimpan. Beli lagi untuk jatah baru, atau berlangganan agar semua laporan terbuka.',

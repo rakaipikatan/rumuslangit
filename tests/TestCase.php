@@ -21,4 +21,13 @@ abstract class TestCase extends BaseTestCase
 
         return parent::createApplication();
     }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // .env produksi dibaca saat tes berjalan; jangan biarkan pengaturan sementara di sana
+        // (harga uji) memengaruhi hasil tes. Tes yang membutuhkannya mengaturnya sendiri.
+        config(['payment.test_price' => null, 'payment.test_email' => null, 'payment.test_until' => null]);
+    }
 }

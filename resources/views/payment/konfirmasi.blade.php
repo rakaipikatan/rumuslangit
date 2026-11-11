@@ -103,6 +103,25 @@
         @endif
     </div>
 
+    @if(str_starts_with($featureId, 'langganan') && !$order)
+        @php
+            $hBulanan = (int) config('payment.subscription_monthly_price');
+            $hTahunan = (int) config('payment.subscription_yearly_price');
+            $hemat    = $hBulanan > 0 ? (int) round((1 - $hTahunan / ($hBulanan * 12)) * 100) : 0;
+        @endphp
+        <div class="text-center mt-3">
+            @if($featureId === 'langganan-tahunan')
+                <a href="{{ route('payment.konfirmasi', 'langganan-bulanan') }}" class="text-xs text-purple-300/80 hover:text-purple-200 underline underline-offset-2 transition">
+                    {{ __('payment.ganti_ke_bulanan', ['harga' => number_format($hBulanan, 0, ',', '.')]) }}
+                </a>
+            @else
+                <a href="{{ route('payment.konfirmasi', 'langganan-tahunan') }}" class="text-xs text-purple-300/80 hover:text-purple-200 underline underline-offset-2 transition">
+                    {{ __('payment.ganti_ke_tahunan', ['harga' => number_format($hTahunan, 0, ',', '.'), 'persen' => $hemat]) }}
+                </a>
+            @endif
+        </div>
+    @endif
+
     @unless($order)
     <p class="text-center text-white/25 text-xs mt-4 leading-relaxed">
         {{ __('payment.persetujuan') }}<br>

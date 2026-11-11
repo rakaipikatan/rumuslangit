@@ -41,4 +41,6 @@ return [
     'selesai_sukses_langganan' => 'Payment successful! Your subscription is active — all reports are unlocked. A payment receipt was emailed to you (check Spam or Junk if it is not in your Inbox).',
     'selesai_gagal' => 'The payment was cancelled or expired. Please try again.',
     'qris_catatan' => 'QRIS can only be paid from an Indonesian e-wallet or mobile banking app. Paying from abroad? Save the QR image and open it via the scan/upload-QR feature of your Indonesian bank or e-wallet app.',
+    'ganti_ke_tahunan' => 'Switch to the Yearly plan — Rp :harga (save :persen%)',
+    'ganti_ke_bulanan' => 'Switch to the Monthly plan — Rp :harga',
 ];

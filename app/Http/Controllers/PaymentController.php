@@ -105,6 +105,26 @@ class PaymentController extends Controller
         return view('payment.selesai', compact('order'));
     }
 
+    // GET /langganan — pilih paket: bulanan dan tahunan berdampingan (tujuan tombol "Mulai Berlangganan").
+    public function pilihPaket()
+    {
+        $user = $this->userDariSession();
+        if (!$user) {
+            return redirect()->route('trial.index')->with('info', 'Silakan isi data lahir Anda terlebih dahulu.');
+        }
+
+        if ($user->isSubscriber()) {
+            return redirect()->route('trial.katalog')->with('info', 'Anda sudah memiliki langganan aktif.');
+        }
+
+        $bulanan = (int) config('payment.subscription_monthly_price');
+        $tahunan = (int) config('payment.subscription_yearly_price');
+        $hemat   = $bulanan > 0 ? (int) round((1 - $tahunan / ($bulanan * 12)) * 100) : 0;
+        $setara  = (int) round($tahunan / 12);
+
+        return view('payment.langganan', compact('user', 'bulanan', 'tahunan', 'hemat', 'setara'));
+    }
+
     // POST /payment/{featureId} — buat pembayaran QRIS (SumoPod) lalu arahkan user ke halaman bayar.
     public function proses(string $featureId, Request $request)
     {

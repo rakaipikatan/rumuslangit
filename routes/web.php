@@ -67,6 +67,9 @@ Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
     Route::get('/kelurahan',  [WilayahController::class, 'kelurahan'])->name('kelurahan');
 });
 
+// Pilih paket langganan (bulanan vs tahunan)
+Route::get('/langganan', [PaymentController::class, 'pilihPaket'])->name('langganan');
+
 // Payment (MVP: transfer bank manual + kode unik 3 digit; nanti: integrasi Midtrans/Xendit)
 Route::prefix('payment')->name('payment.')->group(function () {
     // Halaman tujuan setelah bayar QRIS — HARUS sebelum /{featureId}
