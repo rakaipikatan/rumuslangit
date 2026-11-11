@@ -362,7 +362,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Peralihan AI otomatis Gemini → Grok (cadangan):** `GrokService` (API kompatibel OpenAI), orkestrasi di `GeminiService` (alih saat gagal, penanda jeda kuota harian, galat Gemini diteruskan bila keduanya gagal), `ai_reports.provider`, status "AI Grok (cadangan)" + tombol **Tes Grok** (menampilkan daftar model) di panel Sistem; +13 tes (total 202) |
+| `795d5d8` | **Peralihan AI otomatis Gemini → Grok (cadangan):** `GrokService` (API kompatibel OpenAI), orkestrasi di `GeminiService` (alih saat gagal, penanda jeda kuota harian, galat Gemini diteruskan bila keduanya gagal), `ai_reports.provider`, status "AI Grok (cadangan)" + tombol **Tes Grok** (menampilkan daftar model) di panel Sistem; +13 tes (total 202) |
 | `30ce66d` | **Gemini kuota habis (paket gratis 20/hari):** diagnosis; penanganan kuota diperbaiki (baca waktu tunggu resmi, pesan jelas di panel, pekerjaan laporan menunggu sampai 8 jam dan selesai sendiri, halaman tunggu jujur setelah 3 menit); checklist: aktifkan billing Gemini (teratas); +5 tes (total 189) |
 | `34f35cf` | **Perbaikan alur pemilihan paket:** halaman `/langganan` (bulanan & tahunan berdampingan) menjadi tujuan tombol di katalog + tautan ganti paket di halaman bayar langganan (sebelumnya paket tahunan tidak terlihat dari katalog); tes selalu memulai dengan harga uji dimatikan agar `.env` produksi tidak bocor ke tes; +5 tes (total 184) |
 | `1450f69` | **Persiapan tes pembayaran Live 3 produk:** pengaman `PAYMENT_TEST_UNTIL` (harga uji mati otomatis) + peringatan "HARGA UJI AKTIF" di panel Sistem; harga uji diaktifkan 6 jam untuk akun pemilik (Rp1.000 untuk satuan/bulanan/tahunan; pengguna lain tetap normal); +2 tes (total 179) |
@@ -503,4 +503,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `1450f69` | 11/11 10:31 | Pengaman waktu harga uji + peringatan panel Sistem; persiapan tes pembayaran Live |
 | `34f35cf` | 11/11 10:51 | Halaman pilih paket langganan (bulanan & tahunan) + tautan ganti paket |
 | `30ce66d` | 11/11 11:08 | Gemini: tangani kuota habis (waktu tunggu resmi, pesan jelas, pekerjaan menunggu 8 jam) + halaman tunggu jujur |
+| `795d5d8` | 11/11 11:23 | Peralihan AI otomatis Gemini -> Grok (cadangan) + status panel + tombol Tes Grok |
 <!-- LOG-GIT:AKHIR -->
