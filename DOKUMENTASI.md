@@ -380,7 +380,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit berikut) | **Login admin tanpa pembatas percobaan** (sebelumnya 5/menit per IP dan membuat pemilik terkena 429): permintaan pemilik karena admin hanya satu orang. Konsekuensi: kata sandi admin bisa ditebak tanpa batas — **wajib password panjang & unik** (ganti password lama yang pernah tampil di percakapan); tes diganti memastikan tidak ada 429 (total 230) |
+| `6502771` | **Login admin tanpa pembatas percobaan** (sebelumnya 5/menit per IP dan membuat pemilik terkena 429): permintaan pemilik karena admin hanya satu orang. Konsekuensi: kata sandi admin bisa ditebak tanpa batas — **wajib password panjang & unik** (ganti password lama yang pernah tampil di percakapan); tes diganti memastikan tidak ada 429 (total 230) |
 | `7eed9a1` | **Koreksi teks payout afiliator:** sebelumnya tertulis komisi "dibayar/ditransfer otomatis" — tidak akurat. Yang otomatis hanya pemrosesan (pembuatan payout tgl 25); **transfer uang tetap dilakukan admin sekali sebulan (bulk dari CSV)** segera setelahnya. Teks di /afiliasi, T&C, dashboard, panduan afiliator, dan FAQ chat diperbaiki (ID/EN). Transfer otomatis penuh butuh penyedia disbursement (belum dibangun); yang sudah diuji hanya logika payout, bukan transfer nyata |
 | `bc0f78b` | **Nama penyedia tidak ditampilkan ke pelanggan:** teks publik tidak lagi menyebut Gemini/Groq/SumoPod/"AI" (landing, Kebijakan Privasi/Syarat, FAQ & aturan chat bantuan; "Profil Karakter AI" → "Profil Karakter"); Privasi memakai pernyataan generik "penyedia layanan teknologi/pembayaran/email pihak ketiga" (tetap ada pengungkapan pemrosesan oleh pihak ketiga). Chat bantuan diinstruksikan tidak menyebut nama penyedia. Panel admin tidak diubah. +1 tes (total 230) |
 | `60db502` | **Perbaikan bug privasi (nama orang lain muncul di laporan):** kunci cache hasil AI (`GeminiService`) hanya memuat data lahir + jawaban, tanpa profil, sehingga dua orang berdata lahir sama berbagi hasil (laporan akun #119 memuat nama akun lama yang sudah dihapus). Kini profil (nama, gender, lokasi, dst.) ikut kunci; +1 tes (total 229). Satu laporan profil salah (id 19, gratis) dihapus agar dibuat ulang; tidak ada laporan lain yang terdampak. Catatan: cache lama tidak terbaca lagi (kunci berubah) dan kedaluwarsa sendiri ≤24 jam |
@@ -543,4 +543,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `60db502` | 11/11 14:51 | Perbaiki cache AI: profil ikut kunci agar nama orang lain tidak bocor |
 | `bc0f78b` | 11/11 14:53 | Sembunyikan nama penyedia teknologi dari teks yang dilihat pelanggan |
 | `7eed9a1` | 11/11 14:57 | Koreksi teks payout afiliator: pemrosesan otomatis, transfer oleh admin |
+| `6502771` | 11/11 15:27 | Hapus pembatas percobaan login admin (admin hanya satu orang) |
 <!-- LOG-GIT:AKHIR -->
