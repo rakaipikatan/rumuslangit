@@ -345,7 +345,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Riwayat email:** semua email keluar dicatat (jenis, penerima, pengguna, status, biaya); halaman admin **Email** (ringkasan, per jenis/hari/pengguna, email uji terpisah, rekonsiliasi dengan SumoPod, ekspor CSV) + kartu email di detail pengguna; email uji tidak menempel ke pengguna; migration `email_logs`; +14 tes (total 163) |
+| `10db7fb` | **Riwayat email:** semua email keluar dicatat (jenis, penerima, pengguna, status, biaya); halaman admin **Email** (ringkasan, per jenis/hari/pengguna, email uji terpisah, rekonsiliasi dengan SumoPod, ekspor CSV) + kartu email di detail pengguna; email uji tidak menempel ke pengguna; migration `email_logs`; +14 tes (total 163) |
 | `1271562` | **Panel admin 1–3:** (1) Status layanan (email, Gemini, QRIS, webhook, Hoki, cron, Horizon, konfigurasi, mode SumoPod) + tombol tes email/Gemini; (2) detail pengguna + beri jatah/langganan gratis (order Rp0 `komplimen`); (3) kirim ulang bukti bayar + tabel order yang benar. Perbaikan: komisi afiliator tidak lagi terhapus bersama pengguna, dashboard memakai hari WIB + pendapatan per periode. 3 migration (`service_events`, `orders.catatan`, FK komisi `SET NULL`); +17 tes (total 149) |
 | `0b89b89` | **Harga langganan naik:** bulanan Rp49.000 → **Rp59.000**, tahunan Rp399.000 → **Rp499.000** (hemat 30%); tes tidak lagi mengunci angka lama (komisi dan nominal mengikuti konfigurasi) |
 | `2e74fde` | **Perbaikan email Hoki Harian:** "Krem &amp; Oranye" (kode HTML tampil mentah akibat escape ganda) dan tanggal email yang memakai UTC (tampil tanggal kemarin pada pengiriman 06.00 WIB); angka hoki kini berdasar tanggal WIB; +3 tes (total 132) |
