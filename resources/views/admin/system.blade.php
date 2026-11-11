@@ -27,7 +27,7 @@
                 <tr>
                     <td class="py-2.5 pr-4 text-white/80">{{ $l['label'] }}</td>
                     <td class="pr-4">
-                        @if($l['perlu_cek'])<span class="text-xs text-amber-300">⚠ perlu dicek</span>
+                        @if($l['perlu_cek'])<span class="text-xs text-amber-300">⚠ perlu dicek</span>@if($l['catatan'])<div class="text-xs text-amber-300/70 max-w-[14rem]">{{ $l['catatan'] }}</div>@endif
                         @elseif($l['terakhir_ok'])<span class="text-xs text-emerald-300">✓ normal</span>
                         @else<span class="text-xs text-white/30">belum ada data</span>@endif
                     </td>

@@ -243,6 +243,17 @@ Login memakai `ADMIN_USERNAME` / `ADMIN_PASSWORD` dari `.env` (password boleh te
 
 ---
 
+## 7b. Backup database (`db:backup`, `db:uji-pulih`)
+
+- **Jadwal:** `db:backup` otomatis **setiap hari 02:00 WIB** (penjadwal Laravel). Bisa dijalankan manual: `php artisan db:backup`.
+- **Cara kerja** (`App\Support\DatabaseBackup`): `pg_dump -Fc` (klien PostgreSQL 16 dipasang di server) hanya skema `public` (skema uji `rumuslangit_test` tidak ikut), kata sandi dilewatkan lewat **environment proses** (tidak muncul di argumen/log), ditulis ke berkas `.tmp` lalu di-`rename` (tidak ada berkas setengah jadi). **Verifikasi isi**: `pg_restore --list` harus berhasil dan memuat tabel inti (`users, orders, subscriptions, ai_reports, affiliates, affiliate_commissions, email_logs`); jika tidak, berkas dihapus dan backup dinyatakan gagal.
+- **Lokasi:** `/home/ubuntu/backup-db/` (folder izin 700, berkas 600; `BACKUP_DIR`). **Rotasi:** semua backup 14 hari terakhir, lalu 1 backup per bulan untuk 6 bulan terakhir (`BACKUP_HARIAN_SIMPAN`, `BACKUP_BULANAN_SIMPAN`).
+- **Pemantauan:** muncul di Admin → Sistem → Status layanan ("Backup database"); ditandai **perlu dicek** bila gagal atau bila keberhasilan terakhir lebih dari **26 jam** lalu (jadwal macet).
+- **Uji pulih aman:** `php artisan db:uji-pulih` memuat isi **setiap tabel** dari backup ke **tabel sementara** di dalam transaksi yang selalu dibatalkan, lalu membandingkan jumlah baris dan checksum dengan database hidup (tabel hidup hanya dibaca). Dibuat karena akun database tidak boleh membuat database untuk uji pulih biasa. Hasil pertama (11 Nov 2026): 25 tabel pulih, checksum semua cocok kecuali `cache` (wajar berubah).
+- **Batasan yang diketahui:** salinan ini **berada di server yang sama** dengan aplikasi — melindungi dari kesalahan data/penghapusan, **bukan** dari hilangnya server. Untuk perlindungan penuh: salin ke penyimpanan lain (mis. SumoPod Object Storage) dan/atau pastikan backup otomatis di sisi layanan database SumoPod. Untuk **memulihkan** sungguhan: `pg_restore --clean --if-exists -n public -d <database> <berkas>` (setelah membuat database kosong/persetujuan; jangan dijalankan di database produksi tanpa rencana).
+
+---
+
 ## 8. Konfigurasi Environment
 
 Variabel yang dipakai (nilai rahasia jangan di-commit; `.env` sudah di-gitignore):
@@ -345,13 +356,14 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Backup database otomatis** (`db:backup` harian 02:00 WIB, verifikasi isi, rotasi 14 hari + 6 bulan, izin aman, status di panel) dan **`db:uji-pulih`** (uji pulih aman ke tabel sementara); klien `postgresql-client-16` dipasang; +10 tes (total 177) |
 | `4181277` | **Pencatatan lengkap hari ini:** bagian 15 (ringkasan pembaruan 10–11 Nov per tema + log kronologis dari git, 34 commit, berpenanda agar bisa dibuat ulang) dan aturan "setiap perubahan wajib dicatat"; checklist peluncuran (bagian 14) |
-| `4cb3a54` | **Bukti uji tiga alur pembayaran** (satuan, bulanan, tahunan) uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`, 4 tes / 122 pemeriksaan) + **checklist peluncuran & operasional** (bagian 14); temuan: perpanjangan langganan saat masih aktif diblokir, tidak ada pengingat kedaluwarsa, tidak ada halaman kebijakan/kontak (total 167 tes) |
+| `4cb3a54` | **Bukti uji tiga alur pembayaran** (satuan, bulanan, tahunan) uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`, 4 tes / 122 pemeriksaan) + **checklist peluncuran & operasional** (bagian 14); temuan: perpanjangan langganan saat masih aktif diblokir, tidak ada pengingat kedaluwarsa, tidak ada halaman kebijakan/kontak (total 177 tes) |
 | `10db7fb` | **Riwayat email:** semua email keluar dicatat (jenis, penerima, pengguna, status, biaya); halaman admin **Email** (ringkasan, per jenis/hari/pengguna, email uji terpisah, rekonsiliasi dengan SumoPod, ekspor CSV) + kartu email di detail pengguna; email uji tidak menempel ke pengguna; migration `email_logs`; +14 tes (total 163) |
 | `1271562` | **Panel admin 1–3:** (1) Status layanan (email, Gemini, QRIS, webhook, Hoki, cron, Horizon, konfigurasi, mode SumoPod) + tombol tes email/Gemini; (2) detail pengguna + beri jatah/langganan gratis (order Rp0 `komplimen`); (3) kirim ulang bukti bayar + tabel order yang benar. Perbaikan: komisi afiliator tidak lagi terhapus bersama pengguna, dashboard memakai hari WIB + pendapatan per periode. 3 migration (`service_events`, `orders.catatan`, FK komisi `SET NULL`); +17 tes (total 149) |
 | `0b89b89` | **Harga langganan naik:** bulanan Rp49.000 → **Rp59.000**, tahunan Rp399.000 → **Rp499.000** (hemat 30%); tes tidak lagi mengunci angka lama (komisi dan nominal mengikuti konfigurasi) |
 | `2e74fde` | **Perbaikan email Hoki Harian:** "Krem &amp; Oranye" (kode HTML tampil mentah akibat escape ganda) dan tanggal email yang memakai UTC (tampil tanggal kemarin pada pengiriman 06.00 WIB); angka hoki kini berdasar tanggal WIB; +3 tes (total 132) |
-| `6628866` | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 167 tes) |
+| `6628866` | **Hoki Harian:** kegagalan kirim kini dicatat ke log (sebelumnya hilang), penerima hanya pelanggan yang masa langganannya belum berakhir; tes (jadwal, penerima, log kegagalan); dokumentasi cron/penjadwal (total 177 tes) |
 | `4c511bb` | **Pembersihan `.env`** (24 entri tak relevan dihapus: legacy WhatsApp/WAHA/Duitku, AWS, `CACHE_DRIVER`, `VITE_APP_NAME`, `GEMINI_MAX_OUTPUT_TOKENS`, harga uji) dan konfigurasi `gemini.max_tokens` yang tak terpakai |
 | `8d0bee4` | **Halaman Panduan Pengguna** `/panduan` (setelah login); teks jatah diperjelas ("3 jatah laporan" + tautan "Apa itu jatah?"); aturan hasil diselaraskan dengan keputusan pemilik: **hari sama = hasil sama, hari berikutnya = laporan baru (tanpa memotong jatah), jatah hanya untuk jawaban berbeda**, berlaku untuk semua fitur (`PAYMENT_FITUR_HARIAN=semua` default); +5 tes (total 126) |
 | `2231b85` | **Fitur 3, 10, 11 juga memakai data tersimpan** (pembaruan harian jadi opsi `PAYMENT_FITUR_HARIAN`, default kosong); halaman hasil kini menampilkan tanggal pembuatan laporan (sebelumnya salah menampilkan tanggal hari ini); catatan QRIS untuk pembeli luar negeri di halaman bayar; +2 tes (total 121) |
@@ -395,7 +407,7 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 - [ ] **Pengingat langganan hampir habis** (email H-3 dan H-1) — saat ini tidak ada; pelanggan baru tahu setelah akses hilang.
 - [ ] **Tes pembayaran Live ulang untuk 3 produk** setelah semua perubahan: aktifkan sementara `PAYMENT_TEST_PRICE=1000` + `PAYMENT_TEST_EMAIL` (hapus `#`, `config:cache`), uji satuan/bulanan/tahunan sampai akses terbuka + bukti bayar masuk, lalu komentari lagi.
 - [ ] **Top up kredit email SumoPod** (Rp5/email; sebelumnya 60 email) dan catat sisa kredit sebagai titik awal rekonsiliasi (Admin → Email).
-- [ ] **Backup database**: database ada di server SumoPod terpisah — pastikan backup otomatis aktif di sisi SumoPod **atau** jadwalkan `pg_dump` ke penyimpanan di luar server; **uji restore** satu kali. *(Tidak ada cron backup di server aplikasi.)*
+- [x] **Backup database** harian 02:00 WIB + verifikasi + rotasi + `db:uji-pulih` (11 Nov 2026, bagian 7b). **Sisa:** salinan di **luar server** (Object Storage SumoPod) dan konfirmasi backup otomatis di layanan database SumoPod.
 - [ ] **Pemantau uptime eksternal** untuk `https://rumuslangit.biz.id/health` dengan notifikasi (mis. UptimeRobot).
 - [ ] **Peringatan tagihan Gemini** di Google Cloud (batas bulanan) agar biaya AI tak melonjak tanpa terlihat.
 

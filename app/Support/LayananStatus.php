@@ -21,7 +21,11 @@ class LayananStatus
         'pembayaran' => 'Pembuatan QRIS (SumoPod)',
         'webhook'    => 'Webhook pembayaran SumoPod',
         'hoki'       => 'Hoki Harian (pengiriman pagi)',
+        'backup'     => 'Backup database (harian 02:00 WIB)',
     ];
+
+    /** Layanan terjadwal yang dianggap MACET bila keberhasilan terakhir lebih tua dari N jam. */
+    public const KEDALUWARSA_JAM = ['backup' => 26];
 
     public static function ok(string $layanan, ?string $info = null): void
     {
@@ -94,6 +98,14 @@ class LayananStatus
         // Perlu dicek: ada kegagalan 24 jam terakhir DAN kegagalan terakhir lebih baru daripada sukses terakhir
         $perluCek = $gagal24 > 0 && $terakhir && (!$ok || $terakhir->created_at->gt($ok['at']));
 
+        // Layanan terjadwal yang tak pernah gagal tetapi juga berhenti berhasil (mis. cron mati) → macet
+        $catatan = null;
+        $batasJam = self::KEDALUWARSA_JAM[$layanan] ?? null;
+        if ($batasJam && $ok && $ok['at']->lt(now()->subHours($batasJam))) {
+            $perluCek = true;
+            $catatan  = "Terakhir berhasil lebih dari {$batasJam} jam lalu — jadwal mungkin macet.";
+        }
+
         return [
             'label'          => self::LAYANAN[$layanan] ?? $layanan,
             'terakhir_ok'    => $ok['at'] ?? null,
@@ -101,6 +113,7 @@ class LayananStatus
             'gagal_24j'      => $gagal24,
             'gagal_terakhir' => $terakhir,
             'perlu_cek'      => $perluCek,
+            'catatan'        => $catatan,
         ];
     }
 }
