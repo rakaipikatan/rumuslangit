@@ -90,6 +90,15 @@ class TrialController extends Controller
             ]
         );
 
+        // Email yang sudah lolos OTP sebelum akun ada → tempelkan sekarang (jangan hilang), kecuali sudah dipakai akun terverifikasi lain.
+        $emailV = Session::pull('email_terverifikasi');
+        if ($emailV && blank($user->email)) {
+            $dipakai = User::whereRaw('lower(email) = ?', [strtolower($emailV)])->whereNotNull('email_verified_at')->where('id', '!=', $user->id)->exists();
+            if (!$dipakai) {
+                $user->update(['email' => strtolower($emailV), 'email_verified_at' => now()]);
+            }
+        }
+
         Session::put('user_id', $user->id);
         Session::put('kalkulasi', $kalkulasi);
 

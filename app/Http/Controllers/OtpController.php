@@ -102,6 +102,10 @@ class OtpController extends Controller
         }
 
         $userId = Session::get('user_id');
+        // OTP lolos sebelum akun dibuat (belum ada user di sesi): ingat emailnya, dipasang saat pendaftaran selesai (TrialController::proses).
+        if (!$userId && $email) {
+            Session::put('email_terverifikasi', $email);
+        }
         if ($userId && $email) {
             $existingUser = \App\Models\User::where('email', $email)
                 ->where('id', '!=', $userId)
