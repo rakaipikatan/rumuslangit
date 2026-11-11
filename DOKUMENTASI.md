@@ -345,6 +345,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit ini) | **Pencatatan lengkap hari ini:** bagian 15 (ringkasan pembaruan 10–11 Nov per tema + log kronologis dari git, 34 commit, berpenanda agar bisa dibuat ulang) dan aturan "setiap perubahan wajib dicatat"; checklist peluncuran (bagian 14) |
 | `4cb3a54` | **Bukti uji tiga alur pembayaran** (satuan, bulanan, tahunan) uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`, 4 tes / 122 pemeriksaan) + **checklist peluncuran & operasional** (bagian 14); temuan: perpanjangan langganan saat masih aktif diblokir, tidak ada pengingat kedaluwarsa, tidak ada halaman kebijakan/kontak (total 167 tes) |
 | `10db7fb` | **Riwayat email:** semua email keluar dicatat (jenis, penerima, pengguna, status, biaya); halaman admin **Email** (ringkasan, per jenis/hari/pengguna, email uji terpisah, rekonsiliasi dengan SumoPod, ekspor CSV) + kartu email di detail pengguna; email uji tidak menempel ke pengguna; migration `email_logs`; +14 tes (total 163) |
 | `1271562` | **Panel admin 1–3:** (1) Status layanan (email, Gemini, QRIS, webhook, Hoki, cron, Horizon, konfigurasi, mode SumoPod) + tombol tes email/Gemini; (2) detail pengguna + beri jatah/langganan gratis (order Rp0 `komplimen`); (3) kirim ulang bukti bayar + tabel order yang benar. Perbaikan: komisi afiliator tidak lagi terhapus bersama pengguna, dashboard memakai hari WIB + pendapatan per periode. 3 migration (`service_events`, `orders.catatan`, FK komisi `SET NULL`); +17 tes (total 149) |
@@ -418,3 +419,59 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 
 ### D. Setelah ada transaksi nyata
 - [ ] Ekspor CSV order & daftar payout afiliator; pendapatan per produk; catatan aksi admin; 2FA/IP-allowlist untuk admin; evaluasi harga Rp59.000/Rp499.000 dengan data konversi; evaluasi biaya AI per laporan.
+
+---
+
+## 15. Catatan pembaruan 10–11 November 2026
+
+> **Aturan:** setiap perubahan **wajib** dicatat di dokumen ini (tabel riwayat bagian 13, bagian teknis terkait, dan log di bawah). Log kronologis bagian 15.2 dibuat dari git: perbarui dengan menjalankan skrip pembuat log (atau tambahkan baris baru di bawah penanda) setiap selesai bekerja.
+
+### 15.1 Ringkasan per tema
+- **Keamanan & server.** Pemeriksaan isu PHP2Shell (CVE-2026-109618/109619): paket Ubuntu `8.3.6-0ubuntu0.24.04.13` sudah memuat patch, `session.upload_progress` dimatikan; dependensi Composer diperbarui (Laravel 13.12 → 13.40, Symfony, Guzzle, dompdf, commonmark; `composer audit` bersih); login admin: perbandingan constant-time, mendukung hash bcrypt, throttle 5/menit, kredensial admin diganti; rekening bank dikeluarkan dari kode ke `.env` lalu dibuang saat transfer manual dihapus; tes memakai skema database terpisah (`rumuslangit_test`), bukan data produksi.
+- **Perbaikan bug produksi.** Profil karakter menggantung di "Sedang menganalisis…" (JSON Gemini dengan koma berlebih — kini diperbaiki, divalidasi, dan bisa memulihkan diri); Tafsir Mimpi (gratis) salah menampilkan paywall dan membuat order Rp0; email Hoki Harian menampilkan `&amp;` mentah dan tanggal UTC (tampil kemarin); komisi afiliator ikut terhapus saat pengguna dihapus; dashboard memakai hari UTC; tanggal di halaman hasil memakai hari ini, bukan tanggal pembuatan laporan; katalog dengan sesi usang tidak lagi error; kegagalan kirim Hoki tidak tercatat (kini tercatat).
+- **Pembayaran.** Integrasi QRIS SumoPod Managed Payment (klien API, webhook bertanda tangan Svix, pelunasan idempoten bersama, halaman "menunggu → otomatis ke kuesioner", penanda "Sudah dibeli", batas minimum Rp1.000, host Sandbox vs Live); **transfer bank manual dihapus** (konfirmasi admin dipertahankan sebagai cadangan); harga uji sementara per-email (kini dikomentari); email **bukti pembayaran** otomatis; sandbox → **Live** (key dan secret Live aktif, uji nyata Rp1.000 berhasil).
+- **Harga & akses.** Skema baru: satuan Rp29.000 = **3 jatah** (hasil tersimpan selamanya); langganan bulanan **Rp59.000** (dari Rp49.000) dan tahunan **Rp499.000** (dari Rp350.000 → Rp399.000 → Rp499.000), hemat 30%; jatah hanya terpakai untuk **jawaban berbeda**; hari yang sama = hasil sama, hari berikutnya = laporan baru tanpa memotong jatah; konteks tanggal untuk fitur 3/10/11; batas harian (pelanggan 20, fitur gratis 5); halaman **Panduan Pengguna** (ID/EN) dan teks jatah yang diperjelas.
+- **Akun & email.** Login dengan **kode email** (tanpa password) + menu **Pengaturan** untuk membuat password; email OTP via **SMTP SumoPod** dengan SPF/DKIM/DMARC; pengingat cek folder Spam di semua email dan pesan layar; versi teks polos untuk email OTP; perintah `mail:uji`; pembersihan **`.env`** (24 entri tak relevan dihapus; kredensial lama disimpan terpisah).
+- **Afiliasi.** Halaman pendaftaran publik `/afiliasi` + persetujuan admin + email link referral; aturan komisi (maks. 12 bulan sejak pembayaran pertama, tanpa komisi pembelian sendiri, tahan 14 hari) dan **Syarat & Ketentuan**.
+- **Panel admin.** **Status layanan** (email, Gemini, QRIS, webhook, Hoki, cron, Horizon, konfigurasi, mode SumoPod, tombol tes), **detail pengguna** + beri jatah/langganan gratis (order Rp0 `komplimen`), kirim ulang bukti bayar, tabel order yang benar, dashboard **pendapatan per periode (WIB)**, **riwayat email** (per jenis/hari/pengguna, email uji tak menempel ke pengguna, rekonsiliasi dengan SumoPod, ekspor CSV).
+- **Data & operasional.** Seluruh data pengguna uji dihapus atas permintaan pemilik (cadangan JSON di server, di luar repo); akun admin baru; `.env` dibersihkan; **checklist peluncuran** (bagian 14); bukti uji tiga alur pembayaran uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`); jumlah tes naik dari 23 menjadi **167**.
+
+### 15.2 Log kronologis (dari git, waktu WIB)
+<!-- LOG-GIT:MULAI -->
+| Commit | Waktu (WIB) | Perubahan |
+|---|---|---|
+| `0a837b8` | 10/11 21:59 | Patch keamanan dependensi (PHP2Shell hardening, Laravel 13.40, Symfony, Guzzle, dompdf) + dokumentasi teknis |
+| `7e8789e` | 10/11 22:00 | Rapikan tabel riwayat perubahan di dokumentasi |
+| `080df47` | 10/11 22:04 | Fix profil karakter menggantung (JSON Gemini trailing comma) + hardening keamanan |
+| `e203f75` | 10/11 22:14 | Integrasi QRIS SumoPod Managed Payment (checkout, webhook Svix, settlement bersama) |
+| `48e2866` | 10/11 22:29 | Dokumentasi: host Sandbox vs Live SumoPod Payment |
+| `6ee9559` | 10/11 22:39 | Harga uji sementara khusus satu email untuk tes transaksi Live |
+| `128f84d` | 10/11 22:51 | Katalog: tangani sesi usang (user sudah dihapus) + catat pembersihan data |
+| `50d9784` | 10/11 22:53 | Catat penggantian kredensial admin di dokumentasi |
+| `e178033` | 10/11 23:01 | Tambah perintah mail:uji untuk memeriksa pengiriman email |
+| `6d66fd1` | 10/11 23:23 | Email OTP: tambah versi teks polos; catat batas minimum SumoPod Rp1.000 |
+| `23f8049` | 10/11 23:25 | Fix: Tafsir Mimpi (freemium) gratis, tak lagi memunculkan paywall/order Rp0 |
+| `2b3b60b` | 10/11 23:40 | Perbaiki alur setelah bayar QRIS: langsung ke kuesioner, tandai fitur sudah dibeli |
+| `ca24ee5` | 10/11 23:48 | Hapus pembayaran transfer bank manual; QRIS jadi satu-satunya metode |
+| `24aa214` | 10/11 23:54 | Login dengan kode email (tanpa password) + penanda pembelian di admin |
+| `7b7bfd4` | 10/11 23:56 | Menu pengaturan akun: buat/ubah password |
+| `a4673ee` | 11/11 00:01 | Halaman pendaftaran afiliator publik + persetujuan admin |
+| `b50ffd9` | 11/11 00:12 | Aturan komisi afiliasi: batas 12 bulan, tanpa komisi pembelian sendiri, tahan 14 hari + Syarat & Ketentuan |
+| `118db64` | 11/11 00:15 | Email bukti pembayaran otomatis setelah order lunas |
+| `900b7d9` | 11/11 00:23 | Pengingat cek folder Spam/Junk di semua email dan pesan terkait |
+| `523d10f` | 11/11 00:32 | Terapkan skema harga baru: satuan = 3 jatah pembuatan, tahunan Rp399.000, batas wajar harian |
+| `1534d32` | 11/11 00:34 | Laporan identik dipakai ulang hanya di hari WIB yang sama; besok dibuat baru |
+| `3499414` | 11/11 00:35 | Dokumentasi: biaya email Rp5 dan acuan margin per transaksi |
+| `fdd0e2c` | 11/11 00:38 | Jatah hanya terpakai untuk jawaban yang berbeda |
+| `193ba86` | 11/11 00:45 | Jawaban sama memakai laporan tersimpan tanpa AI; hanya fitur bergantung tanggal diperbarui harian |
+| `2231b85` | 11/11 00:48 | Fitur 3/10/11 memakai data tersimpan (harian jadi opsi env); tanggal hasil = tanggal pembuatan; catatan QRIS luar negeri |
+| `8d0bee4` | 11/11 00:55 | Halaman Panduan Pengguna; teks jatah diperjelas; aturan hasil harian untuk semua fitur |
+| `4c511bb` | 11/11 00:57 | Bersihkan .env: hapus setelan tak relevan; hapus gemini.max_tokens yang tak terpakai |
+| `cf45857` | 11/11 00:59 | Dokumentasi: harga uji dikomentari (bukan dihapus); lokasi kredensial lama |
+| `6628866` | 11/11 01:03 | Hoki Harian: catat kegagalan kirim, hanya pelanggan yang masa aktifnya belum berakhir; tes + dokumentasi |
+| `2e74fde` | 11/11 01:05 | Perbaiki email Hoki Harian: ampersand ganda dan tanggal WIB |
+| `0b89b89` | 11/11 01:10 | Harga langganan: bulanan Rp59.000, tahunan Rp499.000 |
+| `1271562` | 11/11 01:18 | Panel admin: status layanan, detail pengguna + akses gratis, kirim ulang bukti, dashboard WIB |
+| `10db7fb` | 11/11 10:06 | Riwayat email: catat semua email keluar, halaman admin Email, rekonsiliasi SumoPod, CSV |
+| `4cb3a54` | 11/11 10:14 | Tes uji-ujung-ke-ujung 3 alur pembayaran + checklist peluncuran/operasional |
+<!-- LOG-GIT:AKHIR -->
