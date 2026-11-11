@@ -380,7 +380,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit berikut) | **Nama penyedia tidak ditampilkan ke pelanggan:** teks publik tidak lagi menyebut Gemini/Groq/SumoPod/"AI" (landing, Kebijakan Privasi/Syarat, FAQ & aturan chat bantuan; "Profil Karakter AI" → "Profil Karakter"); Privasi memakai pernyataan generik "penyedia layanan teknologi/pembayaran/email pihak ketiga" (tetap ada pengungkapan pemrosesan oleh pihak ketiga). Chat bantuan diinstruksikan tidak menyebut nama penyedia. Panel admin tidak diubah. +1 tes (total 230) |
+| `bc0f78b` | **Nama penyedia tidak ditampilkan ke pelanggan:** teks publik tidak lagi menyebut Gemini/Groq/SumoPod/"AI" (landing, Kebijakan Privasi/Syarat, FAQ & aturan chat bantuan; "Profil Karakter AI" → "Profil Karakter"); Privasi memakai pernyataan generik "penyedia layanan teknologi/pembayaran/email pihak ketiga" (tetap ada pengungkapan pemrosesan oleh pihak ketiga). Chat bantuan diinstruksikan tidak menyebut nama penyedia. Panel admin tidak diubah. +1 tes (total 230) |
 | `60db502` | **Perbaikan bug privasi (nama orang lain muncul di laporan):** kunci cache hasil AI (`GeminiService`) hanya memuat data lahir + jawaban, tanpa profil, sehingga dua orang berdata lahir sama berbagi hasil (laporan akun #119 memuat nama akun lama yang sudah dihapus). Kini profil (nama, gender, lokasi, dst.) ikut kunci; +1 tes (total 229). Satu laporan profil salah (id 19, gratis) dihapus agar dibuat ulang; tidak ada laporan lain yang terdampak. Catatan: cache lama tidak terbaca lagi (kunci berubah) dan kedaluwarsa sendiri ≤24 jam |
 | `3dd247d` | **Halaman legal:** Kebijakan Privasi, Syarat Layanan, Kebijakan Refund (tanpa refund) + tautan footer, ID/EN; chat bantuan sebagai satu-satunya kontak; +2 tes (total 228) |
 | `d83762c` | **Dashboard afiliator + payout otomatis + panduan + chat bantuan:** afiliator masuk dengan kode email dan punya dashboard sendiri (pendaftar, pelanggan membayar, komisi, saldo, riwayat payout); payout dibuat otomatis tiap tgl 25 bila saldo siap ≥ Rp100.000 (admin cukup unduh CSV, transfer massal, klik tandai); panduan afiliator + banner panduan pelanggan; **chat bantuan otomatis** (AI → FAQ) tanpa kontak admin, dengan log di admin; T&C diperbarui; 3 tabel/kolom baru (**perlu `migrate`**); +14 tes (total 226) |
@@ -539,4 +539,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `d83762c` | 11/11 14:28 | Dashboard afiliator, payout otomatis, panduan afiliator, chat bantuan otomatis |
 | `3dd247d` | 11/11 14:46 | Halaman legal: privasi, syarat, refund (tanpa kontak email; chat sebagai saluran) |
 | `60db502` | 11/11 14:51 | Perbaiki cache AI: profil ikut kunci agar nama orang lain tidak bocor |
+| `bc0f78b` | 11/11 14:53 | Sembunyikan nama penyedia teknologi dari teks yang dilihat pelanggan |
 <!-- LOG-GIT:AKHIR -->
