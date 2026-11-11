@@ -31,6 +31,8 @@ return [
     ],
 
     'status' => [
+        'lama' => "Layanan AI sedang padat, jadi laporan Anda belum selesai. Laporan tetap diproses otomatis dan tidak hilang; Anda tidak perlu menunggu di halaman ini. Buka lagi nanti lewat \"Lihat laporan terakhir saya\" di halaman laporannya.",
+        'lama_katalog' => 'Kembali ke katalog',
         'title' => 'Memproses Laporan…',
         'heading' => 'Sedang memproses analisis…',
         'desc' => 'Sistem kami sedang merajut data kalkulasi dan jawaban Anda menjadi laporan personal yang empatik. Mohon tunggu sebentar.',

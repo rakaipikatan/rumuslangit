@@ -78,10 +78,31 @@ class GeminiService
             if ($response->status() === 429) {
                 $body         = $response->body();
                 $retrySeconds = 60;
-                if (preg_match('/retry in ([\d.]+)s/i', $body, $m)) {
+                $harian = false; $gratis = false; $batas = null; $modelKuota = null;
+
+                foreach ((array) $response->json('error.details', []) as $d) {
+                    // Waktu tunggu resmi dari Google, mis. "14137s" (kuota harian habis → bisa berjam-jam)
+                    if (str_contains($d['@type'] ?? '', 'RetryInfo') && preg_match('/([\d.]+)s/', (string) ($d['retryDelay'] ?? ''), $m)) {
+                        $retrySeconds = (int) ceil((float) $m[1]);
+                    }
+                    foreach ((array) ($d['violations'] ?? []) as $v) {
+                        $id = (string) ($v['quotaId'] ?? '');
+                        $harian = $harian || str_contains($id, 'PerDay');
+                        $gratis = $gratis || str_contains($id, 'FreeTier');
+                        $batas = $v['quotaValue'] ?? $batas;
+                        $modelKuota = $v['quotaDimensions']['model'] ?? $modelKuota;
+                    }
+                }
+                if ($retrySeconds === 60 && preg_match('/retry in ([\d.]+)s/i', $body, $m)) {
                     $retrySeconds = (int) ceil((float) $m[1]);
                 }
-                \App\Support\LayananStatus::gagal('gemini', 'Rate limit 429');
+
+                // Pesan yang bisa ditindaklanjuti di panel Status layanan
+                $pesan = $harian
+                    ? 'Kuota harian ' . ($gratis ? 'PAKET GRATIS ' : '') . 'habis (batas ' . ($batas ?? '?') . '/hari, model ' . ($modelKuota ?? $this->model) . '); pulih ±'
+                        . round($retrySeconds / 3600, 1) . ' jam lagi' . ($gratis ? ' — aktifkan billing di Google AI Studio agar tidak terulang' : '')
+                    : 'Rate limit 429 (coba lagi ' . $retrySeconds . ' dtk)';
+                \App\Support\LayananStatus::gagal('gemini', $pesan);
                 throw new \App\Exceptions\GeminiRateLimitException($retrySeconds, 'Gemini 429: ' . substr($body, 0, 200));
             }
 

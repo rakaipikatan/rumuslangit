@@ -31,6 +31,8 @@ return [
     ],
 
     'status' => [
+        'lama' => "The AI service is busy, so your report is not ready yet. It is still being processed and will not be lost; you do not need to wait on this page. Open it later via \"View my latest report\" on the report page.",
+        'lama_katalog' => 'Back to catalog',
         'title' => 'Processing Report…',
         'heading' => 'Processing your analysis…',
         'desc' => 'Our system is weaving your calculation data and answers into an empathetic personal report. Please wait a moment.',

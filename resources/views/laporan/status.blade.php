@@ -32,7 +32,12 @@
         @endforeach
     </div>
 
-    <p class="text-white/20 text-xs">{{ __('laporan.status.durasi', ['durasi' => $featureId == 12 ? '5–10' : '10–30']) }}</p>
+    <div x-show="lama" style="display:none" class="mt-6 bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3 text-xs text-amber-200 leading-relaxed text-left">
+        {{ __('laporan.status.lama') }}
+        <a href="{{ route('trial.katalog') }}" class="block mt-2 text-purple-300 underline underline-offset-2">{{ __('laporan.status.lama_katalog') }}</a>
+    </div>
+
+    <p class="text-white/20 text-xs mt-4">{{ __('laporan.status.durasi', ['durasi' => $featureId == 12 ? '5–10' : '10–30']) }}</p>
 
 </div>
 
@@ -41,6 +46,7 @@
 function statusPage() {
     return {
         langkah: 0,
+        lama: false,
         interval: null,
         timerLangkah: null,
 
@@ -49,6 +55,9 @@ function statusPage() {
             this.timerLangkah = setInterval(() => {
                 if (this.langkah < 3) this.langkah++;
             }, 4000);
+
+            // Lebih dari 3 menit: layanan AI mungkin sedang padat — beri tahu pengguna dengan jujur
+            setTimeout(() => { this.lama = true; }, 180000);
 
             // Polling setiap 2 detik
             this.interval = setInterval(async () => {

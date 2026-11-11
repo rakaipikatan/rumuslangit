@@ -14,9 +14,17 @@ class GenerateAIReport implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
-    public int $tries = 10;
-
     public int $maxExceptions = 3;
+
+    /**
+     * Batas WAKTU, bukan jumlah percobaan: saat kuota harian Gemini habis, pekerjaan menunggu
+     * (dilepas kembali ke antrean) sampai pulih, bukan gagal permanen setelah 10 percobaan singkat.
+     * Kegagalan "nyata" tetap dibatasi $maxExceptions.
+     */
+    public function retryUntil(): \DateTimeInterface
+    {
+        return now()->addHours(8);
+    }
 
     public function backoff(): array
     {
@@ -63,7 +71,7 @@ class GenerateAIReport implements ShouldQueue
                     );
                 } catch (\App\Exceptions\GeminiRateLimitException $e) {
                     $text = null;
-                    $delay = max($e->retryAfterSeconds, 30) + rand(0, 15); // jitter
+                    $delay = min(max($e->retryAfterSeconds, 30), 3600) + rand(0, 15); // ikuti Google, tunda maks. 1 jam sekali + jitter
                     \Log::info("Gemini rate-limited (429), release job #{$this->reportId} in {$delay}s");
                     $this->release($delay);
                 }
