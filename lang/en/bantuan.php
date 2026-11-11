@@ -33,7 +33,7 @@ return [
         ['k' => ['daily luck', 'hoki', 'daily email'],
          'j' => 'Daily Luck is emailed automatically to active subscribers every morning around 06:00 WIB. Check Spam if you do not see it.'],
         ['k' => ['affiliate', 'commission', 'referral', 'payout', 'withdraw'],
-         'j' => 'Affiliate commissions are paid automatically on the 25th of each month to the registered account when the ready balance is at least Rp100,000 (held 14 days from payment; below the minimum it accumulates). No withdrawal request needed. Track it in the Affiliate Dashboard.'],
+         'j' => 'Affiliate commissions are processed automatically on the 25th of each month and transferred to the registered account shortly after, when the ready balance is at least Rp100,000 (held 14 days from payment; below the minimum it accumulates). No withdrawal request needed. Track it in the Affiliate Dashboard.'],
         ['k' => ['refund', 'cancel', 'money back'],
          'j' => 'Generated reports are digital and cannot be refunded. If you were charged but access did not activate after a few minutes, we check and activate it — your question is logged for review.'],
         ['k' => ['language', 'english', 'indonesian'],

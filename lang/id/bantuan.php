@@ -34,7 +34,7 @@ return [
         ['k' => ['hoki', 'harian', 'email harian'],
          'j' => 'Hoki Harian dikirim otomatis ke email pelanggan aktif setiap pagi sekitar pukul 06:00 WIB. Cek folder Spam bila belum terlihat.'],
         ['k' => ['afiliasi', 'afiliator', 'komisi', 'referral', 'payout', 'tarik', 'wd', 'withdraw'],
-         'j' => 'Komisi afiliator dibayar otomatis tiap tanggal 25 ke rekening terdaftar bila saldo siap dibayar minimal Rp100.000 (ditahan 14 hari sejak pembayaran; kurang dari minimum akan terakumulasi). Tidak perlu mengajukan penarikan. Pantau di Dashboard Afiliator.'],
+         'j' => 'Komisi afiliator diproses otomatis tiap tanggal 25 dan ditransfer ke rekening terdaftar segera setelahnya bila saldo siap dibayar minimal Rp100.000 (ditahan 14 hari sejak pembayaran; kurang dari minimum akan terakumulasi). Tidak perlu mengajukan penarikan. Pantau di Dashboard Afiliator.'],
         ['k' => ['refund', 'batal', 'pengembalian', 'uang kembali'],
          'j' => 'Laporan yang sudah dibuat bersifat digital sehingga tidak dapat dikembalikan. Bila pembayaran Anda terpotong tetapi akses tidak aktif setelah beberapa menit, kami periksa dan aktifkan — pertanyaan Anda tercatat untuk ditinjau.'],
         ['k' => ['bahasa', 'english', 'inggris'],

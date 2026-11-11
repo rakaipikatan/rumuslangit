@@ -34,7 +34,7 @@ return [
     'saldo_ditahan_ket' => 'Masa tahan :hari hari sejak pembayaran pengguna',
     'saldo_diproses' => 'Sedang diproses',
     'saldo_diproses_ket' => 'Sudah masuk antrean transfer',
-    'payout_info' => 'Payout otomatis tiap tanggal :tanggal (berikutnya: :berikutnya). Tidak perlu mengajukan penarikan — jika saldo "Siap dibayar" mencapai Rp:minimum, otomatis ditransfer ke rekening :bank · :rekening a.n. :atas_nama. Kurang dari itu, saldo terakumulasi ke bulan berikutnya.',
+    'payout_info' => 'Payout otomatis tiap tanggal :tanggal (berikutnya: :berikutnya). Tidak perlu mengajukan penarikan — jika saldo "Siap dibayar" mencapai Rp:minimum, otomatis diproses untuk dibayar dan segera setelahnya ditransfer ke rekening :bank · :rekening a.n. :atas_nama. Kurang dari itu, saldo terakumulasi ke bulan berikutnya.',
     'payout_kurang' => 'Saldo siap dibayar Anda baru Rp:siap. Kurang Rp:kurang lagi untuk masuk payout.',
     'payout_cukup' => 'Saldo siap dibayar sudah memenuhi minimum — akan masuk payout tanggal :berikutnya.',
     'rekening_salah' => 'Rekening salah? Hubungi lewat chat bantuan di pojok kanan bawah.',
@@ -73,9 +73,9 @@ return [
     'pan_bayar_title' => 'Kapan dan bagaimana komisi dibayar',
     'pan_bayar' => [
         'Setiap komisi ditahan :hari hari sejak pembayaran pengguna (antisipasi pembatalan/penipuan). Statusnya "Ditahan".',
-        'Sesudah itu statusnya "Siap dibayar". Pada tanggal :tanggal tiap bulan, sistem otomatis membuat payout dari semua komisi "Siap dibayar".',
+        'Sesudah itu statusnya "Siap dibayar". Pada tanggal :tanggal tiap bulan, sistem otomatis memproses semua komisi "Siap dibayar" menjadi satu payout, lalu ditransfer segera setelahnya.',
         'Syaratnya total minimal Rp:minimum. Kurang dari itu, saldo tidak hilang — terakumulasi ke bulan berikutnya.',
-        'Anda tidak perlu mengajukan penarikan. Transfer dikirim ke rekening yang Anda daftarkan; statusnya berubah menjadi "Dibayar" di dashboard.',
+        'Anda tidak perlu mengajukan penarikan. Setelah itu transfer dilakukan ke rekening yang Anda daftarkan (segera setelah tanggal tersebut); statusnya berubah dari "Diproses" menjadi "Dibayar" di dashboard.',
     ],
     'pan_tips_title' => 'Tips & larangan',
     'pan_tips' => [

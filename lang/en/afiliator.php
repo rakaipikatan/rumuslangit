@@ -34,7 +34,7 @@ return [
     'saldo_ditahan_ket' => ':hari-day hold from the user\'s payment',
     'saldo_diproses' => 'Processing',
     'saldo_diproses_ket' => 'Already queued for transfer',
-    'payout_info' => 'Automatic payout on the :tanggal of each month (next: :berikutnya). No withdrawal request is needed — once "Ready for payout" reaches Rp:minimum it is transferred to :bank · :rekening in the name of :atas_nama. Below that, the balance rolls over to next month.',
+    'payout_info' => 'Automatic payout on the :tanggal of each month (next: :berikutnya). No withdrawal request is needed — once "Ready for payout" reaches Rp:minimum it is automatically processed for payout and transferred shortly after to :bank · :rekening in the name of :atas_nama. Below that, the balance rolls over to next month.',
     'payout_kurang' => 'Your ready balance is Rp:siap. Rp:kurang more to qualify for payout.',
     'payout_cukup' => 'Your ready balance meets the minimum — it will be included in the payout on :berikutnya.',
     'rekening_salah' => 'Wrong account? Use the help chat at the bottom right.',
@@ -73,9 +73,9 @@ return [
     'pan_bayar_title' => 'When and how commissions are paid',
     'pan_bayar' => [
         'Each commission is held for :hari days after the user\'s payment (to guard against cancellations/fraud). Its status is "On hold".',
-        'After that it becomes "Ready". On day :tanggal of each month the system automatically creates a payout from all "Ready" commissions.',
+        'After that it becomes "Ready". On day :tanggal of each month the system automatically processes all "Ready" commissions into one payout, which is transferred shortly after.',
         'The total must be at least Rp:minimum. Below that, nothing is lost — the balance rolls over to the next month.',
-        'You do not need to request a withdrawal. The transfer goes to your registered account and the dashboard status changes to "Paid".',
+        'You do not need to request a withdrawal. The transfer is then made to your registered account (shortly after that date) and the dashboard status changes from "Processing" to "Paid".',
     ],
     'pan_tips_title' => 'Tips & rules',
     'pan_tips' => [
