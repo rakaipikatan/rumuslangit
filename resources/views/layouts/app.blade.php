@@ -106,6 +106,7 @@
         <p>{{ __('nav.footer_copyright', ['year' => date('Y')]) }}</p>
         <p class="mt-1">{{ __('nav.footer_disclaimer') }}</p>
         <p class="mt-2"><a href="{{ route('afiliasi.index') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('afiliasi.footer_link') }}</a> · <a href="{{ route('afiliator.masuk') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('afiliator.masuk_title') }}</a></p>
+        <p class="mt-1"><a href="{{ route('legal.privasi') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('legal.privasi.judul') }}</a> · <a href="{{ route('legal.syarat') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('legal.syarat.judul') }}</a> · <a href="{{ route('legal.refund') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('legal.refund.judul') }}</a></p>
     </footer>
 
     @include('partials.bantuan')

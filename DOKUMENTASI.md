@@ -186,6 +186,12 @@ Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant
 - **Migration baru (`2026_11_11_190000`):** tabel `affiliate_withdrawals`, `bantuan_logs`, kolom `affiliate_commissions.withdrawal_id`. **Harus dijalankan di produksi: `php artisan migrate --force`.**
 - Env baru (opsional): `AFFILIATE_MIN_WITHDRAWAL` (100000), `AFFILIATE_PAYOUT_DAY` (25).
 
+### 4.4c Halaman legal (11 Nov 2026)
+
+- **`/privasi`, `/syarat`, `/refund`** (publik, ID/EN, isi di berkas bahasa `legal.php`, `HalamanController`), tautan di footer semua halaman. Keputusan pemilik: **tanpa nama usaha, tanpa batas usia, tanpa refund sama sekali** (pembelian final; "bayar berhasil tetapi akses belum aktif" diperlakukan sebagai pemenuhan pesanan, bukan refund), dan **chat bantuan adalah satu-satunya saluran kontak — tidak ada email/WhatsApp**. Tes memastikan halaman tidak memuat alamat email.
+- Catatan risiko: sebagian penyedia pembayaran/platform dapat mewajibkan kontak resmi; pantau bila ada permintaan.
+- Keputusan pemilik: **billing Gemini tidak akan diaktifkan** (tanpa anggaran); AI utama praktis menjadi Groq bila kuota gratis Gemini habis — perlu memantau batas gratis Groq.
+
 ### 4.5 Wilayah
 Dropdown berjenjang provinsi → kota → kecamatan → kelurahan lewat `/api/wilayah/*`. Provinsi dan kota di-seed; kecamatan/kelurahan **di-seed lazy** saat pertama kali diminta (`WilayahController::seedKecamatan/seedKelurahan`).
 
@@ -374,6 +380,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit berikut) | **Halaman legal:** Kebijakan Privasi, Syarat Layanan, Kebijakan Refund (tanpa refund) + tautan footer, ID/EN; chat bantuan sebagai satu-satunya kontak; +2 tes (total 228) |
 | `d83762c` | **Dashboard afiliator + payout otomatis + panduan + chat bantuan:** afiliator masuk dengan kode email dan punya dashboard sendiri (pendaftar, pelanggan membayar, komisi, saldo, riwayat payout); payout dibuat otomatis tiap tgl 25 bila saldo siap ≥ Rp100.000 (admin cukup unduh CSV, transfer massal, klik tandai); panduan afiliator + banner panduan pelanggan; **chat bantuan otomatis** (AI → FAQ) tanpa kontak admin, dengan log di admin; T&C diperbarui; 3 tabel/kolom baru (**perlu `migrate`**); +14 tes (total 226) |
 | `1b52249` | **Jam lahir isian bebas HH:MM** (bukan dropdown) di form pendaftaran/trial dan data pasangan (Jodoh): contoh `07:30`, boleh `.` sebagai pemisah, keterangan "*Tidak harus diisi jika lupa" (ID/EN); kosong = dianggap 00; yang dipakai perhitungan hanya jam (menit hanya dicek formatnya); helper `App\Support\JamLahir`; +3 tes (total 212) |
 | `48cf4fe` | **Harga uji untuk beberapa email** (`PAYMENT_TEST_EMAIL` dipisah koma; tetap wajib terverifikasi dan berlaku sampai `PAYMENT_TEST_UNTIL`); email penguji kedua ditambahkan; +2 tes (total 209) |

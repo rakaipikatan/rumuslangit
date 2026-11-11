@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AfiliasiController;
 use App\Http\Controllers\AfiliatorController;
 use App\Http\Controllers\BantuanController;
+use App\Http\Controllers\HalamanController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OtpController;
@@ -30,6 +31,11 @@ Route::get('/analisis', [TrialController::class, 'katalog'])->name('trial.katalo
 // Program afiliasi (publik)
 Route::get('/afiliasi', [AfiliasiController::class, 'index'])->name('afiliasi.index');
 Route::post('/afiliasi', [AfiliasiController::class, 'daftar'])->middleware('throttle:5,60')->name('afiliasi.daftar');
+
+// Halaman legal
+Route::get('/privasi', [HalamanController::class, 'privasi'])->name('legal.privasi');
+Route::get('/syarat', [HalamanController::class, 'syarat'])->name('legal.syarat');
+Route::get('/refund', [HalamanController::class, 'refund'])->name('legal.refund');
 
 // Chat bantuan otomatis
 Route::post('/bantuan/chat', [BantuanController::class, 'chat'])->middleware('throttle:12,1')->name('bantuan.chat');
