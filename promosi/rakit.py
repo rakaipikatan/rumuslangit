@@ -21,6 +21,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 import tempfile
 from pathlib import Path
 
@@ -208,11 +209,21 @@ def buat_suara(data, folder, nama_suara):
         if cari(folder, n, EKS_AUDIO):
             continue
         path = folder / f'{n}.mp3'
-        try:
-            asyncio.run(satu(a['vo'], path))
-        except Exception as e:
-            raise SystemExit(f'Gagal membuat suara {a["kode"]} (perlu internet): {e}')
+        galat = None
+        for percobaan in range(1, 6):  # layanan gratis kadang menolak sementara (503): coba ulang dengan jeda
+            try:
+                asyncio.run(satu(a['vo'], path))
+                galat = None
+                break
+            except Exception as e:
+                galat = e
+                path.unlink(missing_ok=True)
+                time.sleep(2 * percobaan)
+        if galat is not None:
+            print(f'  ! suara {a["kode"]} gagal dibuat setelah 5 percobaan ({str(galat)[:90]}). Video tetap dirakit; jalankan lagi nanti untuk melengkapi.')
+            continue
         print(f'  suara {a["kode"]}: dibuat ({voice})')
+        time.sleep(1.0)  # jeda kecil antar-permintaan agar tidak ditolak
 
 
 # ───────────────────────── proses satu video ─────────────────────────
