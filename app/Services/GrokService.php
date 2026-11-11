@@ -88,25 +88,30 @@ class GrokService
         return collect($r->json('data', []))->pluck('id')->filter()->sort()->values()->all();
     }
 
-    /** Panggilan uji kecil → [balasan, milidetik]. */
+    /**
+     * Panggilan uji yang mewakili laporan nyata: jalur yang sama persis (mode JSON, ruang penalaran, perbaikan,
+     * validasi). Lulus hanya bila model mengembalikan JSON valid yang berisi isi. → [JSON, milidetik]
+     * @throws RuntimeException
+     */
     public function uji(): array
     {
-        $model = (string) config('services.xai.model');
-        $pesan = [['role' => 'user', 'content' => 'Balas satu kata: OK']];
         $mulai = microtime(true);
 
-        $r = $this->klien()->post($this->url('/chat/completions'), ['model' => $model, 'messages' => $pesan, 'max_completion_tokens' => 20]);
-        if (in_array($r->status(), [400, 422], true)) {
-            $r = $this->klien()->post($this->url('/chat/completions'), ['model' => $model, 'messages' => $pesan]);
-        }
+        $teks = $this->generate(
+            'Anda asisten pengujian layanan.',
+            'Balas dengan JSON persis berbentuk {"status":"ok","pesan":"<satu kalimat singkat dalam bahasa Indonesia>"}.',
+            0.2,
+            80
+        );
 
-        if ($r->failed()) {
-            LayananStatus::gagal('grok', 'Tes admin: HTTP ' . $r->status());
-            throw new RuntimeException('HTTP ' . $r->status() . ': ' . substr($r->body(), 0, 200));
+        $data = json_decode($teks, true);
+        if (!is_array($data) || blank($data['status'] ?? null)) {
+            LayananStatus::gagal('grok', 'Tes admin: balasan kosong/tidak sesuai bentuk yang diminta');
+            throw new RuntimeException('Terhubung, tetapi balasan kosong atau tidak sesuai bentuk JSON yang diminta.');
         }
 
         LayananStatus::ok('grok', 'tes admin');
 
-        return [trim((string) $r->json('choices.0.message.content', '')), (int) round((microtime(true) - $mulai) * 1000)];
+        return [$teks, (int) round((microtime(true) - $mulai) * 1000)];
     }
 }

@@ -227,11 +227,11 @@ class GrokCadanganTest extends TestCase
     {
         Http::fake([
             'api.x.ai/v1/models' => Http::response(['data' => [['id' => 'grok-uji'], ['id' => 'grok-lain']]], 200),
-            'api.x.ai/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => 'OK']]]], 200),
+            'api.x.ai/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => '{"status":"ok","pesan":"Layanan berjalan baik."}']]]], 200),
         ]);
 
         $this->withSession(['admin_logged_in' => true])->post(route('admin.system.tes-grok'))
-            ->assertSessionHas('success', fn ($m) => str_contains($m, 'AI cadangan berfungsi') && str_contains($m, 'grok-uji') && str_contains($m, 'grok-lain'));
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'AI cadangan berfungsi') && str_contains($m, 'JSON valid') && str_contains($m, 'Layanan berjalan baik') && str_contains($m, 'grok-lain'));
         $this->assertNotNull(LayananStatus::ringkas('grok')['terakhir_ok']);
     }
 
@@ -317,5 +317,34 @@ class GrokCadanganTest extends TestCase
         $this->ai(12, '0');
         $lagi = Http::recorded(fn ($r) => str_contains($r->url(), 'api.x.ai'))->values();
         $this->assertArrayNotHasKey('reasoning_effort', $lagi[0][0]->data());
+    }
+
+    public function test_tes_tidak_menyatakan_berfungsi_bila_balasan_kosong(): void
+    {
+        // Model penalaran yang kehabisan token mengembalikan isi kosong — itu BUKAN keberhasilan
+        Http::fake([
+            'api.x.ai/v1/models' => Http::response(['data' => [['id' => 'grok-uji']]], 200),
+            'api.x.ai/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => '']]]], 200),
+        ]);
+
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.system.tes-grok'))
+            ->assertSessionMissing('success')
+            ->assertSessionHas('error', fn ($m) => str_contains($m, 'AI cadangan menolak panggilan uji') && str_contains($m, 'JSON'));
+        $this->assertTrue(LayananStatus::ringkas('grok')['perlu_cek']);
+    }
+
+    public function test_panggilan_uji_memakai_ruang_penalaran_seperti_laporan_nyata(): void
+    {
+        config(['services.xai.ruang_penalaran' => 2500]);
+        Http::fake([
+            'api.x.ai/v1/models' => Http::response(['data' => [['id' => 'grok-uji']]], 200),
+            'api.x.ai/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => '{"status":"ok","pesan":"siap"}']]]], 200),
+        ]);
+
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.system.tes-grok'))->assertSessionHas('success');
+
+        $kirim = Http::recorded(fn ($r) => str_contains($r->url(), 'chat/completions'))->values();
+        $this->assertSame(80 + 2500, $kirim[0][0]->data()['max_completion_tokens'], 'bukan 20 token yang habis untuk berpikir');
+        $this->assertSame('json_object', $kirim[0][0]->data()['response_format']['type']);
     }
 }

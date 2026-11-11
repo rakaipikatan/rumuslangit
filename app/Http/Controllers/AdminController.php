@@ -748,7 +748,7 @@ class AdminController extends Controller
             return back()->with('error', 'AI cadangan menolak panggilan uji: ' . $e->getMessage());
         }
 
-        return back()->with('success', "AI cadangan berfungsi (model {$model}, {$ms} ms, balasan: \"" . \Illuminate\Support\Str::limit($balasan, 40) . "\"). Model tersedia: {$daftar}");
+        return back()->with('success', "AI cadangan berfungsi (model {$model}, {$ms} ms; menghasilkan JSON valid: " . \Illuminate\Support\Str::limit($balasan, 90) . "). Model tersedia: {$daftar}");
     }
 
     // Tombol "Tes Gemini": satu panggilan kecil untuk memastikan kunci, model, dan koneksi berfungsi.
