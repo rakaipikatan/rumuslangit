@@ -362,7 +362,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **AI cadangan aktif di produksi (Groq, `openai/gpt-oss-120b`):** uji ujung-ke-ujung berhasil (Gemini dilewati karena kuota habis → laporan Tafsir Mimpi dari Groq 5,2 dtk, JSON valid); ruang token untuk model penalaran; +1 tes (total 205). Konfigurasi `.env`: `XAI_BASE_URL` (Groq), `XAI_MODEL=openai/gpt-oss-120b` |
+| `c9ad313` | **AI cadangan aktif di produksi (Groq, `openai/gpt-oss-120b`):** uji ujung-ke-ujung berhasil (Gemini dilewati karena kuota habis → laporan Tafsir Mimpi dari Groq 5,2 dtk, JSON valid); ruang token untuk model penalaran; +1 tes (total 205). Konfigurasi `.env`: `XAI_BASE_URL` (Groq), `XAI_MODEL=openai/gpt-oss-120b` |
 | `f1b50eb` | **AI cadangan: deteksi kunci Groq vs xAI Grok** — kunci `gsk_` (Groq) ditolak xAI; tombol uji kini menjelaskan ketidakcocokan kunci/alamat tanpa mengirim kunci, label UI dibuat generik ("AI cadangan"); +2 tes (total 204) |
 | `795d5d8` | **Peralihan AI otomatis Gemini → Grok (cadangan):** `GrokService` (API kompatibel OpenAI), orkestrasi di `GeminiService` (alih saat gagal, penanda jeda kuota harian, galat Gemini diteruskan bila keduanya gagal), `ai_reports.provider`, status "AI Grok (cadangan)" + tombol **Tes Grok** (menampilkan daftar model) di panel Sistem; +13 tes (total 202) |
 | `30ce66d` | **Gemini kuota habis (paket gratis 20/hari):** diagnosis; penanganan kuota diperbaiki (baca waktu tunggu resmi, pesan jelas di panel, pekerjaan laporan menunggu sampai 8 jam dan selesai sendiri, halaman tunggu jujur setelah 3 menit); checklist: aktifkan billing Gemini (teratas); +5 tes (total 189) |
@@ -507,4 +507,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `30ce66d` | 11/11 11:08 | Gemini: tangani kuota habis (waktu tunggu resmi, pesan jelas, pekerjaan menunggu 8 jam) + halaman tunggu jujur |
 | `795d5d8` | 11/11 11:23 | Peralihan AI otomatis Gemini -> Grok (cadangan) + status panel + tombol Tes Grok |
 | `f1b50eb` | 11/11 11:28 | AI cadangan: deteksi kunci Groq vs xAI, label generik, pesan uji yang jelas |
+| `c9ad313` | 11/11 11:32 | AI cadangan: ruang token untuk model penalaran + reasoning_effort opsional; aktif di produksi (Groq gpt-oss-120b) |
 <!-- LOG-GIT:AKHIR -->
