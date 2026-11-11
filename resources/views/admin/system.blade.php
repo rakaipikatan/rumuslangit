@@ -65,6 +65,14 @@
         <span class="{{ str_contains($modeSumopod, 'SANDBOX') ? 'text-amber-300' : 'text-white/50' }}">SumoPod: {{ $modeSumopod }}</span>
     </div>
 
+    <div class="mt-4 text-xs {{ $cadangan['aktif'] ? 'text-white/50' : 'text-white/35' }}">
+        Cadangan AI (Grok): <strong class="{{ $cadangan['aktif'] ? 'text-emerald-300' : 'text-white/50' }}">{{ $cadangan['aktif'] ? 'AKTIF — model ' . $cadangan['model'] : 'belum diaktifkan' }}</strong>
+        @if(!$cadangan['aktif'])
+            — {{ $cadangan['kunci'] ? 'isi XAI_MODEL di .env' : 'isi XAI_API_KEY dan XAI_MODEL di .env, lalu tekan "Tes Grok"' }}
+        @endif
+        @if($cadangan['jeda'])<span class="text-amber-300"> · Gemini sedang dilewati (kuota harian habis) — permintaan langsung ke cadangan</span>@endif
+    </div>
+
     <div class="mt-6 pt-5 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-5">
         <form method="POST" action="{{ route('admin.system.tes-email') }}" class="flex flex-wrap items-end gap-2">
             @csrf
@@ -75,10 +83,16 @@
             </div>
             <button class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-sm text-white transition">Kirim email uji</button>
         </form>
-        <form method="POST" action="{{ route('admin.system.tes-gemini') }}" class="flex items-end">
-            @csrf
-            <button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition">Tes Gemini (1 panggilan kecil)</button>
-        </form>
+        <div class="flex flex-wrap items-end gap-2">
+            <form method="POST" action="{{ route('admin.system.tes-gemini') }}">
+                @csrf
+                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition">Tes Gemini</button>
+            </form>
+            <form method="POST" action="{{ route('admin.system.tes-grok') }}">
+                @csrf
+                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition">Tes Grok (cadangan)</button>
+            </form>
+        </div>
     </div>
 </div>
 

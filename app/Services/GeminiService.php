@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Cache;
 
 class GeminiService
 {
+    /** Penanda cache: kuota harian Gemini habis → permintaan berikutnya langsung ke cadangan. */
+    public const KUNCI_JEDA = 'gemini:kuota-habis';
+
+    /** Penyedia yang menghasilkan teks pada pemanggilan generate() terakhir: gemini | grok. */
+    public ?string $penyedia = null;
+
     private string $apiKey;
     private string $model;
     private string $endpoint;
@@ -32,6 +38,7 @@ class GeminiService
         if (Cache::has($cacheKey)) {
             $cached = Cache::get($cacheKey);
             if ($featureId !== 0 || json_decode(self::repairJson((string) $cached), true) !== null) {
+                $this->penyedia = Cache::get($cacheKey . ':penyedia', 'gemini');
                 return $cached;
             }
             Cache::forget($cacheKey);
@@ -68,6 +75,54 @@ class GeminiService
             ],
         ];
 
+        $konfigGen = $payload['generationConfig'];
+        $grok      = app(GrokService::class);
+        $text      = null;
+        $galat     = null;
+
+        // Bila kuota harian Gemini diketahui habis dan ada cadangan, langsung ke cadangan (hemat satu panggilan gagal).
+        $lewatiGemini = $grok->tersedia() && Cache::has(self::KUNCI_JEDA);
+
+        if (!$lewatiGemini) {
+            try {
+                $text = $this->panggilGemini($endpoint, $payload, $isProfile);
+                $this->penyedia = 'gemini';
+            } catch (\Throwable $e) {
+                $galat = $e;
+            }
+        }
+
+        if ($text === null) {
+            if (!$grok->tersedia()) {
+                throw $galat; // perilaku lama: tanpa cadangan, galat Gemini diteruskan (job menunda/ulang)
+            }
+
+            try {
+                $text = $grok->generate($sysInstruction, $prompt, (float) $konfigGen['temperature'], (int) $konfigGen['maxOutputTokens']);
+                $this->penyedia = 'grok';
+                \Log::warning('AI dialihkan ke cadangan Grok', ['fitur' => $featureId, 'alasan' => $galat ? mb_substr($galat->getMessage(), 0, 160) : 'kuota Gemini habis (jeda)']);
+            } catch (\Throwable $g) {
+                if ($galat) {
+                    throw $galat; // Gemini dan Grok sama-sama gagal: utamakan galat Gemini (mis. rate-limit → job menunda)
+                }
+                // Gemini dilewati karena jeda tetapi Grok gagal: coba Gemini sekali (mungkin kuotanya sudah pulih)
+                $text = $this->panggilGemini($endpoint, $payload, $isProfile);
+                $this->penyedia = 'gemini';
+            }
+        }
+
+        Cache::put($cacheKey, $text, now()->addHours(24));
+        Cache::put($cacheKey . ':penyedia', $this->penyedia, now()->addHours(24));
+
+        return $text;
+    }
+
+    /**
+     * Satu panggilan ke Gemini (dengan percobaan ulang untuk 503/gagal sementara) → teks JSON bersih.
+     * @throws \App\Exceptions\GeminiRateLimitException | \Exception
+     */
+    private function panggilGemini(string $endpoint, array $payload, bool $isProfile): string
+    {
         $response  = null;
         $maxTries  = 3;
         $lastError = '';
@@ -103,6 +158,12 @@ class GeminiService
                         . round($retrySeconds / 3600, 1) . ' jam lagi' . ($gratis ? ' — aktifkan billing di Google AI Studio agar tidak terulang' : '')
                     : 'Rate limit 429 (coba lagi ' . $retrySeconds . ' dtk)';
                 \App\Support\LayananStatus::gagal('gemini', $pesan);
+
+                // Kuota HARIAN habis: tandai agar permintaan berikutnya langsung ke cadangan (jika ada) sampai kuota pulih
+                if ($harian) {
+                    Cache::put(self::KUNCI_JEDA, true, now()->addSeconds(min($retrySeconds, 6 * 3600)));
+                }
+
                 throw new \App\Exceptions\GeminiRateLimitException($retrySeconds, 'Gemini 429: ' . substr($body, 0, 200));
             }
 
@@ -142,8 +203,6 @@ class GeminiService
         if ($isProfile && json_decode($text, true) === null) {
             throw new \Exception('Gemini mengembalikan JSON profil yang tidak valid: ' . json_last_error_msg());
         }
-
-        Cache::put($cacheKey, $text, now()->addHours(24));
 
         return $text;
     }

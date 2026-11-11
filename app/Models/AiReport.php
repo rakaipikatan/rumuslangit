@@ -9,7 +9,7 @@ class AiReport extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'user_id', 'feature_id', 'locale', 'consumed_quota', 'data_hash',
+        'user_id', 'feature_id', 'locale', 'provider', 'consumed_quota', 'data_hash',
         'prompt_used', 'response_text', 'tokens_used', 'cached_at',
     ];
 

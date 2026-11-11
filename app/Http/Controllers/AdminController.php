@@ -672,7 +672,14 @@ class AdminController extends Controller
                 . '. Matikan setelah tes selesai (beri tanda # di .env, lalu config:cache).';
         }
 
-        return view('admin.system', compact('info', 'layanan', 'detak', 'penjadwalOk', 'horizon', 'konfigurasi', 'modeSumopod', 'peringatan'));
+        $cadangan = [
+            'aktif'  => app(\App\Services\GrokService::class)->tersedia(),
+            'kunci'  => filled(config('services.xai.key')),
+            'model'  => (string) config('services.xai.model'),
+            'jeda'   => \Illuminate\Support\Facades\Cache::has(\App\Services\GeminiService::KUNCI_JEDA),
+        ];
+
+        return view('admin.system', compact('info', 'layanan', 'detak', 'penjadwalOk', 'horizon', 'konfigurasi', 'modeSumopod', 'peringatan', 'cadangan'));
     }
 
     // Tombol "Tes kirim email": kirim email uji ke alamat yang diketik admin dan tampilkan hasilnya apa adanya.
@@ -696,6 +703,41 @@ class AdminController extends Controller
         }
 
         return back()->with('success', "Email uji diterima server SMTP dan dikirim ke {$request->email}. Cek Inbox/Spam dalam 1–2 menit.");
+    }
+
+    // Tombol "Tes Grok": menampilkan model yang tersedia untuk akun ini lalu satu panggilan uji dengan model yang dipilih.
+    public function tesGrok()
+    {
+        if (blank(config('services.xai.key'))) {
+            return back()->with('error', 'Kunci Grok belum diisi di .env (XAI_API_KEY).');
+        }
+
+        $grok = app(\App\Services\GrokService::class);
+
+        try {
+            $ids = $grok->daftarModel();
+        } catch (\Throwable $e) {
+            \App\Support\LayananStatus::gagal('grok', 'Tes admin: ' . $e->getMessage());
+            return back()->with('error', 'Grok tidak terjangkau / kunci ditolak: ' . $e->getMessage());
+        }
+
+        $daftar = implode(', ', array_slice($ids, 0, 25)) ?: '(tidak ada)';
+        $model  = (string) config('services.xai.model');
+
+        if ($model === '') {
+            return back()->with('error', "XAI_MODEL belum diisi di .env. Model yang tersedia untuk akun ini: {$daftar}");
+        }
+        if (!in_array($model, $ids, true)) {
+            return back()->with('error', "Model \"{$model}\" tidak ada di akun ini. Model yang tersedia: {$daftar}");
+        }
+
+        try {
+            [$balasan, $ms] = $grok->uji();
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Grok menolak panggilan uji: ' . $e->getMessage());
+        }
+
+        return back()->with('success', "Grok berfungsi (model {$model}, {$ms} ms, balasan: \"" . \Illuminate\Support\Str::limit($balasan, 40) . "\"). Model tersedia: {$daftar}");
     }
 
     // Tombol "Tes Gemini": satu panggilan kecil untuk memastikan kunci, model, dan koneksi berfungsi.

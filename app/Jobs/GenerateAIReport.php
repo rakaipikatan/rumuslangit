@@ -94,6 +94,7 @@ class GenerateAIReport implements ShouldQueue
 
         AiReport::where('id', $this->reportId)->update([
             'response_text' => $text,
+            'provider'      => $gemini->penyedia, // gemini | grok (cadangan)
             'cached_at'     => now(),
         ]);
     }

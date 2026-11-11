@@ -47,4 +47,13 @@ return [
         'webhook_secret' => env('SUMOPOD_PAY_WEBHOOK_SECRET'),
     ],
 
+    // xAI Grok — penyedia AI CADANGAN bila Gemini gagal. Aktif hanya bila key DAN model terisi di .env.
+    // Gunakan tombol "Tes Grok" di Admin → Sistem untuk melihat daftar model yang tersedia bagi akun Anda.
+    'xai' => [
+        'key'      => env('XAI_API_KEY'),
+        'model'    => env('XAI_MODEL'),
+        'base_url' => env('XAI_BASE_URL', 'https://api.x.ai/v1'),
+        'timeout'  => env('XAI_TIMEOUT', 120),
+    ],
+
 ];

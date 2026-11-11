@@ -18,6 +18,7 @@ class LayananStatus
     public const LAYANAN = [
         'email'      => 'Email (SMTP)',
         'gemini'     => 'AI Gemini',
+        'grok'       => 'AI Grok (cadangan)',
         'pembayaran' => 'Pembuatan QRIS (SumoPod)',
         'webhook'    => 'Webhook pembayaran SumoPod',
         'hoki'       => 'Hoki Harian (pengiriman pagi)',

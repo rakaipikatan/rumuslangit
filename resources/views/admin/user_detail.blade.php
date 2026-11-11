@@ -160,18 +160,19 @@
 <div class="{{ $card }} overflow-x-auto">
     <h2 class="{{ $h }}">Laporan terakhir (maks. 15)</h2>
     <table class="w-full text-sm">
-        <thead><tr class="text-left text-xs text-white/30 uppercase tracking-wider"><th class="py-2 pr-4">Laporan</th><th class="pr-4">Bahasa</th><th class="pr-4">Dibuat (WIB)</th><th class="pr-4">Memakai jatah</th><th>Status</th></tr></thead>
+        <thead><tr class="text-left text-xs text-white/30 uppercase tracking-wider"><th class="py-2 pr-4">Laporan</th><th class="pr-4">Bahasa</th><th class="pr-4">Dibuat (WIB)</th><th class="pr-4">Penyedia AI</th><th class="pr-4">Memakai jatah</th><th>Status</th></tr></thead>
         <tbody class="divide-y divide-white/5">
         @forelse($laporan as $r)
             <tr>
                 <td class="py-2 pr-4 text-white/80">{{ $r->feature_id === 0 ? 'Profil karakter (trial)' : ($fitur[$r->feature_id]['nama'] ?? "Fitur #{$r->feature_id}") }}</td>
                 <td class="pr-4 text-white/50">{{ strtoupper($r->locale ?? 'id') }}</td>
                 <td class="pr-4 text-white/30 text-xs">{{ $wib($r->cached_at) }}</td>
+                <td class="pr-4 text-xs {{ $r->provider === 'grok' ? 'text-amber-300' : 'text-white/50' }}">{{ $r->provider ?: '—' }}</td>
                 <td class="pr-4 text-white/50">{{ $r->consumed_quota ? 'ya' : 'tidak' }}</td>
                 <td class="text-xs {{ $r->response_text ? 'text-emerald-300' : 'text-amber-300' }}">{{ $r->response_text ? 'selesai' : 'belum selesai' }}</td>
             </tr>
         @empty
-            <tr><td colspan="5" class="py-4 text-white/30">Belum ada laporan.</td></tr>
+            <tr><td colspan="6" class="py-4 text-white/30">Belum ada laporan.</td></tr>
         @endforelse
         </tbody>
     </table>

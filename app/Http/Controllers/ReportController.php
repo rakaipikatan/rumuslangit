@@ -205,8 +205,9 @@ class ReportController extends Controller
         // Feature 12 (Tafsir Mimpi): coba langsung, fallback ke queue jika gagal
         if ($featureId === 12) {
             try {
-                $text = app(GeminiService::class)->generate($featureId, $kalkulasi, $validated, $userProfile, [], $locale);
-                $report->update(['response_text' => $text]);
+                $ai   = app(GeminiService::class);
+                $text = $ai->generate($featureId, $kalkulasi, $validated, $userProfile, [], $locale);
+                $report->update(['response_text' => $text, 'provider' => $ai->penyedia]);
                 return redirect()->route('laporan.hasil', $featureId);
             } catch (\Throwable) {
                 // Gagal (misal 503) — proses via queue seperti fitur lain

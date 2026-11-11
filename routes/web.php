@@ -117,6 +117,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/affiliates/{id}/lunas',  [AdminController::class, 'tandaiLunasKomisi'])->name('affiliates.lunas');
         Route::get('/system',        [AdminController::class, 'system'])->name('system');
         Route::post('/system/tes-email',         [AdminController::class, 'tesEmail'])->middleware('throttle:10,1')->name('system.tes-email');
+        Route::post('/system/tes-grok',          [AdminController::class, 'tesGrok'])->middleware('throttle:10,1')->name('system.tes-grok');
         Route::post('/system/tes-gemini',        [AdminController::class, 'tesGemini'])->middleware('throttle:10,1')->name('system.tes-gemini');
         Route::post('/system/clear-cache',       [AdminController::class, 'clearCache'])->name('system.clear-cache');
         Route::post('/system/clear-failed-jobs', [AdminController::class, 'clearFailedJobs'])->name('system.clear-failed-jobs');
