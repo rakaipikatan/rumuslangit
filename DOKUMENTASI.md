@@ -356,7 +356,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Persiapan tes pembayaran Live 3 produk:** pengaman `PAYMENT_TEST_UNTIL` (harga uji mati otomatis) + peringatan "HARGA UJI AKTIF" di panel Sistem; harga uji diaktifkan 6 jam untuk akun pemilik (Rp1.000 untuk satuan/bulanan/tahunan; pengguna lain tetap normal); +2 tes (total 179) |
+| `1450f69` | **Persiapan tes pembayaran Live 3 produk:** pengaman `PAYMENT_TEST_UNTIL` (harga uji mati otomatis) + peringatan "HARGA UJI AKTIF" di panel Sistem; harga uji diaktifkan 6 jam untuk akun pemilik (Rp1.000 untuk satuan/bulanan/tahunan; pengguna lain tetap normal); +2 tes (total 179) |
 | `9a7593a` | **Backup database otomatis** (`db:backup` harian 02:00 WIB, verifikasi isi, rotasi 14 hari + 6 bulan, izin aman, status di panel) dan **`db:uji-pulih`** (uji pulih aman ke tabel sementara); klien `postgresql-client-16` dipasang; +10 tes (total 177) |
 | `4181277` | **Pencatatan lengkap hari ini:** bagian 15 (ringkasan pembaruan 10–11 Nov per tema + log kronologis dari git, 34 commit, berpenanda agar bisa dibuat ulang) dan aturan "setiap perubahan wajib dicatat"; checklist peluncuran (bagian 14) |
 | `4cb3a54` | **Bukti uji tiga alur pembayaran** (satuan, bulanan, tahunan) uji-ujung-ke-ujung (`AlurPembayaranLengkapTest`, 4 tes / 122 pemeriksaan) + **checklist peluncuran & operasional** (bagian 14); temuan: perpanjangan langganan saat masih aktif diblokir, tidak ada pengingat kedaluwarsa, tidak ada halaman kebijakan/kontak (total 179 tes) |
@@ -489,4 +489,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `4cb3a54` | 11/11 10:14 | Tes uji-ujung-ke-ujung 3 alur pembayaran + checklist peluncuran/operasional |
 | `4181277` | 11/11 10:20 | Dokumentasi: catatan pembaruan 10-11 Nov (ringkasan per tema + log git kronologis) |
 | `9a7593a` | 11/11 10:29 | Backup database otomatis harian + verifikasi + uji pulih aman |
+| `1450f69` | 11/11 10:31 | Pengaman waktu harga uji + peringatan panel Sistem; persiapan tes pembayaran Live |
 <!-- LOG-GIT:AKHIR -->
