@@ -66,7 +66,7 @@
     </div>
 
     <div class="mt-4 text-xs {{ $cadangan['aktif'] ? 'text-white/50' : 'text-white/35' }}">
-        Cadangan AI (Grok): <strong class="{{ $cadangan['aktif'] ? 'text-emerald-300' : 'text-white/50' }}">{{ $cadangan['aktif'] ? 'AKTIF — model ' . $cadangan['model'] : 'belum diaktifkan' }}</strong>
+        Cadangan AI: <strong class="{{ $cadangan['aktif'] ? 'text-emerald-300' : 'text-white/50' }}">{{ $cadangan['aktif'] ? 'AKTIF — model ' . $cadangan['model'] : 'belum diaktifkan' }}</strong>
         @if(!$cadangan['aktif'])
             — {{ $cadangan['kunci'] ? 'isi XAI_MODEL di .env' : 'isi XAI_API_KEY dan XAI_MODEL di .env, lalu tekan "Tes Grok"' }}
         @endif
@@ -90,7 +90,7 @@
             </form>
             <form method="POST" action="{{ route('admin.system.tes-grok') }}">
                 @csrf
-                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition">Tes Grok (cadangan)</button>
+                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition">Tes AI cadangan</button>
             </form>
         </div>
     </div>

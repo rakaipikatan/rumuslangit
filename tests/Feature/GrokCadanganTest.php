@@ -231,7 +231,7 @@ class GrokCadanganTest extends TestCase
         ]);
 
         $this->withSession(['admin_logged_in' => true])->post(route('admin.system.tes-grok'))
-            ->assertSessionHas('success', fn ($m) => str_contains($m, 'Grok berfungsi') && str_contains($m, 'grok-uji') && str_contains($m, 'grok-lain'));
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'AI cadangan berfungsi') && str_contains($m, 'grok-uji') && str_contains($m, 'grok-lain'));
         $this->assertNotNull(LayananStatus::ringkas('grok')['terakhir_ok']);
     }
 
@@ -255,12 +255,43 @@ class GrokCadanganTest extends TestCase
     public function test_panel_sistem_menampilkan_status_cadangan_dan_tombol_dilindungi_admin(): void
     {
         $this->withSession(['admin_logged_in' => true])->get(route('admin.system'))
-            ->assertOk()->assertSee('Cadangan AI (Grok)')->assertSee('AKTIF — model grok-uji')->assertSee('Tes Grok (cadangan)');
+            ->assertOk()->assertSee('Cadangan AI:')->assertSee('AKTIF — model grok-uji')->assertSee('Tes AI cadangan');
 
         config(['services.xai.key' => null, 'services.xai.model' => null]);
         $this->withSession(['admin_logged_in' => true])->get(route('admin.system'))->assertSee('belum diaktifkan');
 
         $this->flushSession();
         $this->post(route('admin.system.tes-grok'))->assertRedirect(route('admin.login'));
+    }
+
+    public function test_kunci_groq_gsk_pada_alamat_xai_dijelaskan_tanpa_mengirim_kunci_ke_mana_pun(): void
+    {
+        Http::fake();
+        config(['services.xai.key' => 'gsk_contohKunciGroq', 'services.xai.base_url' => 'https://api.x.ai/v1']);
+
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.system.tes-grok'))
+            ->assertSessionHas('error', fn ($m) => str_contains($m, 'GroqCloud') && str_contains($m, 'XAI_BASE_URL=https://api.groq.com/openai/v1') && str_contains($m, 'console.x.ai'));
+
+        Http::assertNothingSent(); // kunci tidak dikirim ke alamat yang salah
+
+        config(['services.xai.key' => 'xai-contoh', 'services.xai.base_url' => 'https://api.groq.com/openai/v1']);
+        $this->withSession(['admin_logged_in' => true])->post(route('admin.system.tes-grok'))
+            ->assertSessionHas('error', fn ($m) => str_contains($m, 'kunci xAI') && str_contains($m, 'https://api.x.ai/v1'));
+        Http::assertNothingSent();
+    }
+
+    public function test_alamat_groq_dengan_kunci_gsk_berfungsi_lewat_jalur_yang_sama(): void
+    {
+        config(['services.xai.key' => 'gsk_contoh', 'services.xai.base_url' => 'https://api.groq.com/openai/v1', 'services.xai.model' => 'llama-uji']);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response($this->gemini429Harian(), 429),
+            'api.groq.com/openai/v1/chat/completions' => Http::response($this->grokOk(), 200),
+        ]);
+
+        [$teks, $svc] = $this->ai();
+
+        $this->assertSame(self::JSON_OK, $teks);
+        $this->assertSame('grok', $svc->penyedia);
+        Http::assertSent(fn ($r) => str_contains($r->url(), 'api.groq.com/openai/v1/chat/completions') && $r->header('Authorization')[0] === 'Bearer gsk_contoh');
     }
 }

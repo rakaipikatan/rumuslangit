@@ -709,7 +709,18 @@ class AdminController extends Controller
     public function tesGrok()
     {
         if (blank(config('services.xai.key'))) {
-            return back()->with('error', 'Kunci Grok belum diisi di .env (XAI_API_KEY).');
+            return back()->with('error', 'Kunci AI cadangan belum diisi di .env (XAI_API_KEY).');
+        }
+
+        // Salah kunci/alamat adalah kekeliruan paling umum: Groq (groq.com, kunci gsk_) ≠ Grok milik xAI (kunci xai-).
+        $kunci = (string) config('services.xai.key');
+        $url   = (string) config('services.xai.base_url');
+        if (str_starts_with($kunci, 'gsk_') && str_contains($url, 'x.ai')) {
+            return back()->with('error', 'Kunci berawalan "gsk_" adalah kunci GroqCloud (groq.com), BUKAN xAI Grok, sehingga ditolak xAI. '
+                . 'Dua pilihan: (1) isi XAI_BASE_URL=https://api.groq.com/openai/v1 di .env lalu jalankan config:cache; atau (2) pakai kunci xAI (berawalan "xai-") dari console.x.ai.');
+        }
+        if (str_starts_with($kunci, 'xai-') && str_contains($url, 'groq.com')) {
+            return back()->with('error', 'Kunci berawalan "xai-" adalah kunci xAI, tetapi XAI_BASE_URL menunjuk ke Groq. Ubah XAI_BASE_URL=https://api.x.ai/v1 (atau hapus barisnya) lalu config:cache.');
         }
 
         $grok = app(\App\Services\GrokService::class);
@@ -718,7 +729,7 @@ class AdminController extends Controller
             $ids = $grok->daftarModel();
         } catch (\Throwable $e) {
             \App\Support\LayananStatus::gagal('grok', 'Tes admin: ' . $e->getMessage());
-            return back()->with('error', 'Grok tidak terjangkau / kunci ditolak: ' . $e->getMessage());
+            return back()->with('error', 'AI cadangan tidak terjangkau / kunci ditolak: ' . $e->getMessage());
         }
 
         $daftar = implode(', ', array_slice($ids, 0, 25)) ?: '(tidak ada)';
@@ -734,10 +745,10 @@ class AdminController extends Controller
         try {
             [$balasan, $ms] = $grok->uji();
         } catch (\Throwable $e) {
-            return back()->with('error', 'Grok menolak panggilan uji: ' . $e->getMessage());
+            return back()->with('error', 'AI cadangan menolak panggilan uji: ' . $e->getMessage());
         }
 
-        return back()->with('success', "Grok berfungsi (model {$model}, {$ms} ms, balasan: \"" . \Illuminate\Support\Str::limit($balasan, 40) . "\"). Model tersedia: {$daftar}");
+        return back()->with('success', "AI cadangan berfungsi (model {$model}, {$ms} ms, balasan: \"" . \Illuminate\Support\Str::limit($balasan, 40) . "\"). Model tersedia: {$daftar}");
     }
 
     // Tombol "Tes Gemini": satu panggilan kecil untuk memastikan kunci, model, dan koneksi berfungsi.
