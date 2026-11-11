@@ -193,7 +193,7 @@ def durasi_audio(path):
     return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3)) if m else None
 
 
-def buat_suara(data, folder, nama_suara):
+def buat_suara(data, folder, nama_suara, kecepatan=20):
     """Membuat v1.mp3 … v8.mp3 dari naskah tiap adegan (hanya yang belum ada, jadi bisa diganti rekaman sendiri)."""
     try:
         import edge_tts
@@ -202,12 +202,17 @@ def buat_suara(data, folder, nama_suara):
     voice = SUARA[nama_suara]
 
     async def satu(teks, path):
-        await edge_tts.Communicate(teks, voice, rate='+0%').save(str(path))
+        await edge_tts.Communicate(teks, voice, rate=f'{kecepatan:+d}%').save(str(path))
 
     for a in data['adegan']:
         n = 'v' + a['kode'][1:]
-        if cari(folder, n, EKS_AUDIO):
-            continue
+        ada = cari(folder, n, EKS_AUDIO)
+        if ada:
+            # berkas rusak/kosong (mis. sisa percobaan yang ditolak layanan) dibuang dan dibuat ulang
+            if ada.stat().st_size >= 2000 and durasi_audio(ada):
+                continue
+            ada.unlink(missing_ok=True)
+            print(f'  suara {a["kode"]}: berkas lama rusak, dibuat ulang')
         path = folder / f'{n}.mp3'
         galat = None
         for percobaan in range(1, 6):  # layanan gratis kadang menolak sementara (503): coba ulang dengan jeda
@@ -303,7 +308,7 @@ def rakit(data_path, args):
         # 3) Audio
         suara_utuh = cari(folder, 'voice', EKS_AUDIO) or cari(folder, 'suara', EKS_AUDIO)
         if args.suara and not suara_utuh:
-            buat_suara(data, folder, args.suara)
+            buat_suara(data, folder, args.suara, args.kecepatan)
         musik = cari(folder, 'musik', EKS_AUDIO) or cari(folder, 'music', EKS_AUDIO)
         suara_adegan = []
         if not suara_utuh:
@@ -314,7 +319,7 @@ def rakit(data_path, args):
                     batas = float(a['durasi']) - 0.4
                     tempo = 1.0
                     if dur_a and dur_a > batas:
-                        tempo = min(dur_a / batas, 1.35)   # percepat sedikit agar muat di adegannya
+                        tempo = min(dur_a / batas, 1.4)   # percepat sedikit agar muat di adegannya
                         if dur_a / tempo > batas + 0.05:
                             print(f'  ! suara {a["kode"]} masih lebih panjang dari adegannya ({dur_a:.1f} dtk > {batas:.1f} dtk): persingkat naskah/rekaman')
                     suara_adegan.append((f, float(a['mulai']), tempo))
@@ -389,6 +394,7 @@ def main():
     ap.add_argument('nomor', nargs='*', help='nomor video, mis. 01 (kosong = semua yang foldernya ada)')
     ap.add_argument('--pratinjau', action='store_true', help='resolusi setengah + cepat, untuk pengecekan')
     ap.add_argument('--suara', nargs='?', const='gadis', choices=sorted(SUARA), help='buat voice-over bahasa Indonesia otomatis: gadis (perempuan, bawaan) atau ardi (laki-laki)')
+    ap.add_argument('--kecepatan', type=int, default=20, help='kecepatan bicara suara otomatis dalam persen (bawaan 20 = 20%% lebih cepat dari normal)')
     ap.add_argument('--hemat', action='store_true', help='mode hemat sumber daya (prioritas CPU terendah, 1 thread) — untuk dijalankan di server kecil')
     ap.add_argument('--izinkan-kosong', action='store_true', help='adegan tanpa klip diisi kartu penanda')
     args = ap.parse_args()
