@@ -362,6 +362,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit berikut) | **Jam lahir isian bebas HH:MM** (bukan dropdown) di form pendaftaran/trial dan data pasangan (Jodoh): contoh `07:30`, boleh `.` sebagai pemisah, keterangan "*Tidak harus diisi jika lupa" (ID/EN); kosong = dianggap 00; yang dipakai perhitungan hanya jam (menit hanya dicek formatnya); helper `App\Support\JamLahir`; +3 tes (total 212) |
 | `48cf4fe` | **Harga uji untuk beberapa email** (`PAYMENT_TEST_EMAIL` dipisah koma; tetap wajib terverifikasi dan berlaku sampai `PAYMENT_TEST_UNTIL`); email penguji kedua ditambahkan; +2 tes (total 209) |
 | `1ebf61d` | **Tes AI cadangan jujur:** menguji jalur laporan nyata (JSON valid + ruang penalaran); balasan kosong tidak lagi dinyatakan "berfungsi"; +2 tes (total 207) |
 | `c9ad313` | **AI cadangan aktif di produksi (Groq, `openai/gpt-oss-120b`):** uji ujung-ke-ujung berhasil (Gemini dilewati karena kuota habis → laporan Tafsir Mimpi dari Groq 5,2 dtk, JSON valid); ruang token untuk model penalaran; +1 tes (total 205). Konfigurasi `.env`: `XAI_BASE_URL` (Groq), `XAI_MODEL=openai/gpt-oss-120b` |

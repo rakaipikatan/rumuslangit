@@ -43,7 +43,7 @@ class AffiliateTest extends TestCase
             'name'              => 'User Referral ' . Str::random(6),
             'jenis_kelamin'     => 'Laki-laki',
             'dob'               => '1995-05-05',
-            'birth_hour'        => 10,
+            'birth_hour'        => '10:00',
             'province'          => 'DKI Jakarta',
             'kota'              => 'Jakarta Selatan',
             'kecamatan'         => 'Kebayoran Baru',

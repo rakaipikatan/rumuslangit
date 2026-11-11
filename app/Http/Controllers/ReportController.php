@@ -85,7 +85,7 @@ class ReportController extends Controller
             if ($featureId === 5) {
                 $rules['p_nama']             = 'required|string|max:255';
                 $rules['p_dob']              = 'required|date|before:today';
-                $rules['p_birth_hour']       = 'nullable|integer|min:0|max:23';
+                $rules['p_birth_hour']       = \App\Support\JamLahir::ATURAN;
                 $rules['p_jenis_kelamin']    = 'nullable|in:Laki-laki,Perempuan';
                 $rules['p_province']         = 'required|string|max:100';
                 $rules['p_kota']             = 'required|string|max:100';
@@ -97,7 +97,7 @@ class ReportController extends Controller
                 $rules['p_jumlah_saudara']   = 'required|integer|min:1|max:20';
                 $rules['p_pekerjaan']        = 'required|string|max:100';
             }
-            $validated = $request->validate($rules);
+            $validated = $request->validate($rules, ["p_birth_hour.regex" => __("trial.form.birth_hour_hint")]);
         }
 
         // Ambil data tarot opsional
@@ -189,7 +189,7 @@ class ReportController extends Controller
                 'nama'             => $validated['p_nama'],
                 'jenis_kelamin'    => $validated['p_jenis_kelamin'] ?? ($user->jenis_kelamin === 'Laki-laki' ? 'Perempuan' : 'Laki-laki'),
                 'dob'              => $validated['p_dob'],
-                'birth_hour'       => $validated['p_birth_hour'] ?? 0,
+                'birth_hour'       => \App\Support\JamLahir::keJam($validated['p_birth_hour'] ?? null),
                 'province'         => $validated['p_province'],
                 'kota'             => $validated['p_kota'],
                 'kecamatan'        => $validated['p_kecamatan'],

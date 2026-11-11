@@ -35,7 +35,7 @@ class TrialController extends Controller
             'name'               => 'required|string|max:255',
             'jenis_kelamin'      => 'required|in:Laki-laki,Perempuan',
             'dob'                => 'required|date|before:today',
-            'birth_hour'         => 'required|integer|min:0|max:23',
+            'birth_hour'         => \App\Support\JamLahir::ATURAN,
             'province'           => 'required|string|max:100',
             'kota'               => 'required|string|max:100',
             'kecamatan'          => 'required|string|max:100',
@@ -45,9 +45,11 @@ class TrialController extends Controller
             'anak_ke'            => 'required|integer|min:1|max:20',
             'jumlah_saudara'     => 'required|integer|min:1|max:20',
             'status_pernikahan'  => 'required|in:Lajang,Menikah,Cerai Hidup,Cerai Mati',
+        ], [
+            'birth_hour.regex' => __('trial.form.birth_hour_hint'),
         ]);
 
-        $kalkulasi = KalkulasiEngine::hitung($request->dob, (int) $request->birth_hour);
+        $kalkulasi = KalkulasiEngine::hitung($request->dob, \App\Support\JamLahir::keJam($request->birth_hour));
 
         $existingId = Session::get('user_id');
         $user = $existingId ? User::find($existingId) : null;
@@ -56,7 +58,7 @@ class TrialController extends Controller
             'name'              => $request->name,
             'jenis_kelamin'     => $request->jenis_kelamin,
             'dob'               => $request->dob,
-            'birth_hour'        => $request->birth_hour,
+            'birth_hour'        => \App\Support\JamLahir::keJam($request->birth_hour),
             'province'          => $request->province,
             'kota'              => $request->kota,
             'kecamatan'         => $request->kecamatan,

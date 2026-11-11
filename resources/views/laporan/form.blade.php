@@ -122,13 +122,11 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">{{ __('laporan.form.jam_lahir_label') }} <span class="normal-case text-white/30">{{ __('laporan.form.boleh_kosong') }}</span></label>
-                        <select name="p_birth_hour"
-                                class="w-full bg-cosmic-700/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/60 transition [color-scheme:dark]">
-                            <option value="">{{ __('laporan.form.tidak_tahu') }}</option>
-                            @for ($h = 0; $h <= 23; $h++)
-                            <option value="{{ $h }}" {{ old('p_birth_hour') == $h && old('p_birth_hour') !== null ? 'selected' : '' }}>{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}:00 WIB</option>
-                            @endfor
-                        </select>
+                        <input type="text" name="p_birth_hour" value="{{ old('p_birth_hour') }}"
+                               inputmode="numeric" maxlength="5" placeholder="{{ __('trial.form.birth_hour_placeholder') }}"
+                               pattern="([01]?[0-9]|2[0-3])[:.][0-5][0-9]"
+                               class="w-full bg-cosmic-700/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-pink-500/60 transition">
+                        <p class="text-xs text-white/40 mt-1.5">{{ __('trial.form.birth_hour_hint') }}</p>
                     </div>
                 </div>
 
