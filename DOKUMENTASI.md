@@ -359,7 +359,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Gemini kuota habis (paket gratis 20/hari):** diagnosis; penanganan kuota diperbaiki (baca waktu tunggu resmi, pesan jelas di panel, pekerjaan laporan menunggu sampai 8 jam dan selesai sendiri, halaman tunggu jujur setelah 3 menit); checklist: aktifkan billing Gemini (teratas); +5 tes (total 189) |
+| `30ce66d` | **Gemini kuota habis (paket gratis 20/hari):** diagnosis; penanganan kuota diperbaiki (baca waktu tunggu resmi, pesan jelas di panel, pekerjaan laporan menunggu sampai 8 jam dan selesai sendiri, halaman tunggu jujur setelah 3 menit); checklist: aktifkan billing Gemini (teratas); +5 tes (total 189) |
 | `34f35cf` | **Perbaikan alur pemilihan paket:** halaman `/langganan` (bulanan & tahunan berdampingan) menjadi tujuan tombol di katalog + tautan ganti paket di halaman bayar langganan (sebelumnya paket tahunan tidak terlihat dari katalog); tes selalu memulai dengan harga uji dimatikan agar `.env` produksi tidak bocor ke tes; +5 tes (total 184) |
 | `1450f69` | **Persiapan tes pembayaran Live 3 produk:** pengaman `PAYMENT_TEST_UNTIL` (harga uji mati otomatis) + peringatan "HARGA UJI AKTIF" di panel Sistem; harga uji diaktifkan 6 jam untuk akun pemilik (Rp1.000 untuk satuan/bulanan/tahunan; pengguna lain tetap normal); +2 tes (total 179) |
 | `9a7593a` | **Backup database otomatis** (`db:backup` harian 02:00 WIB, verifikasi isi, rotasi 14 hari + 6 bulan, izin aman, status di panel) dan **`db:uji-pulih`** (uji pulih aman ke tabel sementara); klien `postgresql-client-16` dipasang; +10 tes (total 177) |
@@ -497,4 +497,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `9a7593a` | 11/11 10:29 | Backup database otomatis harian + verifikasi + uji pulih aman |
 | `1450f69` | 11/11 10:31 | Pengaman waktu harga uji + peringatan panel Sistem; persiapan tes pembayaran Live |
 | `34f35cf` | 11/11 10:51 | Halaman pilih paket langganan (bulanan & tahunan) + tautan ganti paket |
+| `30ce66d` | 11/11 11:08 | Gemini: tangani kuota habis (waktu tunggu resmi, pesan jelas, pekerjaan menunggu 8 jam) + halaman tunggu jujur |
 <!-- LOG-GIT:AKHIR -->
