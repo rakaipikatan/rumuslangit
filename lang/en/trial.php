@@ -74,7 +74,7 @@ return [
         'title' => 'How Rumus Langit Works',
         'steps' => [
             ['no' => '1', 'title' => 'Enter Your Birth Data', 'desc' => 'Name, date & time of birth, and your location. No account needed, 100% free.'],
-            ['no' => '2', 'title' => 'See Your Energy Map', 'desc' => 'Your Weton, Shio, Zodiac, Daily Energy Radar, and AI Character Profile appear within seconds.'],
+            ['no' => '2', 'title' => 'See Your Energy Map', 'desc' => 'Your Weton, Shio, Zodiac, Daily Energy Radar, and Character Profile appear within seconds.'],
             ['no' => '3', 'title' => 'Unlock Deeper Reports (Optional)', 'desc' => '12 specific reports — wealth, love, career, health, even protection — starting at Rp 29,000.'],
         ],
     ],
@@ -106,7 +106,7 @@ return [
 
     'mulai_header' => [
         'title' => 'Enter Your Birth Data',
-        'desc' => 'Fill in the details below to calculate your Weton, Shio, Zodiac, and AI Character Profile.',
+        'desc' => 'Fill in the details below to calculate your Weton, Shio, Zodiac, and Character Profile.',
         'kembali' => '← Back to home',
     ],
 ];

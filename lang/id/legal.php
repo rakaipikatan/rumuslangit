@@ -11,8 +11,8 @@ return [
             ['h' => 'Data yang kami kumpulkan', 'p' => ['Nama, email, tanggal dan jam lahir, lokasi tempat tinggal, serta jawaban kuesioner yang Anda isi. Untuk afiliator: nomor HP dan rekening pembayaran komisi.'], 'li' => []],
             ['h' => 'Untuk apa data digunakan', 'p' => ['Membuat laporan analisis Anda, memproses pembayaran, mengirim email layanan (kode login, bukti pembayaran, Hoki Harian), dan membayar komisi afiliator.'], 'li' => []],
             ['h' => 'Pihak ketiga', 'p' => ['Sebagian data diteruskan ke penyedia layanan yang kami pakai agar layanan berjalan. Kami tidak menjual data Anda.'], 'li' => [
-                'Penyedia AI (Google Gemini dan Groq) menerima data lahir dan jawaban kuesioner untuk menyusun laporan.',
-                'SumoPod memproses pembayaran QRIS dan pengiriman email.',
+                'Penyedia layanan teknologi pihak ketiga memproses data yang diperlukan untuk menyusun laporan Anda.',
+                'Penyedia layanan pembayaran dan pengiriman email memproses data transaksi dan alamat email Anda.',
             ]],
             ['h' => 'Penyimpanan dan keamanan', 'p' => ['Data disimpan di server kami selama akun aktif dan dicadangkan berkala. Akses dibatasi, tetapi tidak ada sistem yang sepenuhnya bebas risiko.', 'Anda dapat meminta penghapusan akun dan data Anda lewat chat bantuan.'], 'li' => []],
             ['h' => 'Perubahan kebijakan', 'p' => ['Kebijakan dapat diperbarui sewaktu-waktu. Versi terbaru selalu tersedia di halaman ini.'], 'li' => []],
@@ -22,7 +22,7 @@ return [
     'syarat' => [
         'judul' => 'Syarat Layanan',
         'bagian' => [
-            ['h' => 'Sifat layanan', 'p' => ['Rumus Langit adalah layanan hiburan dan refleksi diri. Hasil analisis bukan nasihat medis, hukum, atau keuangan, dan bukan jaminan kejadian di masa depan.', 'Laporan dibuat oleh AI dan dapat mengandung kekeliruan. Keputusan penting tetap menjadi tanggung jawab Anda.'], 'li' => []],
+            ['h' => 'Sifat layanan', 'p' => ['Rumus Langit adalah layanan hiburan dan refleksi diri. Hasil analisis bukan nasihat medis, hukum, atau keuangan, dan bukan jaminan kejadian di masa depan.', 'Laporan dibuat otomatis oleh sistem dan dapat mengandung kekeliruan. Keputusan penting tetap menjadi tanggung jawab Anda.'], 'li' => []],
             ['h' => 'Akun dan data', 'p' => ['Anda wajib memberikan data yang benar dan menjaga akses ke akun Anda. Dilarang berbagi akun atau menyalahgunakan layanan, termasuk otomatisasi berlebihan. Kami berhak menonaktifkan akun yang melanggar.'], 'li' => []],
             ['h' => 'Pembelian', 'p' => [], 'li' => [
                 'Pembelian satuan memberi 3 jatah untuk jawaban yang berbeda pada satu fitur.',

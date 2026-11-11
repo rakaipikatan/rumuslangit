@@ -26,4 +26,12 @@ class HalamanLegalTest extends TestCase
             $beranda->assertSee($url, false);
         }
     }
+
+    public function test_halaman_publik_tidak_menyebut_nama_penyedia_teknologi(): void
+    {
+        foreach (['/', '/privasi', '/syarat', '/refund', '/afiliasi', '/mulai-analisis'] as $url) {
+            $html = preg_replace('/<script.*?<\/script>/s', '', $this->get($url)->assertOk()->getContent());
+            $this->assertDoesNotMatchRegularExpression('/gemini|groq|sumopod|\bAI\b/i', $html, "$url menyebut penyedia/AI");
+        }
+    }
 }
