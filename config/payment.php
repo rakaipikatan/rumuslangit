@@ -19,7 +19,9 @@ return [
 
     // Aturan komisi afiliasi (juga ditampilkan sebagai Syarat & Ketentuan ke afiliator).
     'affiliate_commission_months' => env('AFFILIATE_COMMISSION_MONTHS', 12), // komisi hanya untuk pembayaran dalam N bulan sejak pembayaran pertama pelanggan
-    'affiliate_hold_days'         => env('AFFILIATE_HOLD_DAYS', 14),         // masa tahan sebelum komisi boleh dibayar
+    'affiliate_hold_days'         => env('AFFILIATE_HOLD_DAYS', 14),
+    'affiliate_min_withdrawal'    => env('AFFILIATE_MIN_WITHDRAWAL', 100000), // saldo siap-bayar minimum agar masuk payout bulanan
+    'affiliate_payout_day'        => env('AFFILIATE_PAYOUT_DAY', 25),         // tanggal payout otomatis dibuat (jam 09:00 WIB)         // masa tahan sebelum komisi boleh dibayar
 
     // Skema harga: pembelian satuan = N kali pembuatan laporan untuk fitur itu (hasil tersimpan selamanya).
     // Setiap pembelian baru menambah N jatah. Langganan = tanpa jatah, dengan batas wajar harian.

@@ -59,6 +59,8 @@ return [
     ],
 
     'katalog' => [
+        'banner_panduan' => 'Baru di sini? Baca panduan singkat: cara memilih paket, jatah, dan membaca hasil.',
+        'banner_panduan_btn' => 'Buka panduan',
         'title' => 'Pilih Analisis — :name',
         'akses_terbuka' => '✓ Akses terbuka — :name',
         'pilih' => 'Pilih',

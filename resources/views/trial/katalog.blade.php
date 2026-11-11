@@ -23,6 +23,13 @@
         </p>
     </div>
 
+    {{-- Panduan pengguna (setelah login) --}}
+    <a href="{{ route('panduan') }}" class="flex items-center gap-3 bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/20 rounded-2xl px-5 py-3 mb-4 transition">
+        <span class="text-xl">📖</span>
+        <span class="text-sm text-white/70 flex-1">{{ __('hasil.katalog.banner_panduan') }}</span>
+        <span class="text-xs text-purple-300 whitespace-nowrap">{{ __('hasil.katalog.banner_panduan_btn') }} →</span>
+    </a>
+
     {{-- Penjelasan kategori --}}
     <div class="bg-cosmic-800/40 border border-white/5 rounded-2xl p-5 mb-8">
         <p class="text-xs text-white/40 leading-relaxed text-center">{{ __('hasil.katalog.explainer') }}</p>

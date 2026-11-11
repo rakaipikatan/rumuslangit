@@ -22,6 +22,11 @@ class Affiliate extends Model
         return $this->hasMany(AffiliateCommission::class);
     }
 
+    public function withdrawals()
+    {
+        return $this->hasMany(AffiliateWithdrawal::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

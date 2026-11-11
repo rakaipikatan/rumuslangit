@@ -615,8 +615,76 @@ class AdminController extends Controller
         $jumlah = (clone $siap)->count();
 
         $siap->update(['status' => 'paid', 'paid_at' => now()]);
+        // Payout otomatis milik afiliator ini yang masih menunggu ikut ditutup (komisinya sudah lunas di atas)
+        $affiliate->withdrawals()->where('status', 'pending')->update(['status' => 'paid', 'paid_at' => now()]);
 
         return back()->with('success', "{$jumlah} komisi afiliator {$affiliate->name} ditandai lunas (komisi yang masih ditahan tidak ikut).");
+    }
+
+    // Log chat bantuan: pertanyaan yang tidak terjawab (sumber "gagal") ditandai agar FAQ bisa dilengkapi.
+    public function bantuan(Request $request)
+    {
+        $q = \App\Models\BantuanLog::query()->latest('created_at');
+        if ($request->query('sumber') === 'gagal') {
+            $q->where('sumber', 'gagal');
+        }
+        $stat = \App\Models\BantuanLog::where('created_at', '>=', now()->subDays(7))->selectRaw('sumber, count(*) as n')->groupBy('sumber')->pluck('n', 'sumber');
+
+        return view('admin.bantuan', ['logs' => $q->paginate(40)->withQueryString(), 'stat' => $stat, 'filter' => $request->query('sumber')]);
+    }
+
+    // ─── Payout afiliator (otomatis dibuat tiap tanggal 25; admin hanya transfer lalu tandai) ───
+
+    public function payout()
+    {
+        $pending = \App\Models\AffiliateWithdrawal::with('affiliate')->where('status', 'pending')->orderBy('created_at')->get();
+        $riwayat = \App\Models\AffiliateWithdrawal::with('affiliate')->where('status', 'paid')->latest('paid_at')->limit(30)->get();
+
+        return view('admin.payout', [
+            'pending' => $pending, 'riwayat' => $riwayat,
+            'total' => (int) $pending->sum('jumlah'),
+            'minimum' => \App\Services\AffiliatePayoutService::minimum(),
+        ]);
+    }
+
+    // CSV untuk transfer massal (bulk) di internet banking: satu baris per afiliator.
+    public function payoutCsv()
+    {
+        $baris = \App\Models\AffiliateWithdrawal::with('affiliate')->where('status', 'pending')->orderBy('created_at')->get();
+
+        return response()->streamDownload(function () use ($baris) {
+            $o = fopen('php://output', 'w');
+            fputcsv($o, ['payout_id', 'afiliator', 'bank', 'no_rekening', 'atas_nama', 'jumlah']);
+            foreach ($baris as $w) {
+                fputcsv($o, [$w->id, $w->affiliate?->name, $w->bank_nama, "'" . $w->bank_rekening, $w->bank_atas_nama, $w->jumlah]);
+            }
+            fclose($o);
+        }, 'payout-afiliator-' . now('Asia/Jakarta')->format('Ymd') . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function payoutBuat(\App\Services\AffiliatePayoutService $svc)
+    {
+        $n = $svc->buatSemua();
+
+        return back()->with('success', "{$n} permintaan payout baru dibuat (hanya afiliator dengan saldo siap ≥ minimum).");
+    }
+
+    public function payoutDibayar(int $id, \App\Services\AffiliatePayoutService $svc)
+    {
+        $w = \App\Models\AffiliateWithdrawal::findOrFail($id);
+        $svc->tandaiDibayar($w);
+
+        return back()->with('success', 'Payout #' . $w->id . ' ditandai sudah ditransfer.');
+    }
+
+    public function payoutSemuaDibayar(\App\Services\AffiliatePayoutService $svc)
+    {
+        $semua = \App\Models\AffiliateWithdrawal::where('status', 'pending')->get();
+        foreach ($semua as $w) {
+            $svc->tandaiDibayar($w);
+        }
+
+        return back()->with('success', $semua->count() . ' payout ditandai sudah ditransfer.');
     }
 
     // ─── System ──────────────────────────────────────────────────────────────

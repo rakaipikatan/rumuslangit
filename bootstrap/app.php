@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Sinkronisasi status subscription yang expired setiap jam
         $schedule->command('subscription:sync')->hourly();
+
+        // Payout komisi afiliator: dibuat otomatis tiap bulan (tanggal AFFILIATE_PAYOUT_DAY, 09:00 WIB)
+        $schedule->command('afiliasi:payout')->monthlyOn((int) config('payment.affiliate_payout_day', 25), '09:00')->timezone('Asia/Jakarta');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [

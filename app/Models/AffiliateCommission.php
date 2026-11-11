@@ -9,7 +9,7 @@ class AffiliateCommission extends Model
     protected $fillable = [
         'affiliate_id', 'order_id', 'user_id',
         'order_amount', 'komisi_persen', 'komisi_amount',
-        'status', 'paid_at',
+        'status', 'withdrawal_id', 'paid_at',
     ];
 
     protected $casts = [

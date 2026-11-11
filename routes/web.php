@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AfiliasiController;
+use App\Http\Controllers\AfiliatorController;
+use App\Http\Controllers\BantuanController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OtpController;
@@ -28,6 +30,19 @@ Route::get('/analisis', [TrialController::class, 'katalog'])->name('trial.katalo
 // Program afiliasi (publik)
 Route::get('/afiliasi', [AfiliasiController::class, 'index'])->name('afiliasi.index');
 Route::post('/afiliasi', [AfiliasiController::class, 'daftar'])->middleware('throttle:5,60')->name('afiliasi.daftar');
+
+// Chat bantuan otomatis
+Route::post('/bantuan/chat', [BantuanController::class, 'chat'])->middleware('throttle:12,1')->name('bantuan.chat');
+
+// Area afiliator: masuk dengan kode email, dashboard pribadi, panduan
+Route::prefix('afiliasi')->name('afiliator.')->group(function () {
+    Route::get('/masuk', [AfiliatorController::class, 'masukForm'])->name('masuk');
+    Route::post('/masuk', [AfiliatorController::class, 'kodeKirim'])->middleware('throttle:6,1')->name('kode.kirim');
+    Route::post('/masuk/verifikasi', [AfiliatorController::class, 'kodeVerifikasi'])->middleware('throttle:10,1')->name('kode.verifikasi');
+    Route::get('/dashboard', [AfiliatorController::class, 'dashboard'])->name('dashboard');
+    Route::get('/panduan', [AfiliatorController::class, 'panduan'])->name('panduan');
+    Route::post('/keluar', [AfiliatorController::class, 'keluar'])->name('keluar');
+});
 
 // Auth
 Route::get('/login', [AuthController::class, 'loginForm'])->name('auth.login.form');
@@ -115,6 +130,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/affiliates/pendaftar/{id}/tolak',  [AdminController::class, 'tolakPendaftar'])->name('affiliates.pendaftar.tolak');
         Route::post('/affiliates/{id}/toggle', [AdminController::class, 'toggleStatusAffiliate'])->name('affiliates.toggle');
         Route::post('/affiliates/{id}/lunas',  [AdminController::class, 'tandaiLunasKomisi'])->name('affiliates.lunas');
+        Route::get('/bantuan',                 [AdminController::class, 'bantuan'])->name('bantuan');
+        Route::get('/payout',                  [AdminController::class, 'payout'])->name('payout');
+        Route::get('/payout/csv',              [AdminController::class, 'payoutCsv'])->name('payout.csv');
+        Route::post('/payout/buat',            [AdminController::class, 'payoutBuat'])->name('payout.buat');
+        Route::post('/payout/{id}/dibayar',    [AdminController::class, 'payoutDibayar'])->whereNumber('id')->name('payout.dibayar');
+        Route::post('/payout/semua-dibayar',   [AdminController::class, 'payoutSemuaDibayar'])->name('payout.semua');
         Route::get('/system',        [AdminController::class, 'system'])->name('system');
         Route::post('/system/tes-email',         [AdminController::class, 'tesEmail'])->middleware('throttle:10,1')->name('system.tes-email');
         Route::post('/system/tes-grok',          [AdminController::class, 'tesGrok'])->middleware('throttle:10,1')->name('system.tes-grok');

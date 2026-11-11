@@ -63,6 +63,18 @@
                     <span class="ml-auto text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-2 py-0.5">{{ $menunggu }}</span>
                 @endif
             </a>
+            <a href="{{ route('admin.payout') }}"
+               class="nav-link {{ request()->routeIs('admin.payout*') ? 'active' : '' }}">
+                <span class="nav-icon">💸</span> Payout
+                @php $payoutMenunggu = \Illuminate\Support\Facades\Schema::hasTable('affiliate_withdrawals') ? \App\Models\AffiliateWithdrawal::where('status', 'pending')->count() : 0; @endphp
+                @if($payoutMenunggu > 0)
+                    <span class="ml-auto text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-2 py-0.5">{{ $payoutMenunggu }}</span>
+                @endif
+            </a>
+            <a href="{{ route('admin.bantuan') }}"
+               class="nav-link {{ request()->routeIs('admin.bantuan*') ? 'active' : '' }}">
+                <span class="nav-icon">💬</span> Chat bantuan
+            </a>
         </div>
 
         <div class="nav-section-label">Lainnya</div>

@@ -15,7 +15,7 @@
     <h3 style="margin:24px 0 8px;font-size:15px;">{{ __('afiliasi.syarat_title', [], 'id') }}</h3>
     <ol style="line-height:1.55;font-size:13px;color:#444;padding-left:20px;margin:0 0 16px;">
       @foreach(range(1, 9) as $n)
-      <li style="margin-bottom:6px;">{{ __('afiliasi.syarat_' . $n, ['komisi' => $affiliate->komisi_persen, 'bulan' => config('payment.affiliate_commission_months', 12), 'hari' => config('payment.affiliate_hold_days', 14)], 'id') }}</li>
+      <li style="margin-bottom:6px;">{{ __('afiliasi.syarat_' . $n, ['komisi' => $affiliate->komisi_persen, 'bulan' => config('payment.affiliate_commission_months', 12), 'hari' => config('payment.affiliate_hold_days', 14), 'minimum' => number_format((int) config('payment.affiliate_min_withdrawal', 100000), 0, ',', '.')], 'id') }}</li>
       @endforeach
     </ol>
     <p style="line-height:1.5;color:#777;font-size:12px;">Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai &quot;Bukan spam&quot; agar email berikutnya masuk ke Inbox.</p>

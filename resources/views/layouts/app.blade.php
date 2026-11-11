@@ -38,6 +38,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>[x-cloak]{display:none !important}</style>
     @stack('head')
 </head>
 <body class="bg-cosmic-900 text-white min-h-screen font-sans antialiased">
@@ -63,6 +64,9 @@
                     <a href="{{ route('locale.switch', 'en') }}"
                        class="px-2 py-1 rounded {{ app()->getLocale() === 'en' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60' }}">EN</a>
                 </div>
+                @if (session('affiliate_id'))
+                    <a href="{{ route('afiliator.dashboard') }}" class="text-xs text-white/40 hover:text-white/70 transition">{{ __('afiliator.dash_title') }}</a>
+                @endif
                 @if (session('user_id'))
                     @php $namaUser = \App\Models\User::find(session('user_id'))?->name ?? '' @endphp
                     <a href="{{ route('panduan') }}" class="text-xs text-white/40 hover:text-white/70 transition">{{ __('nav.panduan') }}</a>
@@ -101,8 +105,10 @@
     <footer class="relative z-10 border-t border-white/5 mt-16 py-8 text-center text-white/30 text-xs">
         <p>{{ __('nav.footer_copyright', ['year' => date('Y')]) }}</p>
         <p class="mt-1">{{ __('nav.footer_disclaimer') }}</p>
-        <p class="mt-2"><a href="{{ route('afiliasi.index') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('afiliasi.footer_link') }}</a></p>
+        <p class="mt-2"><a href="{{ route('afiliasi.index') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('afiliasi.footer_link') }}</a> · <a href="{{ route('afiliator.masuk') }}" class="text-white/30 hover:text-white/60 underline underline-offset-2 transition">{{ __('afiliator.masuk_title') }}</a></p>
     </footer>
+
+    @include('partials.bantuan')
 
     @stack('scripts')
 </body>

@@ -17,9 +17,11 @@ class GrokService
         return filled(config('services.xai.key')) && filled(config('services.xai.model'));
     }
 
+    private ?int $timeoutKhusus = null;
+
     private function klien(): \Illuminate\Http\Client\PendingRequest
     {
-        return Http::timeout((int) config('services.xai.timeout', 120))->acceptJson()->withToken((string) config('services.xai.key'));
+        return Http::timeout($this->timeoutKhusus ?? (int) config('services.xai.timeout', 120))->acceptJson()->withToken((string) config('services.xai.key'));
     }
 
     private function url(string $jalur): string
@@ -31,8 +33,9 @@ class GrokService
      * Hasilkan teks JSON dengan prompt yang sama seperti Gemini.
      * @throws RuntimeException bila API gagal atau JSON tidak valid
      */
-    public function generate(string $sistem, string $prompt, float $suhu, int $maxToken): string
+    public function generate(string $sistem, string $prompt, float $suhu, int $maxToken, ?int $timeout = null): string
     {
+        $this->timeoutKhusus = $timeout;
         $model = (string) config('services.xai.model');
         $pesan = [
             ['role' => 'system', 'content' => $sistem . "\n\nBalas HANYA dengan satu objek JSON yang valid, tanpa teks lain di luar JSON."],

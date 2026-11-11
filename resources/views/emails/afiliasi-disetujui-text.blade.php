@@ -12,7 +12,7 @@ Komisi dibayarkan ke rekening yang Anda daftarkan ({{ $affiliate->bank_nama }}) 
 
 {{ strtoupper(__('afiliasi.syarat_title', [], 'id')) }}
 @foreach(range(1, 9) as $n)
-{{ $n }}. {{ __('afiliasi.syarat_' . $n, ['komisi' => $affiliate->komisi_persen, 'bulan' => config('payment.affiliate_commission_months', 12), 'hari' => config('payment.affiliate_hold_days', 14)], 'id') }}
+{{ $n }}. {{ __('afiliasi.syarat_' . $n, ['komisi' => $affiliate->komisi_persen, 'bulan' => config('payment.affiliate_commission_months', 12), 'hari' => config('payment.affiliate_hold_days', 14), 'minimum' => number_format((int) config('payment.affiliate_min_withdrawal', 100000), 0, ',', '.')], 'id') }}
 @endforeach
 
 Tidak menemukan email dari kami? Cek folder Spam atau Junk. Jika email ini masuk ke Spam, tandai sebagai "Bukan spam" agar email berikutnya masuk ke Inbox.

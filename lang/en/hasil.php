@@ -59,6 +59,8 @@ return [
     ],
 
     'katalog' => [
+        'banner_panduan' => 'New here? Read the quick guide: choosing a plan, credits, and reading your results.',
+        'banner_panduan_btn' => 'Open guide',
         'title' => 'Choose Analysis — :name',
         'akses_terbuka' => '✓ Access unlocked — :name',
         'pilih' => 'Choose Your',
