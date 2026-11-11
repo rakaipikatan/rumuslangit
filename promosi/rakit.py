@@ -16,6 +16,7 @@ Cara pakai (lihat PETUNJUK.md di folder produksi):
 """
 import argparse
 import asyncio
+import os
 import json
 import re
 import subprocess
@@ -41,7 +42,12 @@ EKS_GAMBAR = ('.png', '.jpg', '.jpeg', '.webp')
 EKS_AUDIO = ('.mp3', '.wav', '.m4a', '.aac', '.ogg')
 
 
+HEMAT = False  # True: prioritas CPU terendah + 1 thread + preset ringan (untuk server kecil yang dipakai bersama)
+
+
 def jalankan(cmd):
+    if HEMAT:
+        cmd = [cmd[0], '-threads', '1', '-filter_threads', '1', '-filter_complex_threads', '1'] + list(cmd[1:])
     r = subprocess.run([str(c) for c in cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if r.returncode != 0:
         pesan = r.stderr.decode('utf-8', 'replace')[-1800:]
@@ -218,7 +224,7 @@ def rakit(data_path, args):
     keluar = ROOT / 'hasil' / f'{nomor}-{slug}.mp4'
     skala = 0.5 if args.pratinjau else 1.0
     W, H = int(LEBAR * skala) // 2 * 2, int(TINGGI * skala) // 2 * 2
-    preset, crf = ('ultrafast', '30') if args.pratinjau else ('medium', '19')
+    preset, crf = ('ultrafast', '30') if args.pratinjau else (('veryfast', '22') if HEMAT else ('medium', '19'))
 
     if not folder.is_dir():
         print(f'[{nomor}] lewati: folder produksi/{nomor}/ belum ada')
@@ -372,8 +378,16 @@ def main():
     ap.add_argument('nomor', nargs='*', help='nomor video, mis. 01 (kosong = semua yang foldernya ada)')
     ap.add_argument('--pratinjau', action='store_true', help='resolusi setengah + cepat, untuk pengecekan')
     ap.add_argument('--suara', nargs='?', const='gadis', choices=sorted(SUARA), help='buat voice-over bahasa Indonesia otomatis: gadis (perempuan, bawaan) atau ardi (laki-laki)')
+    ap.add_argument('--hemat', action='store_true', help='mode hemat sumber daya (prioritas CPU terendah, 1 thread) — untuk dijalankan di server kecil')
     ap.add_argument('--izinkan-kosong', action='store_true', help='adegan tanpa klip diisi kartu penanda')
     args = ap.parse_args()
+    global HEMAT
+    if args.hemat:
+        HEMAT = True
+        try:
+            os.nice(19)  # Linux: turun prioritas agar aplikasi lain di server tidak terganggu
+        except Exception:
+            pass
 
     semua = sorted((ROOT / 'data').glob('*.json'))
     if args.nomor:

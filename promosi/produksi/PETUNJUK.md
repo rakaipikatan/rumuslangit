@@ -34,3 +34,6 @@
 - "Python belum terpasang" → ulangi langkah pemasangan dan centang PATH.
 - "Klip S3 belum ada" → periksa nama berkas (`s3.mp4`) atau pakai `--izinkan-kosong`.
 - Pesan "FFmpeg gagal" → salin pesannya ke chat untuk dibantu.
+
+## Alternatif: menjalankan di VPS (tidak disarankan sebagai cara utama)
+VPS hanya punya RAM 1,9 GB (sisa ±700 MB) dan melayani situs; mengolah video bisa memperlambatnya. Bila terpaksa: jalankan **malam hari**, **satu video per kali**, selalu dengan `--hemat`, dan tutup program lain. Perlu memasang FFmpeg dan pustaka Python di server (`sudo apt install -y ffmpeg python3-venv`, lalu venv + `pip install pillow edge-tts`), dan klip diunggah/diunduh lewat VS Code (seret ke folder `produksi/NN`, klik kanan berkas di `hasil` → Download). Perintah: `nice -n 19 python rakit.py 01 --suara --hemat`.
