@@ -39,7 +39,15 @@ class GrokService
             ['role' => 'user', 'content' => $prompt],
         ];
 
-        $penuh = ['model' => $model, 'messages' => $pesan, 'temperature' => $suhu, 'max_completion_tokens' => $maxToken, 'response_format' => ['type' => 'json_object']];
+        $penuh = [
+            'model' => $model, 'messages' => $pesan, 'temperature' => $suhu,
+            // batas keluaran + ruang penalaran (model penalaran memakai token untuk berpikir sebelum menjawab)
+            'max_completion_tokens' => $maxToken + (int) config('services.xai.ruang_penalaran', 2500),
+            'response_format' => ['type' => 'json_object'],
+        ];
+        if (filled(config('services.xai.reasoning_effort'))) {
+            $penuh['reasoning_effort'] = (string) config('services.xai.reasoning_effort');
+        }
 
         $r = $this->klien()->post($this->url('/chat/completions'), $penuh);
 

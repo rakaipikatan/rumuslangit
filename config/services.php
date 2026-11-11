@@ -54,6 +54,10 @@ return [
         'model'    => env('XAI_MODEL'),
         'base_url' => env('XAI_BASE_URL', 'https://api.x.ai/v1'),
         'timeout'  => env('XAI_TIMEOUT', 120),
+        // Model penalaran (mis. openai/gpt-oss-*) memakai sebagian batas token untuk "berpikir": tambahkan ruang agar JSON tak terpotong.
+        'ruang_penalaran'  => (int) env('XAI_RUANG_PENALARAN', 2500),
+        // Opsional: low | medium | high (hanya dikirim bila diisi; ditolak model → permintaan diulang minimal).
+        'reasoning_effort' => env('XAI_REASONING_EFFORT'),
     ],
 
 ];

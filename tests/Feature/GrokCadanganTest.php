@@ -294,4 +294,28 @@ class GrokCadanganTest extends TestCase
         $this->assertSame('grok', $svc->penyedia);
         Http::assertSent(fn ($r) => str_contains($r->url(), 'api.groq.com/openai/v1/chat/completions') && $r->header('Authorization')[0] === 'Bearer gsk_contoh');
     }
+
+    public function test_batas_token_ditambah_ruang_penalaran_dan_reasoning_effort_opsional(): void
+    {
+        config(['services.xai.ruang_penalaran' => 2500, 'services.xai.reasoning_effort' => 'low']);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response($this->gemini429Harian(), 429),
+            'api.x.ai/*' => Http::response($this->grokOk(), 200),
+        ]);
+
+        $this->ai(12, '1'); // fitur 12: batas keluaran Gemini 800 token
+
+        $kirim = Http::recorded(fn ($r) => str_contains($r->url(), 'api.x.ai'))->values();
+        $this->assertSame(800 + 2500, $kirim[0][0]->data()['max_completion_tokens']);
+        $this->assertSame('low', $kirim[0][0]->data()['reasoning_effort']);
+
+        // tanpa reasoning_effort → parameter tidak dikirim
+        config(['services.xai.reasoning_effort' => null]);
+        Cache::flush();
+        Http::fake(['api.x.ai/*' => Http::response($this->grokOk(), 200)]);
+        Cache::put(GeminiService::KUNCI_JEDA, true, 600);
+        $this->ai(12, '0');
+        $lagi = Http::recorded(fn ($r) => str_contains($r->url(), 'api.x.ai'))->values();
+        $this->assertArrayNotHasKey('reasoning_effort', $lagi[0][0]->data());
+    }
 }
