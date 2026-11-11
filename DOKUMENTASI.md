@@ -380,7 +380,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit berikut) | **Perbaikan bug privasi (nama orang lain muncul di laporan):** kunci cache hasil AI (`GeminiService`) hanya memuat data lahir + jawaban, tanpa profil, sehingga dua orang berdata lahir sama berbagi hasil (laporan akun #119 memuat nama akun lama yang sudah dihapus). Kini profil (nama, gender, lokasi, dst.) ikut kunci; +1 tes (total 229). Satu laporan profil salah (id 19, gratis) dihapus agar dibuat ulang; tidak ada laporan lain yang terdampak. Catatan: cache lama tidak terbaca lagi (kunci berubah) dan kedaluwarsa sendiri ≤24 jam |
+| `60db502` | **Perbaikan bug privasi (nama orang lain muncul di laporan):** kunci cache hasil AI (`GeminiService`) hanya memuat data lahir + jawaban, tanpa profil, sehingga dua orang berdata lahir sama berbagi hasil (laporan akun #119 memuat nama akun lama yang sudah dihapus). Kini profil (nama, gender, lokasi, dst.) ikut kunci; +1 tes (total 229). Satu laporan profil salah (id 19, gratis) dihapus agar dibuat ulang; tidak ada laporan lain yang terdampak. Catatan: cache lama tidak terbaca lagi (kunci berubah) dan kedaluwarsa sendiri ≤24 jam |
 | `3dd247d` | **Halaman legal:** Kebijakan Privasi, Syarat Layanan, Kebijakan Refund (tanpa refund) + tautan footer, ID/EN; chat bantuan sebagai satu-satunya kontak; +2 tes (total 228) |
 | `d83762c` | **Dashboard afiliator + payout otomatis + panduan + chat bantuan:** afiliator masuk dengan kode email dan punya dashboard sendiri (pendaftar, pelanggan membayar, komisi, saldo, riwayat payout); payout dibuat otomatis tiap tgl 25 bila saldo siap ≥ Rp100.000 (admin cukup unduh CSV, transfer massal, klik tandai); panduan afiliator + banner panduan pelanggan; **chat bantuan otomatis** (AI → FAQ) tanpa kontak admin, dengan log di admin; T&C diperbarui; 3 tabel/kolom baru (**perlu `migrate`**); +14 tes (total 226) |
 | `1b52249` | **Jam lahir isian bebas HH:MM** (bukan dropdown) di form pendaftaran/trial dan data pasangan (Jodoh): contoh `07:30`, boleh `.` sebagai pemisah, keterangan "*Tidak harus diisi jika lupa" (ID/EN); kosong = dianggap 00; yang dipakai perhitungan hanya jam (menit hanya dicek formatnya); helper `App\Support\JamLahir`; +3 tes (total 212) |
@@ -537,4 +537,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `1b52249` | 11/11 13:18 | Jam lahir isian bebas HH:MM (boleh kosong) menggantikan dropdown |
 | `d83762c` | 11/11 14:28 | Dashboard afiliator, payout otomatis, panduan afiliator, chat bantuan otomatis |
 | `3dd247d` | 11/11 14:46 | Halaman legal: privasi, syarat, refund (tanpa kontak email; chat sebagai saluran) |
+| `60db502` | 11/11 14:51 | Perbaiki cache AI: profil ikut kunci agar nama orang lain tidak bocor |
 <!-- LOG-GIT:AKHIR -->
