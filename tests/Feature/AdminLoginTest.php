@@ -42,13 +42,14 @@ class AdminLoginTest extends TestCase
             ->assertSessionHasErrors();
     }
 
-    public function test_percobaan_login_dibatasi_setelah_5_kali(): void
+    public function test_login_admin_tidak_dibatasi_percobaan_agar_pemilik_tidak_terkunci(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 8; $i++) {
             $this->post(route('admin.login.post'), ['username' => 'admin-test', 'password' => 'salah']);
         }
 
+        // Setelah banyak percobaan salah, kredensial yang benar tetap diterima (bukan 429)
         $this->post(route('admin.login.post'), ['username' => 'admin-test', 'password' => 'rahasia-test'])
-            ->assertStatus(429);
+            ->assertRedirect(route('admin.dashboard'));
     }
 }
