@@ -362,7 +362,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit ini) | **Harga uji untuk beberapa email** (`PAYMENT_TEST_EMAIL` dipisah koma; tetap wajib terverifikasi dan berlaku sampai `PAYMENT_TEST_UNTIL`); email penguji kedua ditambahkan; +2 tes (total 209) |
+| `48cf4fe` | **Harga uji untuk beberapa email** (`PAYMENT_TEST_EMAIL` dipisah koma; tetap wajib terverifikasi dan berlaku sampai `PAYMENT_TEST_UNTIL`); email penguji kedua ditambahkan; +2 tes (total 209) |
 | `1ebf61d` | **Tes AI cadangan jujur:** menguji jalur laporan nyata (JSON valid + ruang penalaran); balasan kosong tidak lagi dinyatakan "berfungsi"; +2 tes (total 207) |
 | `c9ad313` | **AI cadangan aktif di produksi (Groq, `openai/gpt-oss-120b`):** uji ujung-ke-ujung berhasil (Gemini dilewati karena kuota habis → laporan Tafsir Mimpi dari Groq 5,2 dtk, JSON valid); ruang token untuk model penalaran; +1 tes (total 205). Konfigurasi `.env`: `XAI_BASE_URL` (Groq), `XAI_MODEL=openai/gpt-oss-120b` |
 | `f1b50eb` | **AI cadangan: deteksi kunci Groq vs xAI Grok** — kunci `gsk_` (Groq) ditolak xAI; tombol uji kini menjelaskan ketidakcocokan kunci/alamat tanpa mengirim kunci, label UI dibuat generik ("AI cadangan"); +2 tes (total 204) |
@@ -511,4 +511,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `f1b50eb` | 11/11 11:28 | AI cadangan: deteksi kunci Groq vs xAI, label generik, pesan uji yang jelas |
 | `c9ad313` | 11/11 11:32 | AI cadangan: ruang token untuk model penalaran + reasoning_effort opsional; aktif di produksi (Groq gpt-oss-120b) |
 | `1ebf61d` | 11/11 11:35 | Tes AI cadangan menguji jalur laporan nyata; balasan kosong bukan keberhasilan |
+| `48cf4fe` | 11/11 13:01 | Harga uji untuk beberapa email (dipisah koma) |
 <!-- LOG-GIT:AKHIR -->
