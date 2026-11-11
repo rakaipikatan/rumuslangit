@@ -52,6 +52,24 @@ class GeminiCachePerHariTest extends TestCase
         Http::assertSentCount(2);
     }
 
+    public function test_orang_berdata_lahir_sama_tidak_berbagi_cache_nama_tidak_bocor(): void
+    {
+        config(['services.gemini.key' => 'k']);
+        Cache::flush();
+        Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => '{"ok":true}']]]]]], 200)]);
+
+        $kalk = KalkulasiEngine::hitung('1990-01-01', 8);
+        $a = $this->profil();
+        $b = array_merge($this->profil(), ['name' => 'Siti']);
+
+        app(GeminiService::class)->generate(0, $kalk, [], $a);
+        app(GeminiService::class)->generate(0, $kalk, [], $b);   // nama beda → harus panggilan baru, bukan hasil Budi
+        Http::assertSentCount(2);
+
+        app(GeminiService::class)->generate(0, $kalk, [], $a);   // orang yang sama → cache tetap bekerja
+        Http::assertSentCount(2);
+    }
+
     public function test_awal_hari_wib_dalam_zona_waktu_aplikasi(): void
     {
         $this->travelTo(Carbon::parse('2026-11-10 16:59:00', 'UTC')); // 23:59 WIB

@@ -28,7 +28,8 @@ class GeminiService
 
     public function generate(int $featureId, array $kalkulasi, array $answers, array $userProfile, array $tarotData = [], string $locale = 'id'): string
     {
-        $dataHash = hash('sha256', json_encode(compact('featureId', 'kalkulasi', 'answers', 'tarotData', 'locale')));
+        // Profil (nama, gender, lokasi, dll.) WAJIB ikut kunci: dua orang berdata lahir sama tidak boleh berbagi hasil (nama orang lain bisa muncul).
+        $dataHash = hash('sha256', json_encode(compact('featureId', 'kalkulasi', 'answers', 'tarotData', 'locale', 'userProfile')));
         // Fitur harian di-cache per HARI KALENDER (WIB); fitur lain dan profil karakter (fitur 0) tetap.
         $fiturMeta = \App\Data\FiturData::cari($featureId) ?? [];
         $hari      = !empty($fiturMeta['harian']) ? HariWib::tanggal() : 'tetap';
