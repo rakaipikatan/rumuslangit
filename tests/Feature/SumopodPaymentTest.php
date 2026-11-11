@@ -558,4 +558,36 @@ class SumopodPaymentTest extends TestCase
         $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
         $this->assertSame(29000, (int) Order::where('user_id', $u->id)->value('amount'), 'lewat batas waktu: kembali ke harga normal');
     }
+
+    public function test_harga_uji_bisa_untuk_beberapa_email_dipisah_koma(): void
+    {
+        Http::fake(['*' => fn () => Http::response([
+            'payment_id' => (string) Str::uuid(), 'payment_link_url' => 'https://pay.sumopod.test/pay/m', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+        $a = $this->buatUser(); $b = $this->buatUser(); $c = $this->buatUser();
+        foreach ([$a, $b, $c] as $u) $u->update(['email_verified_at' => now()]);
+        // daftar dengan spasi, huruf besar, dan entri kosong — semuanya harus ditoleransi
+        config(['payment.test_price' => 1000, 'payment.test_email' => strtoupper($a->email) . ' , ' . $b->email . ' ,']);
+
+        foreach ([$a, $b, $c] as $u) {
+            $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+        }
+
+        $this->assertSame(1000, (int) Order::where('user_id', $a->id)->value('amount'));
+        $this->assertSame(1000, (int) Order::where('user_id', $b->id)->value('amount'));
+        $this->assertSame(29000, (int) Order::where('user_id', $c->id)->value('amount'), 'email yang tidak terdaftar tetap harga normal');
+    }
+
+    public function test_harga_uji_butuh_email_terverifikasi_walau_terdaftar(): void
+    {
+        Http::fake(['*' => fn () => Http::response([
+            'payment_id' => (string) Str::uuid(), 'payment_link_url' => 'https://pay.sumopod.test/pay/v', 'expires_at' => now()->addDay()->toIso8601String(),
+        ])]);
+        $u = $this->buatUser(); // email belum terverifikasi
+        config(['payment.test_price' => 1000, 'payment.test_email' => $u->email]);
+
+        $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
+
+        $this->assertSame(29000, (int) Order::where('user_id', $u->id)->value('amount'));
+    }
 }

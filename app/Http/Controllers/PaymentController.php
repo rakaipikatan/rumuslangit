@@ -190,8 +190,9 @@ class PaymentController extends Controller
     }
 
     /**
-     * Harga uji sementara (PAYMENT_TEST_PRICE) khusus untuk SATU email terverifikasi (PAYMENT_TEST_EMAIL).
-     * Pengguna lain tidak terpengaruh. Kosongkan kedua variabel .env setelah tes selesai.
+     * Harga uji sementara (PAYMENT_TEST_PRICE) khusus untuk email terverifikasi yang tercantum di
+     * PAYMENT_TEST_EMAIL (satu atau beberapa, dipisah koma). Pengguna lain tidak terpengaruh.
+     * Otomatis mati setelah PAYMENT_TEST_UNTIL; beri tanda # pada variabel .env setelah tes selesai.
      */
     private function terapkanHargaUji(array $fitur, User $user): array
     {
@@ -204,9 +205,11 @@ class PaymentController extends Controller
             return $fitur;
         }
 
-        if ((int) $fitur['harga'] > 0 && filled($harga) && filled($email)
+        $daftarEmail = array_filter(array_map(fn ($e) => strtolower(trim($e)), explode(',', (string) $email)));
+
+        if ((int) $fitur['harga'] > 0 && filled($harga) && $daftarEmail
             && $user->email_verified_at
-            && strcasecmp((string) $user->email, (string) $email) === 0) {
+            && in_array(strtolower(trim((string) $user->email)), $daftarEmail, true)) {
             $fitur['harga'] = max(1, (int) $harga);
         }
 

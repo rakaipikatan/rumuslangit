@@ -667,7 +667,7 @@ class AdminController extends Controller
             && (blank($sampai) || \Illuminate\Support\Carbon::parse($sampai)->isFuture());
         if ($hargaUjiAktif) {
             $peringatan[] = 'HARGA UJI AKTIF: Rp' . number_format((int) config('payment.test_price'), 0, ',', '.')
-                . ' untuk satu email pengujian'
+                . ' untuk ' . count(array_filter(explode(',', (string) config('payment.test_email')))) . ' email pengujian'
                 . (filled($sampai) ? ', otomatis mati ' . \Illuminate\Support\Carbon::parse($sampai)->timezone('Asia/Jakarta')->format('d/m H:i') . ' WIB' : ' — TANPA batas waktu')
                 . '. Matikan setelah tes selesai (beri tanda # di .env, lalu config:cache).';
         }
