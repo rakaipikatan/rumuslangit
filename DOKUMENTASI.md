@@ -380,7 +380,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit berikut) | **Panduan pembayaran QRIS untuk dipakai ulang di proyek lain:** `docs/PEMBAYARAN-QRIS-SUMOPOD.md` (cetak biru generik dari implementasi produksi: prasyarat SumoPod, konfigurasi, skema `orders` + mesin status, klien API, checkout idempoten, webhook Svix, pelunasan idempoten, halaman tunggu, bukti bayar via antrean, daftar keamanan, strategi uji + 13 kasus uji minimal, prosedur Sandbox→Live, harga uji aman, operasional, jebakan nyata, keterbatasan, checklist, dan prompt siap pakai untuk asisten koding). Tanpa rahasia; hanya placeholder |
+| `49801d1` | **Panduan pembayaran QRIS untuk dipakai ulang di proyek lain:** `docs/PEMBAYARAN-QRIS-SUMOPOD.md` (cetak biru generik dari implementasi produksi: prasyarat SumoPod, konfigurasi, skema `orders` + mesin status, klien API, checkout idempoten, webhook Svix, pelunasan idempoten, halaman tunggu, bukti bayar via antrean, daftar keamanan, strategi uji + 13 kasus uji minimal, prosedur Sandbox→Live, harga uji aman, operasional, jebakan nyata, keterbatasan, checklist, dan prompt siap pakai untuk asisten koding). Tanpa rahasia; hanya placeholder |
 | `82b3712` | `rakit.py`: berkas suara rusak/kosong (sisa percobaan 503) dideteksi dan dibuat ulang; kecepatan bicara bawaan +20% (`--kecepatan N`) dan batas percepatan otomatis 1,4× karena suara Indonesia otomatis hanya ±1,6 kata/detik (naskah ±100 kata melebihi durasi adegan S4, S5, S8 pada kecepatan normal). Uji laptop pemilik: perakitan visual berhasil, kegagalan hanya dari `v3.mp3` rusak |
 | `8c556eb` | `rakit.py`: pembuatan suara mencoba ulang hingga 5× dengan jeda dan jeda antar-adegan (layanan suara gratis kadang menjawab 503), dan bila tetap gagal video tetap dirakit tanpa suara adegan itu. Temuan uji di laptop pemilik (Windows, Python 3.14 mandiri uv): pemasangan lewat `venv` (uv menolak pip global), perakitan adegan dan end card berhasil; suara S1–S2 jadi, S3 kena 503 |
 | `627c8fc` | `rakit.bat` membaca lokasi Python dari `jalur_python.txt` (untuk Python yang tidak ada di PATH; pemilik memakai Python 3.14 mandiri di `D:\Program Files\Python\…`), dan berhenti dengan pesan jelas bila pemasangan komponen gagal |
@@ -559,4 +559,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `627c8fc` | 11/11 17:09 | rakit.bat: dukung lokasi Python kustom (jalur_python.txt) |
 | `8c556eb` | 11/11 18:31 | rakit.py: coba ulang pembuatan suara (503) dan lanjut tanpa suara bila gagal |
 | `82b3712` | 11/11 18:33 | rakit.py: pulihkan suara rusak, kecepatan bicara +20%, batas percepatan 1,4x |
+| `49801d1` | 15/11 12:37 | Panduan pembayaran QRIS SumoPod yang dapat dipakai ulang (docs/) |
 <!-- LOG-GIT:AKHIR -->
