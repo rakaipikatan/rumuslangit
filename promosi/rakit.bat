@@ -3,7 +3,8 @@ chcp 65001 >nul
 cd /d "%~dp0"
 rem Lokasi Python: bila ada berkas jalur_python.txt (satu baris, tanpa tanda kutip) dipakai itu; bila tidak, "python" dari PATH.
 set "PY=python"
-if exist "jalur_python.txt" set /p PY=<jalur_python.txt
+if exist "venv\Scripts\python.exe" set "PY=venv\Scripts\python.exe"
+if exist "jalur_python.txt" if not exist "venv\Scripts\python.exe" set /p PY=<jalur_python.txt
 "%PY%" --version >nul 2>nul
 if errorlevel 1 (
   echo Python tidak ditemukan: %PY%

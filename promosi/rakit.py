@@ -69,6 +69,29 @@ def cari(folder, awalan, ekstensi):
     return None
 
 
+def cari_bagian(folder, awalan):
+    """Klip bertingkat untuk satu adegan: s2a.mp4, s2b.mp4, ... (dipakai bila klip generator lebih pendek dari adegannya)."""
+    pola = re.compile(rf'^{re.escape(awalan)}[a-z](?:[_\- ].*)?$')
+    return [f for f in sorted(folder.iterdir()) if f.suffix.lower() in EKS_VIDEO + EKS_GAMBAR and pola.match(f.stem.lower())]
+
+
+def gabung_bagian(bagian, tmp, W, H, n):
+    """Menyambung beberapa klip (urut abjad) menjadi satu klip; durasinya nanti dipotong/ditahan sesuai adegan."""
+    potongan = []
+    for i, b in enumerate(bagian):
+        out = tmp / f'bagian_{n}_{i}.mp4'
+        pre = ['-loop', '1', '-t', '3'] if b.suffix.lower() in EKS_GAMBAR else []
+        vf = f'scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS},setsar=1,format=yuv420p'
+        jalankan([FFMPEG, '-y', '-v', 'error', *pre, '-i', b, '-vf', vf, '-an',
+                  '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '14', out])
+        potongan.append(out)
+    daftar = tmp / f'bagian_{n}.txt'
+    daftar.write_text('\n'.join(f"file '{p.as_posix()}'" for p in potongan), encoding='utf-8')
+    gabungan = tmp / f'gabung_{n}.mp4'
+    jalankan([FFMPEG, '-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', daftar, '-c', 'copy', gabungan])
+    return gabungan
+
+
 # ───────────────────────── gambar teks / kartu ─────────────────────────
 
 def font(ukuran):
@@ -258,6 +281,11 @@ def rakit(data_path, args):
             kode, dur = a['kode'], float(a['durasi'])
             n = kode.lower()
             sumber = cari(folder, n, EKS_VIDEO + EKS_GAMBAR)
+            if sumber is None:
+                bagian = cari_bagian(folder, n)
+                if bagian:
+                    sumber = gabung_bagian(bagian, tmp, W, H, n)
+                    print(f'  {kode}: {len(bagian)} klip disambung ({", ".join(b.name for b in bagian)})')
             if sumber is None:
                 if kode == 'S8':
                     sumber = tmp / 'latar.png'

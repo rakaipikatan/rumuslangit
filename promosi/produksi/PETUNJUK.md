@@ -13,6 +13,7 @@
 1. Taruh klip dari generator di folder `produksi\NN\` (NN = nomor video, mis. `01`), dengan nama:
    `s1.mp4` `s2.mp4` … `s7.mp4`  (adegan S1–S7). `s8.mp4` opsional: bila tidak ada, end card dibuat otomatis (latar gradasi + logo + tagline + alamat situs).
    Gambar diam (`s3.png`) juga boleh; format lain: `.mov`, `.webm`.
+   **Klip generator lebih pendek dari adegannya?** Beri nama bertingkat `s2a.mp4`, `s2b.mp4`, … — skrip menyambungnya berurutan lalu menyesuaikan ke durasi adegan (kelebihan dipotong, kekurangan menahan bingkai terakhir). Jangan menghapus watermark generator; bila watermark mengganggu, gunakan paket berbayar tanpa watermark.
 2. **Voice-over bahasa Indonesia** — pilih salah satu:
    - **Otomatis (paling mudah):** jalankan `rakit.bat 01 --suara` (suara perempuan) atau `rakit.bat 01 --suara ardi` (laki-laki). Skrip membuat `v1.mp3 … v8.mp3` dari naskah tiap adegan lalu memasangnya pas di awal adegan; bila suara sedikit lebih panjang dari adegannya, otomatis dipercepat (maks. 1,4×). Perlu **internet**. Suara dibuat sekali; hapus `v*.mp3` bila ingin membuat ulang.
    - **Rekam sendiri / suara lain:** simpan sebagai `v1.mp3 … v8.mp3` (per adegan) atau satu berkas penuh. Berkas yang sudah ada tidak akan ditimpa.

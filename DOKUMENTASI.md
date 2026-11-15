@@ -391,6 +391,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit berikut) | **`rakit.py` menyambung klip bertingkat per adegan** (`s2a.mp4`, `s2b.mp4`, … → satu klip lalu dipotong/ditahan sesuai durasi adegan) untuk generator yang hanya menghasilkan klip ±8 detik; `rakit.bat` otomatis memakai `venv\\Scripts\\python.exe` bila ada; petunjuk: jangan menghapus watermark generator. **Belum teruji ujung-ke-ujung** (hanya sintaks dan pencocokan nama berkas diuji; FFmpeg tidak dijalankan di server) |
 | `b5d6df6` | **`promosi/naskah-semua-video.md`:** naskah suara + teks layar 13 video dalam satu berkas siap tempel untuk alat naskah-ke-video berbayar (pengaturan umum + arahan gaya + tabel adegan); dihasilkan dari `promosi/data/*.json`. Keputusan pemilik: paket berbayar boleh dipakai (butuh hak komersial) |
 | `2615bea` | **Isolasi Redis dari Assessly:** Rumus Langit dipindah ke Redis DB 2 (antrean/sesi/Horizon) dan DB 3 (cache Redis) lewat `.env`; Horizon direstart (hanya program `horizon`), diuji dengan pekerjaan nyata, kunci Assessly terbukti tidak berubah; sisa kunci Horizon lama dibersihkan. Penjadwal (cron) tetap perlu ditambahkan kembali oleh pemilik (lihat 4.4d) |
 | `ba0fb9c` | **Pemeriksaan server bersama Assessly** (bagian 4.4d): prefix/antrean Redis aman, tetapi **penjadwal Rumus Langit mati sejak 15 Nov 14:34 WIB** karena crontab ditimpa; baris cron harus ditambahkan kembali; saran isolasi Redis, RAM, dan pool PHP-FPM dicatat |
