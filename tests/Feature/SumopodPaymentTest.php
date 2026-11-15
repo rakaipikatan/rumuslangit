@@ -232,6 +232,49 @@ class SumopodPaymentTest extends TestCase
         $this->kirimWebhook(['event_type' => 'payment.completed', 'data' => ['payment_id' => 'tidak-ada', 'order_id' => 'RL-TIDAKADA', 'amount' => 1]])->assertOk();
     }
 
+    public function test_webhook_order_assessly_diteruskan_apa_adanya(): void
+    {
+        Http::fake(['assessly.biz.id/*' => Http::response(['ok' => true], 200)]);
+
+        $payload = ['event_type' => 'payment.completed', 'data' => ['payment_id' => 'pay_x', 'order_id' => 'AST-ABC123', 'amount' => 10000]];
+        $this->kirimWebhook($payload)->assertOk()->assertJson(['note' => 'diteruskan ke assessly']);
+
+        Http::assertSent(fn ($r) => $r->url() === 'https://assessly.biz.id/webhook/sumopod'
+            && $r->body() === json_encode($payload)
+            && $r->hasHeader('svix-signature')
+            && $r->hasHeader('svix-id')
+            && $r->hasHeader('svix-timestamp'));
+    }
+
+    public function test_webhook_order_assessly_gagal_diteruskan_dibalas_502(): void
+    {
+        Http::fake(['assessly.biz.id/*' => Http::response('down', 500)]);
+
+        $this->kirimWebhook(['event_type' => 'payment.completed', 'data' => ['order_id' => 'AST-ABC123', 'amount' => 10000]])
+            ->assertStatus(502);
+    }
+
+    public function test_webhook_order_assessly_dengan_signature_salah_tidak_diteruskan(): void
+    {
+        Http::fake();
+
+        $this->kirimWebhook(['event_type' => 'payment.completed', 'data' => ['order_id' => 'AST-ABC123', 'amount' => 10000]], 'whsec_' . base64_encode('salah'))
+            ->assertStatus(401);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_webhook_order_rumus_langit_tidak_diteruskan(): void
+    {
+        Http::fake();
+        $order = $this->buatOrderQris($this->buatUser());
+
+        $this->kirimWebhook($this->eventSelesai($order))->assertOk();
+
+        Http::assertNothingSent();
+        $this->assertSame('settlement', $order->refresh()->status);
+    }
+
     public function test_komisi_afiliasi_tercatat_saat_qris_lunas(): void
     {
         $aff  = \App\Models\Affiliate::create(['name' => 'A', 'referral_code' => 'T' . strtoupper(Str::random(6)), 'komisi_persen' => 20, 'status' => 'active']);

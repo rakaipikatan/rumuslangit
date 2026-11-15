@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Services\OrderSettlementService;
 use App\Services\SumopodPayService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Log;
  */
 class SumopodWebhookController extends Controller
 {
+    /** Project SumoPod ini dipakai bersama Assessly; order berawalan AST- diteruskan ke sana. */
+    private const ASSESSLY_WEBHOOK_URL = 'https://assessly.biz.id/webhook/sumopod';
+
     public function handle(Request $request, SumopodPayService $sumopod, OrderSettlementService $settlement)
     {
         $raw = $request->getContent(); // body mentah — jangan diformat ulang sebelum verifikasi
@@ -35,6 +39,11 @@ class SumopodWebhookController extends Controller
 
         if ($event === 'payment.test') {
             return response()->json(['ok' => true]);
+        }
+
+        // Event milik Assessly (project lain di akun SumoPod yang sama) → teruskan apa adanya.
+        if (str_starts_with((string) ($data['order_id'] ?? ''), 'AST-')) {
+            return $this->teruskanKeAssessly($request, $raw);
         }
 
         $order = Order::where('payment_method', 'qris')
@@ -73,5 +82,34 @@ class SumopodWebhookController extends Controller
         }
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Teruskan webhook ke Assessly dengan body MENTAH + header svix-* tanpa diubah,
+     * agar Assessly bisa memverifikasi signature dengan secret yang sama.
+     * Gagal → 502 supaya SumoPod mengirim ulang (pelunasan di Assessly idempoten).
+     */
+    private function teruskanKeAssessly(Request $request, string $raw)
+    {
+        try {
+            $res = Http::timeout(8) // di bawah batas 10 detik SumoPod
+                ->withBody($raw, 'application/json')
+                ->withHeaders([
+                    'svix-id'        => (string) $request->header('svix-id'),
+                    'svix-timestamp' => (string) $request->header('svix-timestamp'),
+                    'svix-signature' => (string) $request->header('svix-signature'),
+                ])
+                ->post(self::ASSESSLY_WEBHOOK_URL);
+
+            if ($res->successful()) {
+                return response()->json(['ok' => true, 'note' => 'diteruskan ke assessly']);
+            }
+
+            Log::error('Forward webhook ke Assessly gagal', ['status' => $res->status()]);
+        } catch (\Throwable $e) {
+            Log::error('Forward webhook ke Assessly error', ['error' => $e->getMessage()]);
+        }
+
+        return response('Forward failed', 502);
     }
 }
