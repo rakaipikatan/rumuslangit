@@ -16,7 +16,11 @@ Cara pakai (lihat PETUNJUK.md di folder produksi):
 """
 import argparse
 import asyncio
+import base64
 import os
+import urllib.error
+import urllib.request
+import wave
 import json
 import re
 import subprocess
@@ -216,17 +220,78 @@ def durasi_audio(path):
     return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3)) if m else None
 
 
-def buat_suara(data, folder, nama_suara, kecepatan=20):
-    """Membuat v1.mp3 … v8.mp3 dari naskah tiap adegan (hanya yang belum ada, jadi bisa diganti rekaman sendiri)."""
+MESIN = ('edge', 'gemini', 'elevenlabs')
+CONTOH_KALIMAT = 'Kamu merasa belum benar-benar kenal dirimu sendiri? Coba Rumus Langit, gratis dan tanpa proses yang rumit.'
+
+
+def _panggil_json(url, body, headers, timeout=120):
+    req = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'), headers=headers, method='POST')
     try:
-        import edge_tts
-    except ImportError:
-        raise SystemExit('Pustaka edge-tts belum terpasang. Jalankan: python -m pip install -r requirements.txt')
-    voice = SUARA[nama_suara]
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read()
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f'HTTP {e.code}: {e.read().decode("utf-8", "replace")[:160]}')
 
-    async def satu(teks, path):
-        await edge_tts.Communicate(teks, voice, rate=f'{kecepatan:+d}%').save(str(path))
 
+def _tts_gemini(teks, tujuan, nama):
+    """Gemini TTS lewat REST (tanpa pustaka tambahan). Kunci dari variabel lingkungan GEMINI_API_KEY (tidak pernah disimpan di kode)."""
+    kunci = os.environ.get('GEMINI_API_KEY')
+    if not kunci:
+        raise SystemExit('GEMINI_API_KEY belum diisi. Di jendela cmd ketik:  set GEMINI_API_KEY=kunci_Anda   (hanya berlaku di jendela itu)')
+    model = os.environ.get('GEMINI_TTS_MODEL', 'gemini-2.5-flash-preview-tts')
+    arahan = os.environ.get('GEMINI_TTS_ARAHAN', 'Bacakan dalam bahasa Indonesia dengan suara hangat, tenang, dan natural seperti bercerita kepada teman: ')
+    body = {'contents': [{'parts': [{'text': arahan + teks}]}],
+            'generationConfig': {'responseModalities': ['AUDIO'],
+                                 'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': nama or 'Kore'}}}}}
+    mentah = _panggil_json(f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent', body,
+                           {'Content-Type': 'application/json', 'x-goog-api-key': kunci})
+    data = json.loads(mentah)
+    try:
+        pcm = base64.b64decode(data['candidates'][0]['content']['parts'][0]['inlineData']['data'])
+    except Exception:
+        raise RuntimeError('Respons Gemini TTS tidak berisi audio: ' + str(data)[:160])
+    with wave.open(str(tujuan), 'wb') as w:  # keluaran Gemini = PCM 16-bit mono 24 kHz
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(24000)
+        w.writeframes(pcm)
+
+
+def _tts_elevenlabs(teks, tujuan, nama):
+    """ElevenLabs lewat REST. Kunci: ELEVENLABS_API_KEY; suara: --nama-suara atau ELEVENLABS_VOICE_ID (ID suara dari akun Anda)."""
+    kunci = os.environ.get('ELEVENLABS_API_KEY')
+    voice_id = nama or os.environ.get('ELEVENLABS_VOICE_ID')
+    if not kunci or not voice_id:
+        raise SystemExit('ELEVENLABS_API_KEY dan ID suara (--nama-suara atau ELEVENLABS_VOICE_ID) belum diisi.')
+    body = {'text': teks, 'model_id': os.environ.get('ELEVENLABS_MODEL', 'eleven_multilingual_v2'),
+            'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75, 'style': 0.2}}
+    audio = _panggil_json(f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128', body,
+                          {'xi-api-key': kunci, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg'})
+    Path(tujuan).write_bytes(audio)
+
+
+def sintesis(teks, folder, nama_berkas, mesin, nama_suara, kecepatan):
+    """Membuat satu berkas suara; mengembalikan Path-nya (ekstensi tergantung mesin)."""
+    if mesin == 'edge':
+        try:
+            import edge_tts
+        except ImportError:
+            raise SystemExit('Pustaka edge-tts belum terpasang. Jalankan: python -m pip install -r requirements.txt')
+        voice = SUARA.get(nama_suara or 'gadis', nama_suara)
+        path = folder / f'{nama_berkas}.mp3'
+        asyncio.run(edge_tts.Communicate(teks, voice, rate=f'{kecepatan:+d}%').save(str(path)))
+        return path
+    if mesin == 'gemini':
+        path = folder / f'{nama_berkas}.wav'
+        _tts_gemini(teks, path, nama_suara)
+        return path
+    path = folder / f'{nama_berkas}.mp3'
+    _tts_elevenlabs(teks, path, nama_suara)
+    return path
+
+
+def buat_suara(data, folder, nama_suara, kecepatan=20, mesin='edge'):
+    """Membuat v1 … v8 dari naskah tiap adegan (hanya yang belum ada, jadi bisa diganti rekaman sendiri)."""
     for a in data['adegan']:
         n = 'v' + a['kode'][1:]
         ada = cari(folder, n, EKS_AUDIO)
@@ -236,22 +301,34 @@ def buat_suara(data, folder, nama_suara, kecepatan=20):
                 continue
             ada.unlink(missing_ok=True)
             print(f'  suara {a["kode"]}: berkas lama rusak, dibuat ulang')
-        path = folder / f'{n}.mp3'
-        galat = None
-        for percobaan in range(1, 6):  # layanan gratis kadang menolak sementara (503): coba ulang dengan jeda
+        galat, hasil = None, None
+        for percobaan in range(1, 6):  # layanan kadang menolak sementara (503/429): coba ulang dengan jeda
             try:
-                asyncio.run(satu(a['vo'], path))
+                hasil = sintesis(a['vo'], folder, n, mesin, nama_suara, kecepatan)
                 galat = None
                 break
+            except SystemExit:
+                raise
             except Exception as e:
                 galat = e
-                path.unlink(missing_ok=True)
+                for ext in ('.mp3', '.wav'):
+                    (folder / f'{n}{ext}').unlink(missing_ok=True)
                 time.sleep(2 * percobaan)
         if galat is not None:
-            print(f'  ! suara {a["kode"]} gagal dibuat setelah 5 percobaan ({str(galat)[:90]}). Video tetap dirakit; jalankan lagi nanti untuk melengkapi.')
+            print(f'  ! suara {a["kode"]} gagal dibuat setelah 5 percobaan ({str(galat)[:110]}). Video tetap dirakit; jalankan lagi nanti untuk melengkapi.')
             continue
-        print(f'  suara {a["kode"]}: dibuat ({voice})')
+        print(f'  suara {a["kode"]}: dibuat ({mesin}{", " + str(nama_suara) if nama_suara else ""})')
         time.sleep(1.0)  # jeda kecil antar-permintaan agar tidak ditolak
+
+
+def uji_suara(args):
+    """Membuat satu contoh suara untuk dibandingkan antar-mesin (hasil/contoh-suara-<mesin>.*)."""
+    folder = ROOT / 'hasil'
+    folder.mkdir(exist_ok=True)
+    teks = args.uji_suara or CONTOH_KALIMAT
+    nama = args.nama_suara or (args.suara if args.mesin == 'edge' else None)
+    path = sintesis(teks, folder, f'contoh-suara-{args.mesin}', args.mesin, nama, args.kecepatan)
+    print(f'Contoh suara ({args.mesin}) dibuat: {path.relative_to(ROOT)}\nKalimat: {teks}')
 
 
 # ───────────────────────── proses satu video ─────────────────────────
@@ -336,7 +413,7 @@ def rakit(data_path, args):
         # 3) Audio
         suara_utuh = cari(folder, 'voice', EKS_AUDIO) or cari(folder, 'suara', EKS_AUDIO)
         if args.suara and not suara_utuh:
-            buat_suara(data, folder, args.suara, args.kecepatan)
+            buat_suara(data, folder, args.nama_suara or (args.suara if args.mesin == 'edge' else None), args.kecepatan, args.mesin)
         musik = cari(folder, 'musik', EKS_AUDIO) or cari(folder, 'music', EKS_AUDIO)
         suara_adegan = []
         if not suara_utuh:
@@ -421,11 +498,17 @@ def main():
     ap = argparse.ArgumentParser(description='Rakit video promosi Rumus Langit (4:5, 1080x1350).')
     ap.add_argument('nomor', nargs='*', help='nomor video, mis. 01 (kosong = semua yang foldernya ada)')
     ap.add_argument('--pratinjau', action='store_true', help='resolusi setengah + cepat, untuk pengecekan')
-    ap.add_argument('--suara', nargs='?', const='gadis', choices=sorted(SUARA), help='buat voice-over bahasa Indonesia otomatis: gadis (perempuan, bawaan) atau ardi (laki-laki)')
+    ap.add_argument('--suara', nargs='?', const='gadis', choices=sorted(SUARA), help='buat voice-over bahasa Indonesia otomatis. Untuk mesin edge: gadis (perempuan, bawaan) atau ardi (laki-laki)')
+    ap.add_argument('--mesin', choices=MESIN, default='edge', help='mesin suara: edge (bawaan, gratis), gemini, atau elevenlabs (butuh kunci API di variabel lingkungan)')
+    ap.add_argument('--nama-suara', help='gemini: nama suara (mis. Kore, Puck, Aoede, Charon); elevenlabs: ID suara; edge: gadis/ardi')
+    ap.add_argument('--uji-suara', nargs='?', const='', metavar='KALIMAT', help='hanya membuat satu contoh suara untuk dibandingkan (tanpa merakit video)')
     ap.add_argument('--kecepatan', type=int, default=20, help='kecepatan bicara suara otomatis dalam persen (bawaan 20 = 20%% lebih cepat dari normal)')
     ap.add_argument('--hemat', action='store_true', help='mode hemat sumber daya (prioritas CPU terendah, 1 thread) — untuk dijalankan di server kecil')
     ap.add_argument('--izinkan-kosong', action='store_true', help='adegan tanpa klip diisi kartu penanda')
     args = ap.parse_args()
+    if args.uji_suara is not None:
+        uji_suara(args)
+        return
     global HEMAT
     if args.hemat:
         HEMAT = True

@@ -38,3 +38,19 @@
 
 ## Alternatif: menjalankan di VPS (tidak disarankan sebagai cara utama)
 VPS hanya punya RAM 1,9 GB (sisa ±700 MB) dan melayani situs; mengolah video bisa memperlambatnya. Bila terpaksa: jalankan **malam hari**, **satu video per kali**, selalu dengan `--hemat`, dan tutup program lain. Perlu memasang FFmpeg dan pustaka Python di server (`sudo apt install -y ffmpeg python3-venv`, lalu venv + `pip install pillow edge-tts`), dan klip diunggah/diunduh lewat VS Code (seret ke folder `produksi/NN`, klik kanan berkas di `hasil` → Download). Perintah: `nice -n 19 python rakit.py 01 --suara --hemat`.
+
+## Memilih mesin suara yang lebih natural
+`--suara` memakai **Edge TTS** (gratis, hanya dua suara Indonesia: `gadis` perempuan, `ardi` laki-laki). Untuk suara yang lebih natural ada dua mesin berbayar/berkunci, dipilih dengan `--mesin`:
+- `--mesin gemini` (kunci di variabel `GEMINI_API_KEY`; nama suara dengan `--nama-suara`, mis. `Kore`, `Puck`, `Aoede`, `Charon`; model bisa diganti lewat `GEMINI_TTS_MODEL`, gaya bicara lewat `GEMINI_TTS_ARAHAN`).
+- `--mesin elevenlabs` (kunci di `ELEVENLABS_API_KEY`; ID suara dari akun Anda lewat `--nama-suara` atau `ELEVENLABS_VOICE_ID`).
+
+**Kunci API jangan pernah ditulis di berkas atau dikirim ke chat.** Di jendela cmd, ketik `set GEMINI_API_KEY=kunci_Anda` (hanya berlaku di jendela itu).
+
+**Bandingkan dulu** dengan satu kalimat sama (tidak merakit video):
+```
+venv\Scripts\python.exe rakit.py --uji-suara --mesin edge --kecepatan 0
+venv\Scripts\python.exe rakit.py --uji-suara --mesin gemini --nama-suara Kore
+```
+Hasil: `hasil\contoh-suara-<mesin>.mp3` atau `.wav`. Kalimat sendiri: `--uji-suara "kalimat Anda"`.
+
+Bila cocok: `rakit.py 00 --suara --mesin gemini --nama-suara Kore` (suara dibuat per adegan; hapus `v*.mp3`/`v*.wav` lama bila ingin diganti).
