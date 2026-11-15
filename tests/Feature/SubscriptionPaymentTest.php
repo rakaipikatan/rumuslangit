@@ -126,6 +126,6 @@ class SubscriptionPaymentTest extends TestCase
             ->get(route('payment.konfirmasi', 1));
 
         $response->assertOk();
-        $response->assertSee('29.000');
+        $response->assertSee(number_format((int) config('payment.single_price'), 0, ',', '.'));
     }
 }

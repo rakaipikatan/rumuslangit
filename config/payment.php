@@ -4,6 +4,9 @@ return [
     // Masa berlaku (jam) link pembayaran QRIS; maksimum SumoPod 24 jam.
     'expire_hours' => env('PAYMENT_EXPIRE_HOURS', 24),
 
+    // Harga pembelian SATUAN per laporan (rupiah). Teks harga di lang/*/ (hasil, trial, bantuan) ditulis statis: ubah juga bila angka ini diubah.
+    'single_price' => env('PAYMENT_HARGA_SATUAN', 19000),
+
     // Harga langganan (dipakai untuk order feature_id = Order::SUBSCRIPTION_MONTHLY_FEATURE_ID / SUBSCRIPTION_YEARLY_FEATURE_ID).
     'subscription_monthly_price' => env('PAYMENT_LANGGANAN_BULANAN_HARGA', 59000),
     'subscription_yearly_price'  => env('PAYMENT_LANGGANAN_TAHUNAN_HARGA', 499000),

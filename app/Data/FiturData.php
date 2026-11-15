@@ -4,20 +4,26 @@ namespace App\Data;
 
 class FiturData
 {
+    /** Harga satuan per laporan, dari config('payment.single_price'). */
+    public static function hargaSatuan(): int
+    {
+        return (int) config('payment.single_price', 19000);
+    }
+
     /** Locale-independent metadata: pricing, icons, and access flags never vary by language. */
     private static function meta(): array
     {
         return [
-            1  => ['hub' => 'Wealth Hub', 'icon' => '🧭', 'harga' => 29000],
-            2  => ['hub' => 'Wealth Hub', 'icon' => '📈', 'harga' => 29000],
-            3  => ['hub' => 'Wealth Hub', 'icon' => '📅', 'harga' => 29000],
-            4  => ['hub' => 'Wealth Hub', 'icon' => '🏪', 'harga' => 29000],
-            5  => ['hub' => 'Social Hub', 'icon' => '💑', 'harga' => 29000],
-            6  => ['hub' => 'Social Hub', 'icon' => '🏢', 'harga' => 29000],
-            7  => ['hub' => 'Social Hub', 'icon' => '👨‍👧', 'harga' => 29000],
-            8  => ['hub' => 'Personal Wellness Hub', 'icon' => '✍️', 'harga' => 29000],
-            9  => ['hub' => 'Personal Wellness Hub', 'icon' => '💚', 'harga' => 29000, 'tanya_golongan_darah' => true],
-            10 => ['hub' => 'Personal Wellness Hub', 'icon' => '🛡️', 'harga' => 29000],
+            1  => ['hub' => 'Wealth Hub', 'icon' => '🧭', 'harga' => self::hargaSatuan()],
+            2  => ['hub' => 'Wealth Hub', 'icon' => '📈', 'harga' => self::hargaSatuan()],
+            3  => ['hub' => 'Wealth Hub', 'icon' => '📅', 'harga' => self::hargaSatuan()],
+            4  => ['hub' => 'Wealth Hub', 'icon' => '🏪', 'harga' => self::hargaSatuan()],
+            5  => ['hub' => 'Social Hub', 'icon' => '💑', 'harga' => self::hargaSatuan()],
+            6  => ['hub' => 'Social Hub', 'icon' => '🏢', 'harga' => self::hargaSatuan()],
+            7  => ['hub' => 'Social Hub', 'icon' => '👨‍👧', 'harga' => self::hargaSatuan()],
+            8  => ['hub' => 'Personal Wellness Hub', 'icon' => '✍️', 'harga' => self::hargaSatuan()],
+            9  => ['hub' => 'Personal Wellness Hub', 'icon' => '💚', 'harga' => self::hargaSatuan(), 'tanya_golongan_darah' => true],
+            10 => ['hub' => 'Personal Wellness Hub', 'icon' => '🛡️', 'harga' => self::hargaSatuan()],
             11 => ['hub' => 'Personal Wellness Hub', 'icon' => '🎯', 'harga' => 0, 'subscriber_only' => true],
             12 => ['hub' => 'Traffic Driver', 'icon' => '🌙', 'harga' => 0, 'freemium' => true],
         ];
@@ -417,7 +423,7 @@ class FiturData
 
     public static function harga(int $id): int
     {
-        return self::cari($id)['harga'] ?? 29000;
+        return self::cari($id)['harga'] ?? self::hargaSatuan();
     }
 
     public static function pertanyaan(int $id, ?string $locale = null): array

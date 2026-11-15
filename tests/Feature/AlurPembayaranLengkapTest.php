@@ -125,7 +125,7 @@ class AlurPembayaranLengkapTest extends TestCase
 
     public function test_alur_laporan_satuan(): void
     {
-        [$u, $order] = $this->bayar('3', 29000, 'Hari Baik');
+        [$u, $order] = $this->bayar('3', (int) config('payment.single_price'), 'Hari Baik');
         $sesi = ['user_id' => $u->id];
 
         // setelah bayar → langsung ke kuesioner laporan yang dibeli

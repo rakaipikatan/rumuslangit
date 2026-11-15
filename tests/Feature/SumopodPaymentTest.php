@@ -303,7 +303,7 @@ class SumopodPaymentTest extends TestCase
         $this->withSession(['user_id' => $lain->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
 
         $this->assertSame(500, (int) Order::where('user_id', $penguji->id)->value('amount'));
-        $this->assertSame(29000, (int) Order::where('user_id', $lain->id)->value('amount'));
+        $this->assertSame((int) config('payment.single_price'), (int) Order::where('user_id', $lain->id)->value('amount'));
     }
 
     public function test_harga_uji_nonaktif_bila_email_tidak_diisi(): void
@@ -318,7 +318,7 @@ class SumopodPaymentTest extends TestCase
 
         $this->withSession(['user_id' => $user->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
 
-        $this->assertSame(29000, (int) Order::where('user_id', $user->id)->value('amount'));
+        $this->assertSame((int) config('payment.single_price'), (int) Order::where('user_id', $user->id)->value('amount'));
     }
 
     public function test_fitur_gratis_tafsir_mimpi_terbuka_tanpa_bayar(): void
@@ -472,7 +472,7 @@ class SumopodPaymentTest extends TestCase
         $this->assertStringContainsString('Sudah dibeli', $html);
         // fitur 3 tidak lagi menampilkan harga; fitur lain yang belum dibeli tetap menampilkannya
         $this->assertSame(1, substr_count($html, 'Sudah dibeli'));
-        $this->assertStringContainsString('Rp 29.000', $html);
+        $this->assertStringContainsString('Rp ' . number_format((int) config('payment.single_price'), 0, ',', '.'), $html);
     }
 
     public function test_transfer_bank_manual_sudah_dihapus_semua_pembayaran_lewat_qris(): void
@@ -599,7 +599,7 @@ class SumopodPaymentTest extends TestCase
 
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 11:01:00', 'UTC'));
         $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
-        $this->assertSame(29000, (int) Order::where('user_id', $u->id)->value('amount'), 'lewat batas waktu: kembali ke harga normal');
+        $this->assertSame((int) config('payment.single_price'), (int) Order::where('user_id', $u->id)->value('amount'), 'lewat batas waktu: kembali ke harga normal');
     }
 
     public function test_harga_uji_bisa_untuk_beberapa_email_dipisah_koma(): void
@@ -618,7 +618,7 @@ class SumopodPaymentTest extends TestCase
 
         $this->assertSame(1000, (int) Order::where('user_id', $a->id)->value('amount'));
         $this->assertSame(1000, (int) Order::where('user_id', $b->id)->value('amount'));
-        $this->assertSame(29000, (int) Order::where('user_id', $c->id)->value('amount'), 'email yang tidak terdaftar tetap harga normal');
+        $this->assertSame((int) config('payment.single_price'), (int) Order::where('user_id', $c->id)->value('amount'), 'email yang tidak terdaftar tetap harga normal');
     }
 
     public function test_harga_uji_butuh_email_terverifikasi_walau_terdaftar(): void
@@ -631,6 +631,6 @@ class SumopodPaymentTest extends TestCase
 
         $this->withSession(['user_id' => $u->id])->post(route('payment.proses', 3), ['metode' => 'qris']);
 
-        $this->assertSame(29000, (int) Order::where('user_id', $u->id)->value('amount'));
+        $this->assertSame((int) config('payment.single_price'), (int) Order::where('user_id', $u->id)->value('amount'));
     }
 }

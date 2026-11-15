@@ -16,7 +16,7 @@ class PanduanController extends Controller
         $rp = fn (int $n) => number_format($n, 0, ',', '.');
 
         $p = [
-            'satuan'   => $rp(29000),
+            'satuan'   => $rp((int) config('payment.single_price', 19000)),
             'n'        => (int) config('payment.single_generations', 3),
             'bulanan'  => $rp((int) config('payment.subscription_monthly_price')),
             'tahunan'  => $rp((int) config('payment.subscription_yearly_price')),
