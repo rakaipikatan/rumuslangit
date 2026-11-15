@@ -39,10 +39,10 @@ class PilihPaketLanggananTest extends TestCase
         $this->assertStringContainsString('Pilih Paket Langganan', $html);
         $this->assertStringContainsString('Langganan Bulanan', $html);
         $this->assertStringContainsString('Langganan Tahunan', $html);
-        $this->assertStringContainsString('Rp 59.000', $html);
-        $this->assertStringContainsString('Rp 499.000', $html);
+        $this->assertStringContainsString('Rp 39.000', $html);
+        $this->assertStringContainsString('Rp 329.000', $html);
         $this->assertStringContainsString('Hemat 30%', $html);
-        $this->assertStringContainsString('setara Rp 41.583/bulan', $html);
+        $this->assertStringContainsString('setara Rp 27.417/bulan', $html);
         $this->assertStringContainsString(route('payment.konfirmasi', 'langganan-bulanan'), $html);
         $this->assertStringContainsString(route('payment.konfirmasi', 'langganan-tahunan'), $html);
     }
@@ -52,7 +52,7 @@ class PilihPaketLanggananTest extends TestCase
         $u = $this->user();
 
         $this->withSession(['user_id' => $u->id, 'locale' => 'en'])->get(route('langganan'))->assertOk()
-            ->assertSee('Choose a Subscription Plan')->assertSee('Save 30%')->assertSee('equal to Rp 41.583/month');
+            ->assertSee('Choose a Subscription Plan')->assertSee('Save 30%')->assertSee('equal to Rp 27.417/month');
     }
 
     public function test_tamu_dan_pelanggan_aktif_dialihkan(): void
@@ -82,11 +82,11 @@ class PilihPaketLanggananTest extends TestCase
         $sesi = ['user_id' => $u->id];
 
         $this->withSession($sesi)->get(route('payment.konfirmasi', 'langganan-bulanan'))->assertOk()
-            ->assertSee('Ganti ke paket Tahunan — Rp 499.000 (hemat 30%)')
+            ->assertSee('Ganti ke paket Tahunan — Rp 329.000 (hemat 30%)')
             ->assertSee(route('payment.konfirmasi', 'langganan-tahunan'));
 
         $this->withSession($sesi)->get(route('payment.konfirmasi', 'langganan-tahunan'))->assertOk()
-            ->assertSee('Ganti ke paket Bulanan — Rp 59.000')
+            ->assertSee('Ganti ke paket Bulanan — Rp 39.000')
             ->assertSee(route('payment.konfirmasi', 'langganan-bulanan'));
 
         // alias lama "langganan" = bulanan: tetap menawarkan tahunan

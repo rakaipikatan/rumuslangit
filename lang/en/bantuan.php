@@ -23,7 +23,7 @@ return [
         ['k' => ['quota', 'credit', 'remaining', 'how many'],
          'j' => 'A single purchase (Rp19,000) gives 3 credits for DIFFERENT answers in one feature. Repeating the same answers on the same day shows the saved result without using a credit, and the next day the result is refreshed without using a credit.'],
         ['k' => ['subscription', 'monthly', 'yearly', 'plan', 'price'],
-         'j' => 'Options: single Rp19,000 (3 credits per feature), monthly Rp59,000, yearly Rp499,000 (all features). Compare on the Plans page.'],
+         'j' => 'Options: single Rp19,000 (3 credits per feature), monthly Rp39,000, yearly Rp329,000 (all features). Compare on the Plans page.'],
         ['k' => ['report', 'result', 'analyzing', 'slow', 'stuck', 'error'],
          'j' => 'Reports are generated automatically by the system and usually finish in 1–2 minutes. If it takes longer, keep the page open — the system retries automatically, including a backup route. You can also close the page and come back; results stay in your account.'],
         ['k' => ['tarot', 'card'],

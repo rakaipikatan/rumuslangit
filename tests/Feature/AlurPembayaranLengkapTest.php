@@ -158,7 +158,7 @@ class AlurPembayaranLengkapTest extends TestCase
 
     public function test_alur_langganan_bulanan(): void
     {
-        [$u, $order] = $this->bayar('langganan-bulanan', 59000, 'Langganan Bulanan');
+        [$u, $order] = $this->bayar('langganan-bulanan', (int) config('payment.subscription_monthly_price'), 'Langganan Bulanan');
         $sesi = ['user_id' => $u->id];
 
         // setelah bayar → katalog (semua laporan terbuka)
@@ -194,12 +194,12 @@ class AlurPembayaranLengkapTest extends TestCase
         Mail::assertNotSent(HokiHarianMail::class);
 
         // setelah habis, halaman bayar langganan terbuka lagi (perpanjangan)
-        $this->withSession($sesi)->get(route('payment.konfirmasi', 'langganan-bulanan'))->assertOk()->assertSee('Rp 59.000');
+        $this->withSession($sesi)->get(route('payment.konfirmasi', 'langganan-bulanan'))->assertOk()->assertSee('Rp ' . number_format((int) config('payment.subscription_monthly_price'), 0, ',', '.'));
     }
 
     public function test_alur_langganan_tahunan(): void
     {
-        [$u, $order] = $this->bayar('langganan-tahunan', 499000, 'Langganan Tahunan');
+        [$u, $order] = $this->bayar('langganan-tahunan', (int) config('payment.subscription_yearly_price'), 'Langganan Tahunan');
         $sesi = ['user_id' => $u->id];
 
         $this->withSession($sesi)->get(route('payment.selesai', $order->gateway_order_id))->assertRedirect(route('trial.katalog'));
@@ -219,7 +219,7 @@ class AlurPembayaranLengkapTest extends TestCase
         // bukti bayar memuat produk & masa aktif tahunan
         $mail = new BuktiBayarMail($order);
         $mail->assertSeeInHtml('Langganan Tahunan');
-        $mail->assertSeeInHtml('Rp 499.000');
+        $mail->assertSeeInHtml('Rp ' . number_format((int) config('payment.subscription_yearly_price'), 0, ',', '.'));
     }
 
     public function test_perbedaan_tiga_alur_dalam_satu_tabel(): void
@@ -227,8 +227,8 @@ class AlurPembayaranLengkapTest extends TestCase
         // Produk berbeda pada penanda order, harga, dan hak akses — selebihnya alur pembayaran sama.
         $this->assertSame(-1, Order::SUBSCRIPTION_MONTHLY_FEATURE_ID);
         $this->assertSame(-2, Order::SUBSCRIPTION_YEARLY_FEATURE_ID);
-        $this->assertSame(59000, (int) config('payment.subscription_monthly_price'));
-        $this->assertSame(499000, (int) config('payment.subscription_yearly_price'));
+        $this->assertSame(39000, (int) config('payment.subscription_monthly_price'));
+        $this->assertSame(329000, (int) config('payment.subscription_yearly_price'));
         $this->assertSame(3, (int) config('payment.single_generations'));
     }
 }

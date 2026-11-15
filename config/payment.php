@@ -8,8 +8,8 @@ return [
     'single_price' => env('PAYMENT_HARGA_SATUAN', 19000),
 
     // Harga langganan (dipakai untuk order feature_id = Order::SUBSCRIPTION_MONTHLY_FEATURE_ID / SUBSCRIPTION_YEARLY_FEATURE_ID).
-    'subscription_monthly_price' => env('PAYMENT_LANGGANAN_BULANAN_HARGA', 59000),
-    'subscription_yearly_price'  => env('PAYMENT_LANGGANAN_TAHUNAN_HARGA', 499000),
+    'subscription_monthly_price' => env('PAYMENT_LANGGANAN_BULANAN_HARGA', 39000),
+    'subscription_yearly_price'  => env('PAYMENT_LANGGANAN_TAHUNAN_HARGA', 329000),
 
     // Harga UJI sementara, hanya berlaku untuk SATU email (untuk tes transaksi Live bernominal kecil).
     // Aktif bila keduanya terisi di .env; hapus/kosongkan setelah pengujian selesai.
