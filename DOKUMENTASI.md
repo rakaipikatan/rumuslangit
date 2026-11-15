@@ -391,7 +391,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit berikut) | **`promosi/naskah-semua-video.md`:** naskah suara + teks layar 13 video dalam satu berkas siap tempel untuk alat naskah-ke-video berbayar (pengaturan umum + arahan gaya + tabel adegan); dihasilkan dari `promosi/data/*.json`. Keputusan pemilik: paket berbayar boleh dipakai (butuh hak komersial) |
+| `b5d6df6` | **`promosi/naskah-semua-video.md`:** naskah suara + teks layar 13 video dalam satu berkas siap tempel untuk alat naskah-ke-video berbayar (pengaturan umum + arahan gaya + tabel adegan); dihasilkan dari `promosi/data/*.json`. Keputusan pemilik: paket berbayar boleh dipakai (butuh hak komersial) |
 | `2615bea` | **Isolasi Redis dari Assessly:** Rumus Langit dipindah ke Redis DB 2 (antrean/sesi/Horizon) dan DB 3 (cache Redis) lewat `.env`; Horizon direstart (hanya program `horizon`), diuji dengan pekerjaan nyata, kunci Assessly terbukti tidak berubah; sisa kunci Horizon lama dibersihkan. Penjadwal (cron) tetap perlu ditambahkan kembali oleh pemilik (lihat 4.4d) |
 | `ba0fb9c` | **Pemeriksaan server bersama Assessly** (bagian 4.4d): prefix/antrean Redis aman, tetapi **penjadwal Rumus Langit mati sejak 15 Nov 14:34 WIB** karena crontab ditimpa; baris cron harus ditambahkan kembali; saran isolasi Redis, RAM, dan pool PHP-FPM dicatat |
 | `49801d1` | **Panduan pembayaran QRIS untuk dipakai ulang di proyek lain:** `docs/PEMBAYARAN-QRIS-SUMOPOD.md` (cetak biru generik dari implementasi produksi: prasyarat SumoPod, konfigurasi, skema `orders` + mesin status, klien API, checkout idempoten, webhook Svix, pelunasan idempoten, halaman tunggu, bukti bayar via antrean, daftar keamanan, strategi uji + 13 kasus uji minimal, prosedur Sandbox→Live, harga uji aman, operasional, jebakan nyata, keterbatasan, checklist, dan prompt siap pakai untuk asisten koding). Tanpa rahasia; hanya placeholder |
@@ -577,4 +577,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `8027b14` | 15/11 15:38 | Forward SumoPod webhooks for Assessly orders (AST-*) to assessly.biz.id |
 | `ba0fb9c` | 15/11 18:35 | Catat hasil pemeriksaan server bersama Assessly dan temuan penjadwal mati |
 | `2615bea` | 15/11 18:39 | Isolasi Redis Rumus Langit dari Assessly (DB 2/3); catat prosedur dan verifikasi |
+| `b5d6df6` | 15/11 19:13 | Naskah siap tempel 13 video untuk alat naskah-ke-video |
 <!-- LOG-GIT:AKHIR -->
