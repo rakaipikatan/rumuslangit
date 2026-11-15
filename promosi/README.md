@@ -48,6 +48,8 @@ Tiap berkas punya bagian **Kunci konsistensi karakter**: deskripsi tokoh yang ba
 
 Setelah klip dibuat di generator, `rakit.py` menyusunnya (dan, dengan `--suara`, membuat **voice-over bahasa Indonesia** otomatis dari naskah) menjadi video final 4:5: memotong sesuai waktu adegan, memasang teks layar, logo, end card, suara, dan musik. Jalan di laptop Windows (perlu Python sekali). Petunjuk lengkap: [`produksi/PETUNJUK.md`](produksi/PETUNJUK.md). Data adegan ada di `data/*.json` (dibuat dari prompt yang sama, jadi teks dan waktu selalu sinkron).
 
+- **Panduan edge-tts:** [`PANDUAN-EDGE-TTS.md`](PANDUAN-EDGE-TTS.md) — ringkasan penggunaan paket `edge-tts` (rany2/edge-tts) untuk dipakai mandiri di laptop.
+
 ## Aset
 
 - **Logo:** [`aset/logo-rumus-langit.png`](aset/logo-rumus-langit.png) — logo aplikasi dengan **tagline berbahasa Inggris sudah dihapus** (dipotong); hanya ikon dan tulisan RUMUS LANGIT yang tersisa. Sumber asli: `public/images/logo.png` (tidak diubah).
