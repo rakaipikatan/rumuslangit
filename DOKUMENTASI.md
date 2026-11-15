@@ -192,6 +192,16 @@ Biaya QRIS menurut dashboard SumoPod: 0,7% + Rp300 (dipotong dari saldo merchant
 - Catatan risiko: sebagian penyedia pembayaran/platform dapat mewajibkan kontak resmi; pantau bila ada permintaan.
 - Keputusan pemilik: **billing Gemini tidak akan diaktifkan** (tanpa anggaran); AI utama praktis menjadi Groq bila kuota gratis Gemini habis — perlu memantau batas gratis Groq.
 
+### 4.4d Server bersama Assessly (diperiksa 15 Nov 2026)
+
+Rumus Langit, Assessly, dan v3open berbagi satu VPS (2 core, RAM 1,9 GB, swap 1,9 GB; satu pool PHP-FPM `www` dengan `pm.max_children = 5`; satu Redis lokal). Hasil pemeriksaan:
+
+- **Prefix Redis tidak bertabrakan:** Rumus Langit `rumus-langit-database-`, Assessly `assessly-database-` (dari `APP_NAME`). Antrean/sesi keduanya ada di Redis DB 0; cache Assessly di DB 1 (Rumus Langit memakai cache `database`, bukan Redis). Redis memakai `noeviction`, memori terpakai ±1,8 MB.
+- **Antrean terpisah:** Horizon milik Rumus Langit (`supervisor` program `horizon`) dan worker `assessly-worker`; masing-masing hanya memproses antrean berprefix miliknya.
+- **TEMUAN — penjadwal Rumus Langit berhenti:** crontab user `ubuntu` ditulis ulang 15 Nov 14:34:34 WIB dan kini hanya memuat baris Assessly (`schedule:run`); detak penjadwal Rumus Langit terhenti 14:34:01. Akibatnya `subscription:sync`, `db:backup` (02:00 WIB), `hoki:kirim` (06:00 WIB), `afiliasi:payout` (tgl 25), dan pembersihan log berhenti. **Perbaikan:** tambahkan kembali baris `* * * * * cd /var/www/rumuslangit && /usr/bin/php artisan schedule:run >> /dev/null 2>&1` lewat `crontab -e` (jangan menimpa baris Assessly). Pengaman: `crontab -l > cadangan.txt` sebelum menyunting; selalu **tambah**, jangan ganti seluruh isi.
+- **Risiko bersama:** `redis-cli FLUSHALL/FLUSHDB` atau `FLUSHDB` pada DB 0 menghapus antrean dan sesi **kedua** aplikasi; reload PHP-FPM memengaruhi semua situs; RAM sempit (VS Code Server dan alat pengembangan lain memakai ±1 GB); satu pool PHP-FPM dipakai bersama.
+- **Saran (belum dikerjakan):** beri Rumus Langit nomor DB Redis sendiri (`REDIS_DB=2`, `REDIS_CACHE_DB=3`; semua pengguna akan keluar sekali karena sesi pindah) atau Redis terpisah; pantau RAM; pertimbangkan VPS 4 GB bila keduanya berkembang; pool PHP-FPM terpisah per aplikasi bila ada perebutan proses.
+
 ### 4.5 Wilayah
 Dropdown berjenjang provinsi → kota → kecamatan → kelurahan lewat `/api/wilayah/*`. Provinsi dan kota di-seed; kecamatan/kelurahan **di-seed lazy** saat pertama kali diminta (`WilayahController::seedKecamatan/seedKelurahan`).
 
@@ -380,6 +390,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
+| (commit berikut) | **Pemeriksaan server bersama Assessly** (bagian 4.4d): prefix/antrean Redis aman, tetapi **penjadwal Rumus Langit mati sejak 15 Nov 14:34 WIB** karena crontab ditimpa; baris cron harus ditambahkan kembali; saran isolasi Redis, RAM, dan pool PHP-FPM dicatat |
 | `49801d1` | **Panduan pembayaran QRIS untuk dipakai ulang di proyek lain:** `docs/PEMBAYARAN-QRIS-SUMOPOD.md` (cetak biru generik dari implementasi produksi: prasyarat SumoPod, konfigurasi, skema `orders` + mesin status, klien API, checkout idempoten, webhook Svix, pelunasan idempoten, halaman tunggu, bukti bayar via antrean, daftar keamanan, strategi uji + 13 kasus uji minimal, prosedur Sandbox→Live, harga uji aman, operasional, jebakan nyata, keterbatasan, checklist, dan prompt siap pakai untuk asisten koding). Tanpa rahasia; hanya placeholder |
 | `82b3712` | `rakit.py`: berkas suara rusak/kosong (sisa percobaan 503) dideteksi dan dibuat ulang; kecepatan bicara bawaan +20% (`--kecepatan N`) dan batas percepatan otomatis 1,4× karena suara Indonesia otomatis hanya ±1,6 kata/detik (naskah ±100 kata melebihi durasi adegan S4, S5, S8 pada kecepatan normal). Uji laptop pemilik: perakitan visual berhasil, kegagalan hanya dari `v3.mp3` rusak |
 | `8c556eb` | `rakit.py`: pembuatan suara mencoba ulang hingga 5× dengan jeda dan jeda antar-adegan (layanan suara gratis kadang menjawab 503), dan bila tetap gagal video tetap dirakit tanpa suara adegan itu. Temuan uji di laptop pemilik (Windows, Python 3.14 mandiri uv): pemasangan lewat `venv` (uv menolak pip global), perakitan adegan dan end card berhasil; suara S1–S2 jadi, S3 kena 503 |
