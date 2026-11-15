@@ -391,7 +391,7 @@ php artisan test       # atau: composer test
 
 | Commit | Isi |
 |---|---|
-| (commit berikut) | **Harga satuan kembali Rp19.000** (sebelumnya Rp29.000), kini diatur lewat `config('payment.single_price')` / `PAYMENT_HARGA_SATUAN` (`FiturData::hargaSatuan()`; panduan pengguna dinamis); teks harga di landing/katalog/FAQ chat diperbarui; tes memakai nilai konfigurasi (total 236). Order pending lama tidak ada yang terdampak. Harga bulanan Rp59.000 dan tahunan Rp499.000 belum diubah (rekomendasi: bulanan Rp39.000, tahunan Rp329.000 — menunggu keputusan pemilik) |
+| `42d889d` | **Harga satuan kembali Rp19.000** (sebelumnya Rp29.000), kini diatur lewat `config('payment.single_price')` / `PAYMENT_HARGA_SATUAN` (`FiturData::hargaSatuan()`; panduan pengguna dinamis); teks harga di landing/katalog/FAQ chat diperbarui; tes memakai nilai konfigurasi (total 236). Order pending lama tidak ada yang terdampak. Harga bulanan Rp59.000 dan tahunan Rp499.000 belum diubah (rekomendasi: bulanan Rp39.000, tahunan Rp329.000 — menunggu keputusan pemilik) |
 | `ff63d5a` | **Pilihan mesin suara di `rakit.py`:** `--mesin edge` (bawaan; Edge TTS, hanya 2 suara Indonesia `gadis`/`ardi`), `gemini` (Gemini TTS via REST, kunci dari variabel lingkungan `GEMINI_API_KEY`) dan `elevenlabs` (kunci `ELEVENLABS_API_KEY`); `--nama-suara`; mode `--uji-suara` untuk membandingkan satu kalimat antar-mesin tanpa merakit video. Kunci tidak pernah disimpan di kode. Pemilik menilai suara Edge terlalu kaku. **Belum teruji** (tanpa jaringan/kunci di server; hanya sintaks dan penulisan WAV dari PCM diuji) |
 | `dd5fe0c` | **`rakit.py` menyambung klip bertingkat per adegan** (`s2a.mp4`, `s2b.mp4`, … → satu klip lalu dipotong/ditahan sesuai durasi adegan) untuk generator yang hanya menghasilkan klip ±8 detik; `rakit.bat` otomatis memakai `venv\\Scripts\\python.exe` bila ada; petunjuk: jangan menghapus watermark generator. **Belum teruji ujung-ke-ujung** (hanya sintaks dan pencocokan nama berkas diuji; FFmpeg tidak dijalankan di server) |
 | `b5d6df6` | **`promosi/naskah-semua-video.md`:** naskah suara + teks layar 13 video dalam satu berkas siap tempel untuk alat naskah-ke-video berbayar (pengaturan umum + arahan gaya + tabel adegan); dihasilkan dari `promosi/data/*.json`. Keputusan pemilik: paket berbayar boleh dipakai (butuh hak komersial) |
@@ -583,4 +583,5 @@ Tandai `[x]` bila selesai. **Hasil verifikasi hari ini:** ketiga alur pembayaran
 | `b5d6df6` | 15/11 19:13 | Naskah siap tempel 13 video untuk alat naskah-ke-video |
 | `dd5fe0c` | 15/11 19:20 | rakit.py: sambung klip bertingkat per adegan; rakit.bat memakai venv otomatis |
 | `ff63d5a` | 15/11 19:29 | rakit.py: pilihan mesin suara (edge/gemini/elevenlabs) + mode uji suara |
+| `42d889d` | 15/11 21:41 | Harga satuan kembali Rp19.000, diatur lewat config; perbarui teks dan tes |
 <!-- LOG-GIT:AKHIR -->
